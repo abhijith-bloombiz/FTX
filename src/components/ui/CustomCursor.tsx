@@ -1,0 +1,122 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+export function CustomCursor() {
+    const dotRef = useRef<HTMLDivElement>(null);
+    const ringRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isClicked, setIsClicked] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+
+    // Position refs for 0-re-render RAF smoothing
+    const mousePos = useRef({ x: -100, y: -100 });
+    const ringPos = useRef({ x: -100, y: -100 });
+    const rafId = useRef<number | null>(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+
+        // Only run on fine-pointer devices (desktop)
+        if (window.matchMedia("(pointer: coarse)").matches) {
+            return;
+        }
+
+        const handleMouseMove = (e: MouseEvent) => {
+            mousePos.current = { x: e.clientX, y: e.clientY };
+            if (!isVisible) setIsVisible(true);
+        };
+
+        const handleMouseDown = () => setIsClicked(true);
+        const handleMouseUp = () => setIsClicked(false);
+
+        const handleMouseLeave = () => setIsVisible(false);
+        const handleMouseEnter = () => setIsVisible(true);
+
+        // Detect hover over interactive elements
+        const handleMouseOver = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target) return;
+
+            const isInteractive = !!target.closest(
+                'a, button, input, textarea, select, [role="button"], .ftx-btn-tech, [data-cursor="hover"]'
+            );
+            setIsHovered(isInteractive);
+        };
+
+        window.addEventListener("mousemove", handleMouseMove, { passive: true });
+        window.addEventListener("mousedown", handleMouseDown);
+        window.addEventListener("mouseup", handleMouseUp);
+        window.addEventListener("mouseover", handleMouseOver, { passive: true });
+        document.body.addEventListener("mouseleave", handleMouseLeave);
+        document.body.addEventListener("mouseenter", handleMouseEnter);
+
+        // RAF Loop for fluid 60-120fps ring lag tracking
+        const render = () => {
+            const lerpFactor = 0.22; // Damping speed
+
+            ringPos.current.x += (mousePos.current.x - ringPos.current.x) * lerpFactor;
+            ringPos.current.y += (mousePos.current.y - ringPos.current.y) * lerpFactor;
+
+            if (dotRef.current) {
+                dotRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0) translate(-50%, -50%)`;
+            }
+
+            if (ringRef.current) {
+                ringRef.current.style.transform = `translate3d(${ringPos.current.x}px, ${ringPos.current.y}px, 0) translate(-50%, -50%)`;
+            }
+
+            rafId.current = requestAnimationFrame(render);
+        };
+
+        rafId.current = requestAnimationFrame(render);
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mousedown", handleMouseDown);
+            window.removeEventListener("mouseup", handleMouseUp);
+            window.removeEventListener("mouseover", handleMouseOver);
+            document.body.removeEventListener("mouseleave", handleMouseLeave);
+            document.body.removeEventListener("mouseenter", handleMouseEnter);
+            if (rafId.current) cancelAnimationFrame(rafId.current);
+        };
+    }, [mounted, isVisible]);
+
+    // Ensure initial hydration pass matches server (null) 100%
+    if (!mounted) return null;
+
+    return (
+        <div
+            className={`fixed inset-0 pointer-events-none z-[9999] transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+                }`}
+        >
+            {/* 1. Fast Precision Center Dot */}
+            <div
+                ref={dotRef}
+                className="fixed top-0 left-0 w-2 h-2 rounded-full bg-ftx-lime shadow-[0_0_8px_#80FF00] pointer-events-none will-change-transform"
+            />
+
+            {/* 2. Automotive HUD Ring with Crosshairs */}
+            <div
+                ref={ringRef}
+                className={`fixed top-0 left-0 w-10 h-10 rounded-full border pointer-events-none will-change-transform transition-all duration-200 ease-out flex items-center justify-center ${isHovered
+                    ? "scale-140 border-ftx-lime bg-ftx-lime/10 shadow-[0_0_15px_rgba(128,255,0,0.3)]"
+                    : isClicked
+                        ? "scale-90 border-ftx-lime/80 bg-ftx-lime/5"
+                        : "scale-100 border-ftx-lime/35 bg-transparent"
+                    }`}
+            >
+                {/* Crosshair ticks */}
+                <span className="absolute top-0 w-1 h-[2px] bg-ftx-lime/60" />
+                <span className="absolute bottom-0 w-1 h-[2px] bg-ftx-lime/60" />
+                <span className="absolute left-0 h-1 w-[2px] bg-ftx-lime/60" />
+                <span className="absolute right-0 h-1 w-[2px] bg-ftx-lime/60" />
+            </div>
+        </div>
+    );
+}

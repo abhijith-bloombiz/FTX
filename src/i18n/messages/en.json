@@ -1,0 +1,117 @@
+{
+    "common": {
+        "brandName": "FTX – FIRST TORQUE X",
+        "tagline": "Precision Protection. Automotive Perfection.",
+        "getQuote": "GET A QUOTE",
+        "whatsappUs": "WHATSAPP US",
+        "exploreServices": "EXPLORE SERVICES",
+        "viewPackages": "VIEW PACKAGES",
+        "learnMore": "LEARN MORE",
+        "contactUs": "CONTACT US",
+        "bookNow": "BOOK NOW",
+        "viewGallery": "VIEW GALLERY",
+        "ourServices": "OUR SERVICES",
+        "allRightsReserved": "All Rights Reserved."
+    },
+    "nav": {
+        "home": "Home",
+        "about": "About",
+        "services": "Services",
+        "gallery": "Our Work",
+        "packages": "Packages",
+        "contact": "Contact"
+    },
+    "hero": {
+        "badge": "LUXURY AUTOMOTIVE PROTECTION",
+        "title": "PRECISION PROTECTION.",
+        "subtitle": "AUTOMOTIVE PERFECTION.",
+        "description": "Premium Paint Protection Film, advanced Ceramic Coating, and Professional Detailing services engineered for discerning vehicle enthusiasts."
+    },
+    "intro": {
+        "badge": "THE PHILOSOPHY",
+        "title": "ENGINEERED FOR PROTECTION. CRAFTED FOR PERFECTION.",
+        "p1": "At FTX - First Torque X, we treat every vehicle as a masterwork of design and engineering. Our studio environment is designed for maximum clarity and surgical execution.",
+        "p2": "From exotic supercars to high-performance daily drivers, our specialized technicians apply world-class paint protection film and hydrophobic coatings with unyielding precision."
+    },
+    "whyFtx": {
+        "badge": "WHY CHOOSE FTX",
+        "title": "THE STANDARDS OF AUTOMOTIVE EXCELLENCE",
+        "v1Title": "PRECISION",
+        "v1Desc": "Microscopic attention to detail with optical-grade alignment and seamless edge wraps.",
+        "v2Title": "PROTECTION",
+        "v2Desc": "Self-healing thermoplastic shield preserving factory paint against stone chips and environmental elements.",
+        "v3Title": "CRAFTSMANSHIP",
+        "v3Desc": "Certified master applicators working in ultra-clean climate-controlled detailing bays.",
+        "v4Title": "PERFORMANCE",
+        "v4Desc": "Hydrophobic repellency and deep obsidian gloss enhancement engineered to outlast extreme conditions."
+    },
+    "servicesSection": {
+        "badge": "MASTERCLASS SERVICES",
+        "title": "WORLD-CLASS PROTECTION & DETAILING",
+        "ppfTitle": "PAINT PROTECTION FILM (PPF)",
+        "ppfDesc": "Ultra-clear self-healing protection against rock chips, scratches, and road debris.",
+        "ceramicTitle": "CERAMIC COATING",
+        "ceramicDesc": "Multi-layer nano-ceramic hydrophobic shield delivering permanent gloss and UV defense.",
+        "detailingTitle": "PROFESSIONAL DETAILING",
+        "detailingDesc": "Meticulous paint correction, interior restoration, and engine bay revival."
+    },
+    "beforeAfter": {
+        "badge": "TRANSFORMATION SHOWCASE",
+        "title": "WITNESS THE FTX STANDARD",
+        "subtitle": "Drag the slider to compare original vehicle condition with post-FTX ceramic & paint correction mastery.",
+        "before": "BEFORE",
+        "after": "AFTER"
+    },
+    "testimonials": {
+        "badge": "CLIENT REVIEWS",
+        "title": "TRUSTED BY DISCERNING OWNERS"
+    },
+    "finalCta": {
+        "title": "YOUR VEHICLE DESERVES MORE.",
+        "subtitle": "Elevate your automotive investment with FTX precision protection."
+    },
+    "about": {
+        "heroBadge": "ABOUT FIRST TORQUE X",
+        "heroTitle": "DRIVEN BY PRECISION.",
+        "heroSub": "Built around protection, craftsmanship, and automotive excellence.",
+        "philosophyTitle": "OUR APPROACH",
+        "philosophyText": "We refuse to compromise on quality. Every installation undergoes multi-stage inspection under high-intensity color-matched studio lights."
+    },
+    "servicesPage": {
+        "heroTitle": "PROTECTION. PERFORMANCE. PERFECTION.",
+        "heroSub": "Explore our comprehensive lineup of automotive paint protection, ceramic, and detailing solutions."
+    },
+    "gallery": {
+        "heroTitle": "BUILT TO BE SEEN.",
+        "heroSub": "Explore recent FTX automotive transformations, paint protection film fits, and ceramic glass finishes.",
+        "all": "ALL WORK",
+        "ppf": "PPF",
+        "ceramic": "CERAMIC",
+        "detailing": "DETAILING",
+        "beforeAfter": "BEFORE & AFTER"
+    },
+    "packages": {
+        "heroTitle": "CHOOSE YOUR LEVEL OF PROTECTION",
+        "heroSub": "Engineered tiers tailored to your vehicle's specific usage and protection requirements.",
+        "requestQuote": "REQUEST A QUOTE"
+    },
+    "contact": {
+        "heroTitle": "LET'S PROTECT YOUR VEHICLE.",
+        "heroSub": "Get in touch with our studio team to discuss customized protection packages for your car.",
+        "formTitle": "REQUEST A PERSONALIZED QUOTE",
+        "name": "Full Name",
+        "phone": "Phone Number",
+        "email": "Email Address",
+        "vehicle": "Vehicle Make & Model",
+        "service": "Select Service",
+        "package": "Select Package (Optional)",
+        "message": "Additional Details / Requirements",
+        "submit": "SUBMIT QUOTE REQUEST",
+        "submitting": "SUBMITTING...",
+        "successMsg": "Thank you! Your quote request has been received. Our specialist will contact you shortly.",
+        "errorMsg": "An error occurred while submitting your request. Please try again or WhatsApp us directly.",
+        "visitStudio": "VISIT OUR STUDIO",
+        "hours": "Working Hours",
+        "address": "Studio Address"
+    }
+}

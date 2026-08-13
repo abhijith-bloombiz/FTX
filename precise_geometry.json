@@ -1,0 +1,128 @@
+{
+  "F.png": {
+    "compName": "F.png",
+    "imgWidth": 1080,
+    "imgHeight": 710,
+    "visibleBbox": {
+      "minX": 52,
+      "minY": 48,
+      "maxX": 1079,
+      "maxY": 644,
+      "width": 1028,
+      "height": 597
+    },
+    "pngLeftInFinal": 6,
+    "pngTopInFinal": 300,
+    "visibleLeftInFinal": 58,
+    "visibleTopInFinal": 348,
+    "matchScore": "164.43"
+  },
+  "T.png": {
+    "compName": "T.png",
+    "imgWidth": 390,
+    "imgHeight": 279,
+    "visibleBbox": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 386,
+      "maxY": 278,
+      "width": 387,
+      "height": 279
+    },
+    "pngLeftInFinal": 610,
+    "pngTopInFinal": 372,
+    "visibleLeftInFinal": 610,
+    "visibleTopInFinal": 372,
+    "matchScore": "18.42"
+  },
+  "X.png": {
+    "compName": "X.png",
+    "imgWidth": 500,
+    "imgHeight": 276,
+    "visibleBbox": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 495,
+      "maxY": 275,
+      "width": 496,
+      "height": 276
+    },
+    "pngLeftInFinal": 820,
+    "pngTopInFinal": 371,
+    "visibleLeftInFinal": 820,
+    "visibleTopInFinal": 371,
+    "matchScore": "25.86"
+  },
+  "car-silver.png": {
+    "compName": "car-silver.png",
+    "imgWidth": 1222,
+    "imgHeight": 445,
+    "visibleBbox": {
+      "minX": 48,
+      "minY": 2,
+      "maxX": 1190,
+      "maxY": 383,
+      "width": 1143,
+      "height": 382
+    },
+    "pngLeftInFinal": 147,
+    "pngTopInFinal": 86,
+    "visibleLeftInFinal": 195,
+    "visibleTopInFinal": 88,
+    "matchScore": "6.80"
+  },
+  "car-green.png": {
+    "compName": "car-green.png",
+    "imgWidth": 1318,
+    "imgHeight": 444,
+    "visibleBbox": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 1281,
+      "maxY": 443,
+      "width": 1282,
+      "height": 444
+    },
+    "pngLeftInFinal": 129,
+    "pngTopInFinal": 179,
+    "visibleLeftInFinal": 129,
+    "visibleTopInFinal": 179,
+    "matchScore": "4.61"
+  },
+  "brand name.png": {
+    "compName": "brand name.png",
+    "imgWidth": 1182,
+    "imgHeight": 142,
+    "visibleBbox": {
+      "minX": 58,
+      "minY": 23,
+      "maxX": 1113,
+      "maxY": 140,
+      "width": 1056,
+      "height": 118
+    },
+    "pngLeftInFinal": 179,
+    "pngTopInFinal": 654,
+    "visibleLeftInFinal": 237,
+    "visibleTopInFinal": 677,
+    "matchScore": "8.50"
+  },
+  "text.png": {
+    "compName": "text.png",
+    "imgWidth": 1920,
+    "imgHeight": 177,
+    "visibleBbox": {
+      "minX": 184,
+      "minY": 32,
+      "maxX": 1761,
+      "maxY": 84,
+      "width": 1578,
+      "height": 53
+    },
+    "pngLeftInFinal": -2,
+    "pngTopInFinal": 6,
+    "visibleLeftInFinal": 182,
+    "visibleTopInFinal": 38,
+    "matchScore": "389.85"
+  }
+}

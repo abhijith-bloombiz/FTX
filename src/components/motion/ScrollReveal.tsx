@@ -1,0 +1,160 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+
+export type ScrollRevealType =
+    | "card"
+    | "editorial"
+    | "image-mask"
+    | "horizontal"
+    | "scale"
+    | "heading-inset";
+
+interface ScrollRevealProps {
+    children: React.ReactNode;
+    type?: ScrollRevealType;
+    direction?: "left" | "right";
+    delay?: number;
+    duration?: number;
+    threshold?: number;
+    className?: string;
+    style?: React.CSSProperties;
+}
+
+export function ScrollReveal({
+    children,
+    type = "card",
+    direction = "left",
+    delay = 0,
+    duration = 850,
+    threshold = 0.15,
+    className = "",
+    style = {},
+}: ScrollRevealProps) {
+    const [isVisible, setIsVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+
+        const prefersReducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        if (prefersReducedMotion) {
+            setIsVisible(true);
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    if (ref.current) observer.unobserve(ref.current);
+                }
+            },
+            { threshold }
+        );
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("resize", checkMobile);
+        };
+    }, [threshold]);
+
+    const getStyles = (): React.CSSProperties => {
+        const baseTransition: React.CSSProperties = {
+            transitionProperty: "transform, opacity, filter, clip-path",
+            transitionDuration: `${duration}ms`,
+            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+            transitionDelay: `${delay}ms`,
+            willChange: "transform, opacity",
+            ...style,
+        };
+
+        if (isVisible) {
+            return {
+                ...baseTransition,
+                opacity: 1,
+                transform: "translate3d(0, 0, 0) scale(1)",
+                filter: "blur(0px)",
+                clipPath: type === "heading-inset" ? "inset(0 0 0 0)" : undefined,
+            };
+        }
+
+        switch (type) {
+            case "card":
+                // Phenomenon Studio Card Entrance: translateY 80px (45px mobile) + scale 0.96 (0.98 mobile)
+                const cardY = isMobile ? "45px" : "80px";
+                const cardScale = isMobile ? "0.98" : "0.96";
+                return {
+                    ...baseTransition,
+                    opacity: 0,
+                    transform: `translate3d(0, ${cardY}, 0) scale(${cardScale})`,
+                };
+
+            case "editorial":
+                const editY = isMobile ? "25px" : "45px";
+                return {
+                    ...baseTransition,
+                    opacity: 0,
+                    transform: `translate3d(0, ${editY}, 0)`,
+                };
+
+            case "image-mask":
+                // Image settle from scale 1.06 to 1.0
+                return {
+                    ...baseTransition,
+                    opacity: 0.7,
+                    transform: "scale(1.06)",
+                    clipPath: "inset(0 0 0 0)",
+                };
+
+            case "horizontal":
+                // direction === "left" means slide in FROM LEFT TO RIGHT (initialX: -150px)
+                // direction === "right" means slide in FROM RIGHT TO LEFT (initialX: 150px)
+                const isFromLeft = direction === "left";
+                const initialX = isFromLeft
+                    ? (isMobile ? "-60px" : "-150px")
+                    : (isMobile ? "60px" : "150px");
+                return {
+                    ...baseTransition,
+                    opacity: 0,
+                    transform: `translate3d(${initialX}, 0, 0) scale(0.97)`,
+                };
+
+            case "scale":
+                const scaleVal = isMobile ? "0.97" : "0.94";
+                return {
+                    ...baseTransition,
+                    opacity: 0,
+                    transform: `translate3d(0, 30px, 0) scale(${scaleVal})`,
+                };
+
+            case "heading-inset":
+                return {
+                    ...baseTransition,
+                    opacity: 0,
+                    transform: "translate3d(0, 100%, 0)",
+                    clipPath: "inset(100% 0 0 0)",
+                };
+
+            default:
+                return baseTransition;
+        }
+    };
+
+    return (
+        <div ref={ref} style={getStyles()} className={className}>
+            {children}
+        </div>
+    );
+}

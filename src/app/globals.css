@@ -1,0 +1,402 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700;900&display=swap');
+@import 'lenis/dist/lenis.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-obsidian: #131313;
+  --color-black: #0e0e0e;
+  --color-surface: #1f1f1f;
+  --color-surface-high: #2a2a2a;
+  --color-lime: #a4d65e;
+  --color-lime-bright: #bff377;
+  --color-silver: #c6c6c6;
+
+  /* FTX Unified Container Radius System */
+  --radius-unified: 40px;
+  --radius-unified-sm: 16px;
+  --radius-sm: 16px;
+  --radius-md: 40px;
+  --radius-lg: 40px;
+  --radius-xl: 40px;
+  --radius-hero: 40px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --radius-unified: 30px;
+    --radius-unified-sm: 12px;
+    --radius-sm: 12px;
+    --radius-md: 30px;
+    --radius-lg: 30px;
+    --radius-xl: 30px;
+    --radius-hero: 30px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --radius-unified: 24px;
+    --radius-unified-sm: 10px;
+    --radius-sm: 10px;
+    --radius-md: 24px;
+    --radius-lg: 24px;
+    --radius-xl: 24px;
+    --radius-hero: 24px;
+  }
+}
+
+/* ============================================================
+   FTX CHAMFERED TECH BUTTON SYSTEM (As shown in reference UI)
+   Top-Right and Bottom-Left angled cut-outs
+   ============================================================ */
+.ftx-btn-tech {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  transition: transform 250ms ease, opacity 250ms ease, background-color 250ms ease;
+}
+
+.ftx-btn-tech:hover {
+  transform: translateY(-1px);
+}
+
+.ftx-btn-tech:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   FTX GLOBAL UNIFIED SQUIRCLE SYSTEM FOR CONTAINERS & BOXES
+   ============================================================ */
+.ftx-squircle-sm {
+  border-radius: var(--radius-unified-sm);
+  overflow: hidden;
+}
+
+.ftx-squircle-md,
+.ftx-squircle-lg,
+.ftx-squircle-xl,
+.ftx-squircle-hero {
+  border-radius: var(--radius-unified);
+  overflow: hidden;
+}
+
+@supports (corner-shape: superellipse(4)) {
+  .ftx-squircle-sm {
+    corner-shape: superellipse(3.5);
+  }
+
+  .ftx-squircle-md,
+  .ftx-squircle-lg,
+  .ftx-squircle-xl,
+  .ftx-squircle-hero {
+    corner-shape: superellipse(4);
+  }
+}
+
+html,
+body {
+  scroll-behavior: smooth;
+  background-color: var(--color-black);
+  color: #e2e2e2;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  overflow-x: hidden !important;
+  max-width: 100vw;
+}
+
+@media (pointer: fine) {
+
+  body,
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    cursor: none !important;
+  }
+}
+
+html.lenis,
+html.lenis-smooth {
+  height: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+html[dir="rtl"] {
+  font-family: 'Noto Sans Arabic', 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+/* Custom Metallic Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 0px;
+}
+
+::-webkit-scrollbar:horizontal {
+  display: none !important;
+  height: 0px !important;
+  opacity: 0 !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #0e0e0e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a4d65e;
+}
+
+/* Texture Overlays & Utilities */
+.bg-honeycomb {
+  background-image: url('/images/honeycomb.svg');
+  background-repeat: repeat;
+}
+
+.text-gradient-lime {
+  background: linear-gradient(135deg, #bff377 0%, #a4d65e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-silver {
+  background: linear-gradient(135deg, #ffffff 0%, #c6c6c6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.clip-corner {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.clip-button {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+/* Subtle Pulsing Lime Ambient Glow */
+@keyframes ambientGlow {
+
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+}
+
+.animate-glow {
+  animation: ambientGlow 8s infinite ease-in-out;
+}
+
+/* Micro Breathing Scale for Settled Cinematic Logo */
+@keyframes microBreath {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.005);
+  }
+}
+
+.animate-micro-breath {
+  animation: microBreath 4s infinite ease-in-out;
+}
+
+/* ============================================================
+   FTX MOVING BORDER LIGHT SYSTEM (Conic-Gradient Laser Sweep)
+   ============================================================ */
+@keyframes ftxRotateBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.ftx-border-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 2px;
+  background-color: var(--color-surface);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@supports (corner-shape: superellipse(4)) {
+  .ftx-border-card {
+    corner-shape: superellipse(4);
+  }
+}
+
+.ftx-border-card::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(from 0deg,
+      transparent 0deg,
+      transparent 270deg,
+      rgba(164, 214, 94, 0.3) 310deg,
+      #a4d65e 340deg,
+      #ffffff 352deg,
+      transparent 360deg);
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ftx-border-card::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background-color: var(--color-surface);
+  border-radius: calc(var(--radius-lg) - 2px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+@supports (corner-shape: superellipse(4)) {
+  .ftx-border-card::after {
+    corner-shape: superellipse(4);
+  }
+}
+
+.ftx-border-card>* {
+  position: relative;
+  z-index: 2;
+  border-radius: calc(var(--radius-lg) - 2px);
+  overflow: hidden;
+}
+
+@supports (corner-shape: superellipse(4)) {
+  .ftx-border-card>* {
+    corner-shape: superellipse(4);
+  }
+}
+
+.ftx-border-card:hover::before,
+.ftx-border-card:focus-within::before {
+  opacity: 1;
+  animation: ftxRotateBorder 6.5s linear infinite;
+}
+
+.ftx-border-card:hover {
+  box-shadow: 0 12px 35px -10px rgba(164, 214, 94, 0.2);
+}
+
+/* Bi-Directional Light Reflection Sweep for Buttons */
+.ftx-btn-specular {
+  position: relative;
+  overflow: hidden;
+}
+
+.ftx-btn-specular::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 100%);
+  transform: translateX(-160%) skewX(-15deg);
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ftx-btn-specular:hover::before {
+  transform: translateX(260%) skewX(-15deg);
+}
+
+/* PNG-Masked Pure White Logo Laser Light Sweep on Hover */
+@keyframes ftxLogoLaser {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(350%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.ftx-logo-laser {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mask-image: url('/brand/ftx-3d-logo.png');
+  -webkit-mask-image: url('/brand/ftx-3d-logo.png');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: left center;
+  -webkit-mask-position: left center;
+}
+
+.ftx-logo-laser-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%);
+  filter: drop-shadow(0 0 15px #ffffff) drop-shadow(0 0 5px #ffffff) brightness(2.5);
+  mix-blend-mode: screen;
+  transform: translateX(-150%) skewX(-20deg);
+  opacity: 0;
+}
+
+.group:hover .ftx-logo-laser-beam {
+  animation: ftxLogoLaser 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Accessibility Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .ftx-border-card::before {
+    animation: none !important;
+  }
+
+  .ftx-border-card:hover::before {
+    opacity: 0;
+  }
+
+  .ftx-btn-specular:hover::before {
+    animation: none !important;
+  }
+}
