@@ -270,12 +270,12 @@ export function CinematicLoader() {
             window.addEventListener("load", handleLoad);
         }
 
-        const MIN_ANIMATION_DURATION = prefersReducedMotion ? 600 : 2800; // ms
+        const MIN_ANIMATION_DURATION = prefersReducedMotion ? 400 : 1200; // ms (fast, responsive 1.2s loader)
         const startTime = performance.now();
 
         const checkReadyToExit = () => {
-            if (DISABLE_AUTO_EXIT) return; // Freeze loading screen indefinitely for testing
-            if (minAnimationDoneRef.current && (pageLoadedRef.current || document.readyState === "complete")) {
+            if (DISABLE_AUTO_EXIT) return;
+            if (minAnimationDoneRef.current) {
                 triggerExitTransition();
             }
         };

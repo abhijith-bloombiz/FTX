@@ -110,16 +110,18 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, []);
 
-    // 2. Preload 192 Frames & Draw Initial Frame
+    // 2. Progressive Batch Preloading for 192 Frames (Sub-second Vercel Network Load)
     useEffect(() => {
-        const loadedImages: HTMLImageElement[] = [];
+        const loadedImages: HTMLImageElement[] = new Array(TOTAL_FRAMES);
 
-        for (let i = 0; i < TOTAL_FRAMES; i++) {
+        // Helper to load a single frame index
+        const loadFrame = (index: number) => {
+            if (loadedImages[index]) return;
             const img = new Image();
-            const frameNum = String(i + 1).padStart(4, "0");
+            const frameNum = String(index + 1).padStart(4, "0");
             img.src = `/video/frames/frame_${frameNum}.jpg`;
 
-            if (i === 0) {
+            if (index === 0) {
                 img.onload = () => {
                     if (lastFrameIndexRef.current === -1 || lastFrameIndexRef.current === 0) {
                         drawFrame(img);
@@ -127,10 +129,31 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     }
                 };
             }
-            loadedImages.push(img);
+            loadedImages[index] = img;
+        };
+
+        // Stage 1: Load initial 10 frames immediately for instant rendering
+        for (let i = 0; i < Math.min(10, TOTAL_FRAMES); i++) {
+            loadFrame(i);
         }
 
         imagesRef.current = loadedImages;
+
+        // Stage 2: Progressive background loading in non-blocking batches of 15 frames
+        let nextFrameBatch = 10;
+        const intervalId = setInterval(() => {
+            if (nextFrameBatch >= TOTAL_FRAMES) {
+                clearInterval(intervalId);
+                return;
+            }
+            const endBatch = Math.min(nextFrameBatch + 15, TOTAL_FRAMES);
+            for (let i = nextFrameBatch; i < endBatch; i++) {
+                loadFrame(i);
+            }
+            nextFrameBatch = endBatch;
+        }, 80);
+
+        return () => clearInterval(intervalId);
     }, [drawFrame]);
 
     // 3. GSAP ScrollTrigger — Single Source of Truth for Hero Scroll & Typography
