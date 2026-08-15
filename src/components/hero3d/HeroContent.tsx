@@ -136,7 +136,7 @@ export function HeroContent({
             className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[calc(100vh-6rem)] flex flex-col justify-between py-12 transition-opacity duration-300 pointer-events-none"
             style={{ opacity: revealed ? 1 : 0 }}
         >
-            {/* TOP SECTION: PRECISION (Line 1) & PROTECTION. (Line 2) */}
+            {/* TOP SECTION: PRECISION & PROTECTION. + AUTOMOTIVE PERFECTION (Mobile View) */}
             <div className="pt-4 pointer-events-auto">
                 <div className="space-y-1 text-center lg:text-left">
                     <div className="overflow-hidden py-0.5">
@@ -155,14 +155,33 @@ export function HeroContent({
                             <span>{titleLine2}</span>
                         </h1>
                     </div>
+
+                    {/* AUTOMOTIVE PERFECTION — Mobile position (directly under PRECISION PROTECTION) */}
+                    <div className="block lg:hidden pt-2 space-y-0.5 text-center">
+                        <div className="overflow-hidden py-0.5">
+                            <h2
+                                className="text-2xl sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
+                                style={automotiveStyle}
+                            >
+                                <span>{subLine1}</span>
+                            </h2>
+                        </div>
+                        <div className="overflow-hidden py-0.5">
+                            <h2
+                                className="text-2xl sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
+                                style={perfectionStyle}
+                            >
+                                <span>{subLine2}</span>
+                            </h2>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* BOTTOM SECTION: Sub paragraph, CTAs & Metrics (Bottom Left) + AUTOMOTIVE PERFECTION (Bottom Right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pb-4 pt-8">
-                {/* Bottom Left: Description, CTAs, Metrics */}
+            {/* BOTTOM SECTION: CTAs (Left) + AUTOMOTIVE PERFECTION (Desktop Right View) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-4 pt-4 lg:pt-8">
+                {/* CTAs & Buttons */}
                 <div className="lg:col-span-7 space-y-6 text-center lg:text-left pointer-events-auto">
-                    {/* CTAs */}
                     <div className="relative z-20 flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
                         <Link
                             href={`/${locale}/contact`}
@@ -184,12 +203,12 @@ export function HeroContent({
                     </div>
                 </div>
 
-                {/* Bottom Right: AUTOMOTIVE PERFECTION */}
-                <div className="lg:col-span-5 flex flex-col justify-end items-center lg:items-end text-center lg:text-right pointer-events-auto">
-                    <div className="space-y-1 text-center lg:text-right">
+                {/* AUTOMOTIVE PERFECTION — Desktop position (bottom right) */}
+                <div className="hidden lg:flex lg:col-span-5 flex-col justify-end items-end text-right pointer-events-auto translate-y-16">
+                    <div className="space-y-1 text-right">
                         <div className="overflow-hidden py-0.5">
                             <h2
-                                className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
+                                className="text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
                                 style={automotiveStyle}
                             >
                                 <span>{subLine1}</span>
@@ -197,7 +216,7 @@ export function HeroContent({
                         </div>
                         <div className="overflow-hidden py-0.5">
                             <h2
-                                className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
+                                className="text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
                                 style={perfectionStyle}
                             >
                                 <span>{subLine2}</span>

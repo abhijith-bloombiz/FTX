@@ -95,7 +95,7 @@ function AutoImageSlideshow({
 export function ServicesGrid({ locale, messages }: ServicesGridProps) {
     return (
         <section id="services" className="py-24 bg-ftx-black relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Row: Masked Editorial Text Reveal */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
                     <div className="space-y-2">

@@ -100,6 +100,7 @@ export function BeforeAfterSlider({
                     src={afterImage}
                     alt={`After: ${alt}`}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
@@ -117,6 +118,7 @@ export function BeforeAfterSlider({
                     src={beforeImage}
                     alt={`Before: ${alt}`}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />

@@ -41,7 +41,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
     return (
         <section id="packages" className="py-24 bg-ftx-obsidian relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-left max-w-3xl mb-16 space-y-3">
                     <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                         <span>{messages.whyFtx.badge}</span>

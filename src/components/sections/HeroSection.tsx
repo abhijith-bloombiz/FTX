@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Locale } from "@/i18n/config";
@@ -12,11 +11,6 @@ import { HeroTypography } from "@/components/hero3d/HeroTypography";
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
 }
-
-const HeroCanvas = dynamic(
-    () => import("@/components/hero3d/HeroCanvas").then((mod) => mod.HeroCanvas),
-    { ssr: false }
-);
 
 interface HeroSectionProps {
     locale: Locale;
@@ -32,26 +26,32 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const contentRef = useRef<HTMLDivElement>(null);
 
     const imagesRef = useRef<HTMLImageElement[]>([]);
-    const lastFrameIndexRef = useRef<number>(-1);
+    const targetFrameRef = useRef<number>(0);
+    const currentFrameRef = useRef<number>(0);
+    const lastDrawnFrameRef = useRef<number>(-1);
+    const animFrameIdRef = useRef<number | null>(null);
 
     const [revealed, setRevealed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [scrollProgress, setScrollProgress] = useState(0);
-    const mousePosRef = useRef({ x: 0, y: 0 });
 
-    // Cover-fit Canvas Drawing Function (aspect-ratio preserving, never distorts)
+    // High-DPI Cover-fit Canvas Drawing Function (Retina Sharp 2K/4K Resolution)
     const drawFrame = useCallback((img: HTMLImageElement) => {
         if (!canvasRef.current || !img) return;
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
+        const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
         const displayWidth = canvas.clientWidth;
         const displayHeight = canvas.clientHeight;
+
         if (displayWidth && displayHeight) {
-            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-                canvas.width = displayWidth;
-                canvas.height = displayHeight;
+            const targetW = Math.round(displayWidth * dpr);
+            const targetH = Math.round(displayHeight * dpr);
+            if (canvas.width !== targetW || canvas.height !== targetH) {
+                canvas.width = targetW;
+                canvas.height = targetH;
             }
         }
 
@@ -59,15 +59,20 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const canvasHeight = canvas.height;
         if (!canvasWidth || !canvasHeight) return;
 
+        // Enable maximum image rendering clarity & high-quality smoothing
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+
         const imgWidth = img.naturalWidth || 1920;
         const imgHeight = img.naturalHeight || 1080;
 
-        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight) * 1.01;
+        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight) * 1.005;
         const width = imgWidth * scale;
         const height = imgHeight * scale;
         const x = (canvasWidth - width) / 2;
         const y = (canvasHeight - height) / 2;
 
+        ctx.globalAlpha = 1.0;
         ctx.drawImage(img, x, y, width, height);
     }, []);
 
@@ -110,11 +115,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, []);
 
-    // 2. Progressive Batch Preloading for 192 Frames (Sub-second Vercel Network Load)
+    // 2. Rapid Preloading of All 192 Frames
     useEffect(() => {
         const loadedImages: HTMLImageElement[] = new Array(TOTAL_FRAMES);
 
-        // Helper to load a single frame index
         const loadFrame = (index: number) => {
             if (loadedImages[index]) return;
             const img = new Image();
@@ -123,40 +127,92 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
             if (index === 0) {
                 img.onload = () => {
-                    if (lastFrameIndexRef.current === -1 || lastFrameIndexRef.current === 0) {
+                    if (lastDrawnFrameRef.current === -1) {
                         drawFrame(img);
-                        lastFrameIndexRef.current = 0;
+                        lastDrawnFrameRef.current = 0;
                     }
                 };
             }
             loadedImages[index] = img;
         };
 
-        // Stage 1: Load initial 10 frames immediately for instant rendering
-        for (let i = 0; i < Math.min(10, TOTAL_FRAMES); i++) {
+        imagesRef.current = loadedImages;
+
+        // Stage 1: Load first 30 frames immediately for instant zero-latency start
+        for (let i = 0; i < Math.min(30, TOTAL_FRAMES); i++) {
             loadFrame(i);
         }
 
-        imagesRef.current = loadedImages;
-
-        // Stage 2: Progressive background loading in non-blocking batches of 15 frames
-        let nextFrameBatch = 10;
-        const intervalId = setInterval(() => {
-            if (nextFrameBatch >= TOTAL_FRAMES) {
-                clearInterval(intervalId);
-                return;
-            }
-            const endBatch = Math.min(nextFrameBatch + 15, TOTAL_FRAMES);
-            for (let i = nextFrameBatch; i < endBatch; i++) {
+        // Stage 2: Rapid background preloading in 40-frame concurrent bursts
+        let nextBatch = 30;
+        const burstLoad = () => {
+            if (nextBatch >= TOTAL_FRAMES) return;
+            const limit = Math.min(nextBatch + 40, TOTAL_FRAMES);
+            for (let i = nextBatch; i < limit; i++) {
                 loadFrame(i);
             }
-            nextFrameBatch = endBatch;
-        }, 80);
+            nextBatch = limit;
+            if (nextBatch < TOTAL_FRAMES) {
+                if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+                    (window as any).requestIdleCallback(burstLoad);
+                } else {
+                    setTimeout(burstLoad, 16);
+                }
+            }
+        };
 
-        return () => clearInterval(intervalId);
+        const timer = setTimeout(burstLoad, 30);
+        return () => clearTimeout(timer);
     }, [drawFrame]);
 
-    // 3. GSAP ScrollTrigger — Single Source of Truth for Hero Scroll & Typography
+    // 3. Smooth Inertia Lerping Render Loop (Crisp 60FPS Frame Interpolation)
+    useEffect(() => {
+        const renderLoop = () => {
+            const target = targetFrameRef.current;
+            const current = currentFrameRef.current;
+
+            // Lerp towards target frame for smooth inertia without ghosting
+            const diff = target - current;
+            if (Math.abs(diff) > 0.005) {
+                currentFrameRef.current += diff * 0.18;
+            } else {
+                currentFrameRef.current = target;
+            }
+
+            const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
+
+            if (frameIndex !== lastDrawnFrameRef.current) {
+                lastDrawnFrameRef.current = frameIndex;
+                const images = imagesRef.current;
+                let img = images[frameIndex];
+
+                // Fallback to nearest loaded frame if target frame isn't ready
+                if (!img || !img.complete) {
+                    for (let offset = 1; offset < 10; offset++) {
+                        const prev = images[frameIndex - offset];
+                        if (prev && prev.complete) { img = prev; break; }
+                        const next = images[frameIndex + offset];
+                        if (next && next.complete) { img = next; break; }
+                    }
+                }
+
+                if (img && img.complete) {
+                    drawFrame(img);
+                }
+            }
+
+            animFrameIdRef.current = requestAnimationFrame(renderLoop);
+        };
+
+        animFrameIdRef.current = requestAnimationFrame(renderLoop);
+        return () => {
+            if (animFrameIdRef.current !== null) {
+                cancelAnimationFrame(animFrameIdRef.current);
+            }
+        };
+    }, [drawFrame]);
+
+    // 4. GSAP ScrollTrigger — Single Source of Truth for Hero Scroll & Typography
     useEffect(() => {
         if (!sectionRef.current || !pinWrapperRef.current) return;
 
@@ -168,8 +224,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 trigger: section,
                 pin: pinWrapper,
                 start: "top top",
-                end: "+=3000px",
-                scrub: 0.1,
+                end: "+=2200px",
+                scrub: 0.15,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
@@ -178,35 +234,23 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     // Update state for HeroTypography transformation
                     setScrollProgress(progress);
 
-                    // Map ScrollTrigger progress to frame indices [0, 191]
-                    const frameIndex = progress >= 1
-                        ? 191
-                        : Math.floor(progress * TOTAL_FRAMES);
-
-                    if (frameIndex !== lastFrameIndexRef.current) {
-                        lastFrameIndexRef.current = frameIndex;
-                        const img = imagesRef.current[frameIndex];
-                        if (img) {
-                            if (img.complete) {
-                                drawFrame(img);
-                            } else {
-                                img.onload = () => drawFrame(img);
-                            }
-                        }
-                    }
+                    // Set target frame for smooth inertia interpolation [0, 191]
+                    targetFrameRef.current = progress * (TOTAL_FRAMES - 1);
                 },
             });
 
             const handleResizeRedraw = () => {
-                const currentIndex = Math.max(0, lastFrameIndexRef.current);
-                const img = imagesRef.current[currentIndex];
+                const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
+                const img = imagesRef.current[frameIndex];
+
                 if (img && img.complete) {
                     if (canvasRef.current) {
+                        const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
                         const w = canvasRef.current.clientWidth;
                         const h = canvasRef.current.clientHeight;
                         if (w && h) {
-                            canvasRef.current.width = w;
-                            canvasRef.current.height = h;
+                            canvasRef.current.width = Math.round(w * dpr);
+                            canvasRef.current.height = Math.round(h * dpr);
                         }
                     }
                     drawFrame(img);
@@ -229,23 +273,6 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => ctx.revert();
     }, [drawFrame]);
 
-    // Mouse Tracking for 3D Car Interaction
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isMobile) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const rawX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        const rawY = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-
-        const easedX = Math.sign(rawX) * Math.pow(Math.abs(rawX), 1.2);
-        const easedY = Math.sign(rawY) * Math.pow(Math.abs(rawY), 1.2);
-
-        mousePosRef.current = { x: easedX, y: easedY };
-    };
-
-    const handleMouseLeave = () => {
-        mousePosRef.current = { x: 0, y: 0 };
-    };
-
     return (
         <section
             ref={sectionRef}
@@ -254,8 +281,6 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         >
             <div
                 ref={pinWrapperRef}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
                 className="relative w-full h-screen flex items-center justify-center overflow-hidden"
             >
                 {/* 1. Scroll-Controlled Frame-Based HTML Canvas Background (z-0) */}
@@ -270,13 +295,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     revealed={revealed}
                 />
 
-                {/* 3. Interactive 3D Vehicle WebGL Canvas (z-10) */}
-                <HeroCanvas
-                    mousePosRef={mousePosRef}
-                    isMobile={isMobile}
-                />
-
-                {/* 4. FTX Content & Headline UI Overlay (z-20) */}
+                {/* 3. FTX Content & Headline UI Overlay (z-20) */}
                 <HeroContent
                     locale={locale}
                     messages={messages}

@@ -15,12 +15,16 @@ export function HeroBackground({
     const handleResize = useCallback(() => {
         if (!canvasRef?.current) return;
         const canvas = canvasRef.current;
+        const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
         const width = canvas.parentElement?.clientWidth || window.innerWidth;
         const height = canvas.parentElement?.clientHeight || window.innerHeight;
 
-        if (canvas.width !== width || canvas.height !== height) {
-            canvas.width = width;
-            canvas.height = height;
+        const targetW = Math.round(width * dpr);
+        const targetH = Math.round(height * dpr);
+
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+            canvas.width = targetW;
+            canvas.height = targetH;
         }
     }, [canvasRef]);
 
@@ -37,7 +41,12 @@ export function HeroBackground({
                 <canvas
                     ref={canvasRef}
                     className="block w-full h-full object-cover transition-opacity duration-1000"
-                    style={{ opacity: revealed ? 1 : 0, pointerEvents: "none" }}
+                    style={{
+                        opacity: revealed ? 1 : 0,
+                        pointerEvents: "none",
+                        imageRendering: "-webkit-optimize-contrast",
+                        filter: "contrast(1.04) brightness(1.02)",
+                    }}
                 />
             </div>
 
@@ -49,9 +58,9 @@ export function HeroBackground({
 
             {/* 3. Subtle Atmosphere Overlay (Clean & natural without black edge bar) */}
             <div
-                className="absolute inset-0 opacity-20 mix-blend-screen pointer-events-none"
+                className="absolute inset-0 opacity-15 mix-blend-screen pointer-events-none"
                 style={{
-                    backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(128, 255, 0, 0.1) 0%, rgba(15, 23, 18, 0.25) 70%, transparent 100%)`,
+                    backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(128, 255, 0, 0.08) 0%, rgba(15, 23, 18, 0.20) 70%, transparent 100%)`,
                 }}
             />
         </div>

@@ -13,7 +13,7 @@ interface IntroSectionProps {
 export function IntroSection({ locale, messages }: IntroSectionProps) {
     return (
         <section id="about" className="py-20 bg-ftx-obsidian relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     {/* Image Grid */}
                     <ScrollReveal type="card" duration={850} className="lg:col-span-5 relative">

@@ -42,34 +42,46 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
         if (progress <= start) return 0;
         if (progress >= end) return 1;
         const raw = (progress - start) / (end - start);
-        // Smooth quadratic ease for slow, gradual appearance
         return Math.pow(raw, 1.3);
     };
 
-    // Phase 1: F -> FIRST (spread slowly across 0.08 -> 0.45)
-    const iProg = getLetterProgress(0.08, 0.18);
-    const r1Prog = getLetterProgress(0.17, 0.27);
-    const sProg = getLetterProgress(0.26, 0.36);
-    const t1Prog = getLetterProgress(0.35, 0.45);
+    // Phase 1: F -> FIRST (spread across 0.04 -> 0.30)
+    const iProg = getLetterProgress(0.04, 0.10);
+    const r1Prog = getLetterProgress(0.10, 0.16);
+    const sProg = getLetterProgress(0.16, 0.22);
+    const t1Prog = getLetterProgress(0.22, 0.28);
 
-    // Phase 2: T -> TORQUE (spread slowly across 0.45 -> 0.85)
-    const oProg = getLetterProgress(0.45, 0.53);
-    const r2Prog = getLetterProgress(0.53, 0.61);
-    const qProg = getLetterProgress(0.61, 0.69);
-    const uProg = getLetterProgress(0.69, 0.77);
-    const eProg = getLetterProgress(0.77, 0.85);
+    // Phase 2: T -> TORQUE (spread across 0.30 -> 0.65 so ALL letters complete before frame 140)
+    const oProg = getLetterProgress(0.30, 0.37);
+    const r2Prog = getLetterProgress(0.37, 0.44);
+    const qProg = getLetterProgress(0.44, 0.51);
+    const uProg = getLetterProgress(0.51, 0.58);
+    const eProg = getLetterProgress(0.58, 0.65);
 
-    // Scroll-driven liquid green fill progress (0.0 to 1.0)
-    const fillProg = Math.min(1, Math.max(0, progress / 0.75));
-    // Green fill stop percentage: 80% (bottom 20% green at rest) -> 35% (as you scroll down)
-    const greenStop = Math.round(80 - fillProg * 45);
+    // Scroll-driven fill progress (0.0 to 1.0)
+    const fillProg = Math.min(1, Math.max(0, progress / 0.65));
 
-    // Dynamic Glass Style for FTX Typography: Initial 20% green at bottom -> Scroll fills Green higher
+    // Frame 150 Hide Calculation:
+    // frame_0150.jpg corresponds to progress = 149 / 191 (~0.7801).
+    // All letters finish revealing at progress 0.65.
+    // Fades out smoothly between frame 140 (~0.7277) and frame 150 (~0.7801).
+    const frame150Progress = 149 / 191;
+    const frame140Progress = 139 / 191;
+
+    let frameHideOpacity = 1;
+    if (progress >= frame150Progress) {
+        frameHideOpacity = 0;
+    } else if (progress > frame140Progress) {
+        frameHideOpacity = 1 - (progress - frame140Progress) / (frame150Progress - frame140Progress);
+    }
+
+    // Pure Delicate Light Outline Style: Zero background fill, clean stroke
     const getXGlassStyle = () => {
         return {
-            WebkitTextStroke: "0.8px rgba(20, 20, 20, 0.40)",
-            backgroundImage: `linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.65) ${Math.max(0, greenStop - 15)}%, rgba(163, 230, 53, 0.95) ${greenStop}%, rgba(163, 230, 53, 0.85) 100%)`,
-            textShadow: `0 8px 32px rgba(163, 230, 53, ${0.15 + fillProg * 0.25}), 0 0 20px rgba(163, 230, 53, ${0.10 + fillProg * 0.20})`,
+            WebkitTextStroke: `0.6px rgba(255, 255, 255, ${(0.20 + fillProg * 0.20) * frameHideOpacity})`,
+            color: "transparent",
+            backgroundColor: "transparent",
+            backgroundImage: "none",
         };
     };
 
@@ -77,22 +89,26 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
 
     return (
         <div
-            className="absolute inset-0 z-5 pointer-events-none flex items-center justify-center -translate-y-6 sm:-translate-y-8 lg:-translate-y-10 w-full max-w-full overflow-hidden px-4 select-none"
+            className="absolute inset-0 z-5 pointer-events-none flex items-center justify-center w-full max-w-full overflow-hidden px-4 select-none transition-opacity duration-300"
+            style={{
+                opacity: isVisible ? frameHideOpacity : 0,
+                visibility: frameHideOpacity < 0.01 ? "hidden" : "visible",
+            }}
         >
-            {/* Tightly grouped 2X enlarged glassy typography container centered behind the 3D car */}
+            {/* Perfectly centered glassy typography container */}
             <div
-                className="flex items-center justify-center gap-2 sm:gap-4 lg:gap-6 font-heading font-black tracking-tighter leading-none text-center max-w-full overflow-hidden"
+                className="flex items-center justify-center text-center gap-2 sm:gap-4 lg:gap-5 font-heading font-black tracking-tighter leading-none max-w-full overflow-hidden"
                 suppressHydrationWarning
                 translate="no"
             >
                 {/* WORD 1: F -> FIRST (Slide in smoothly from LEFT to RIGHT) */}
                 <div
-                    className="flex items-center text-[clamp(3.5rem,10vw,10rem)] font-black uppercase text-transparent bg-clip-text drop-shadow-2xl"
+                    className="flex items-center justify-center text-[clamp(2.2rem,6.5vw,6.5rem)] font-black uppercase text-transparent text-center"
                     style={{
                         ...getXGlassStyle(),
-                        opacity: isVisible ? 1 : 0,
+                        opacity: isVisible ? frameHideOpacity : 0,
                         transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(-140px, 0, 0)",
-                        filter: isVisible ? "blur(0px)" : "blur(18px)",
+                        filter: isVisible && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(18px)",
                         transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
                         transitionDelay: "200ms",
                     }}
@@ -106,12 +122,12 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
 
                 {/* WORD 2: T -> TORQUE (Vertical Fill-Up & Expand effect from bottom) */}
                 <div
-                    className="flex items-center text-[clamp(3.5rem,10vw,10rem)] font-black uppercase text-transparent bg-clip-text drop-shadow-2xl"
+                    className="flex items-center justify-center text-[clamp(2.2rem,6.5vw,6.5rem)] font-black uppercase text-transparent text-center"
                     style={{
                         ...getXGlassStyle(),
-                        opacity: isVisible ? 1 : 0,
+                        opacity: isVisible ? frameHideOpacity : 0,
                         transform: isVisible ? "translate3d(0, 0, 0) scale(1)" : "translate3d(0, 50px, 0) scaleY(0.15) scaleX(0.85)",
-                        filter: isVisible ? "blur(0px)" : "blur(22px)",
+                        filter: isVisible && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(22px)",
                         transformOrigin: "bottom center",
                         transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
                         transitionDelay: "380ms",
@@ -127,12 +143,12 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
 
                 {/* WORD 3: X (Slide in smoothly from RIGHT to LEFT) */}
                 <div
-                    className="text-[clamp(3.5rem,10vw,10rem)] font-black uppercase text-transparent bg-clip-text drop-shadow-2xl"
+                    className="text-[clamp(2.2rem,6.5vw,6.5rem)] font-black uppercase text-transparent text-center"
                     style={{
                         ...getXGlassStyle(),
-                        opacity: isVisible ? 1 : 0,
+                        opacity: isVisible ? frameHideOpacity : 0,
                         transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(140px, 0, 0)",
-                        filter: isVisible ? "blur(0px)" : "blur(18px)",
+                        filter: isVisible && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(18px)",
                         transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
                         transitionDelay: "560ms",
                     }}

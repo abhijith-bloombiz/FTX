@@ -10,7 +10,7 @@ global.document = {
 const THREE = require('three');
 const { GLTFLoader } = require('three-stdlib');
 
-const glbPath = path.join(__dirname, '../public/3D-model/bmw3d.glb');
+const glbPath = path.join(__dirname, '../public/3D-model/ftx-logo-3d.glb');
 console.log('Loading GLB from:', glbPath);
 
 const data = fs.readFileSync(glbPath);
@@ -19,7 +19,7 @@ const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.by
 const loader = new GLTFLoader();
 loader.parse(arrayBuffer, '', (gltf) => {
     const scene = gltf.scene;
-    console.log('--- GLB SCENE STRUCT ---');
+    console.log('--- FTX LOGO 3D SCENE STRUCT ---');
 
     const box = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
@@ -34,15 +34,8 @@ loader.parse(arrayBuffer, '', (gltf) => {
     console.log('Animations count:', gltf.animations ? gltf.animations.length : 0);
 
     const meshes = [];
-    const wheelNodes = [];
 
     scene.traverse((child) => {
-        if (child.name) {
-            const nameLower = child.name.toLowerCase();
-            if (nameLower.includes('wheel') || nameLower.includes('tire') || nameLower.includes('rim') || nameLower.includes('rad') || nameLower.includes('rad_')) {
-                wheelNodes.push({ name: child.name, type: child.type });
-            }
-        }
         if (child.isMesh) {
             meshes.push({
                 name: child.name,
@@ -53,7 +46,6 @@ loader.parse(arrayBuffer, '', (gltf) => {
 
     console.log(`Total Meshes: ${meshes.length}`);
     console.log('First 20 Meshes:', meshes.slice(0, 20));
-    console.log('Potential Wheel Nodes:', wheelNodes);
 }, (err) => {
     console.error('Error parsing GLB:', err);
 });

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { Locale, locales } from "@/i18n/config";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { IntroSection } from "@/components/sections/IntroSection";
@@ -7,6 +8,11 @@ import { WhyFTX } from "@/components/sections/WhyFTX";
 import { FeaturedWork } from "@/components/sections/FeaturedWork";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { ContactForm } from "@/components/ui/ContactForm";
+
+const HeroCanvas = dynamic(
+    () => import("@/components/hero3d/HeroCanvas").then((mod) => mod.HeroCanvas),
+    { ssr: false }
+);
 
 async function getMessages(locale: Locale) {
     if (!locales.includes(locale as Locale)) {
@@ -28,6 +34,9 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
     return (
         <>
+            {/* Persistent Full-Page 3D WebGL Canvas Layer */}
+            <HeroCanvas />
+
             {/* 1. Cinematic Hero */}
             <HeroSection locale={locale} messages={messages} />
 

@@ -24,7 +24,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
 
     return (
         <section id="ourwork" className="py-24 bg-ftx-black relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Row with Masked Text Reveal */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
                     <div>
