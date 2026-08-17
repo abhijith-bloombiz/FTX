@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Locale } from "@/i18n/config";
 import { HeroBackground } from "@/components/hero3d/HeroBackground";
 import { HeroContent } from "@/components/hero3d/HeroContent";
-import { HeroTypography } from "@/components/hero3d/HeroTypography";
+import { HeroTypography, HeroTypographyRef } from "@/components/hero3d/HeroTypography";
 
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
@@ -18,27 +18,30 @@ interface HeroSectionProps {
 }
 
 const TOTAL_FRAMES = 150;
-const CRITICAL_LOAD_COUNT = 15; // Critical frames 1-15 for instant loader completion
+const CRITICAL_LOAD_COUNT = 15; // Critical initial frames 1-15 for instant loader completion
+const CACHE_WINDOW_BACK = 10;   // Keep decoded images up to 10 frames behind current scroll position
+const CACHE_WINDOW_FORWARD = 35; // Keep decoded images up to 35 frames ahead of current scroll position
 
 export function HeroSection({ locale, messages }: HeroSectionProps) {
     const sectionRef = useRef<HTMLDivElement>(null);
     const pinWrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const typographyRef = useRef<HeroTypographyRef>(null);
 
-    // Frame Cache & High-Frequency Animation Refs (0ms React State Overhead)
+    // Frame Cache & High-Frequency Animation Refs (0ms React State Overhead during scroll)
     const imagesRef = useRef<(HTMLImageElement | null)[]>(new Array(TOTAL_FRAMES).fill(null));
-    const loadingStatusRef = useRef<boolean[]>(new Array(TOTAL_FRAMES).fill(false));
+    const downloadedSetRef = useRef<Set<number>>(new Set());
+    const inFlightRef = useRef<Set<number>>(new Set());
 
     const targetFrameRef = useRef<number>(0);
     const currentFrameRef = useRef<number>(0);
     const lastDrawnFrameRef = useRef<number>(-1);
     const animFrameIdRef = useRef<number | null>(null);
+    const scrollProgressRef = useRef<number>(0);
 
     const [revealed, setRevealed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [scrollProgress, setScrollProgress] = useState(0);
 
     // High-DPI Cover-fit Canvas Drawing Pipeline
     const drawFrame = useCallback((img: HTMLImageElement) => {
@@ -123,13 +126,15 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         ctx.fillRect(0, bottomFadeY, canvasWidth, bottomFadeH);
     }, [isMobile]);
 
-    // Async Frame Load & Pre-decoding Helper
-    const loadAndDecodeFrame = useCallback(async (index: number): Promise<HTMLImageElement | null> => {
+    // Async Frame Load & Pre-decoding Helper (with deduplication)
+    const loadFrame = useCallback(async (index: number): Promise<HTMLImageElement | null> => {
         if (index < 0 || index >= TOTAL_FRAMES) return null;
-        if (imagesRef.current[index]) return imagesRef.current[index];
-        if (loadingStatusRef.current[index]) return null;
+        if (imagesRef.current[index] && imagesRef.current[index]?.complete) {
+            return imagesRef.current[index];
+        }
+        if (inFlightRef.current.has(index)) return null;
 
-        loadingStatusRef.current[index] = true;
+        inFlightRef.current.add(index);
         const img = new Image();
         const paddedIndex = String(index + 1).padStart(4, "0");
         img.src = `/video/frames/frame_${paddedIndex}.webp`;
@@ -145,19 +150,73 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             }
             if (img.naturalWidth > 0) {
                 imagesRef.current[index] = img;
+                downloadedSetRef.current.add(index);
                 return img;
             }
             return null;
         } catch {
             if (img.naturalWidth > 0) {
                 imagesRef.current[index] = img;
+                downloadedSetRef.current.add(index);
                 return img;
             }
             return null;
         } finally {
-            loadingStatusRef.current[index] = false;
+            inFlightRef.current.delete(index);
         }
     }, []);
+
+    // Sliding Window Memory Management — Prune uncompressed 8.3MB RGBA textures for distant frames
+    const manageMemoryCache = useCallback((currentIdx: number) => {
+        const backLimit = Math.max(0, currentIdx - CACHE_WINDOW_BACK);
+        const forwardLimit = Math.min(TOTAL_FRAMES - 1, currentIdx + CACHE_WINDOW_FORWARD);
+
+        for (let i = 0; i < TOTAL_FRAMES; i++) {
+            // Preserve initial critical frame 0 as safety fallback
+            if (i === 0) continue;
+
+            if (i < backLimit || i > forwardLimit) {
+                if (imagesRef.current[i]) {
+                    // Nullifying image releases decoded bitmap texture for GC while HTTP cache retains asset
+                    imagesRef.current[i] = null;
+                }
+            }
+        }
+    }, []);
+
+    // Scroll-Aware Priority Preloader
+    const preloadPriorityQueue = useCallback((centerIndex: number, isForward: boolean) => {
+        const priorityList: number[] = [];
+
+        if (isForward) {
+            for (let i = centerIndex; i <= Math.min(TOTAL_FRAMES - 1, centerIndex + 20); i++) {
+                priorityList.push(i);
+            }
+            for (let i = centerIndex - 1; i >= Math.max(0, centerIndex - 5); i--) {
+                priorityList.push(i);
+            }
+        } else {
+            for (let i = centerIndex; i >= Math.max(0, centerIndex - 20); i--) {
+                priorityList.push(i);
+            }
+            for (let i = centerIndex + 1; i <= Math.min(TOTAL_FRAMES - 1, centerIndex + 5); i++) {
+                priorityList.push(i);
+            }
+        }
+
+        const loadBatch = () => {
+            const missing = priorityList.filter((idx) => !imagesRef.current[idx] && !inFlightRef.current.has(idx));
+            if (missing.length === 0) return;
+            const batch = missing.slice(0, 4);
+            batch.forEach((idx) => loadFrame(idx));
+        };
+
+        if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+            (window as any).requestIdleCallback(loadBatch);
+        } else {
+            setTimeout(loadBatch, 10);
+        }
+    }, [loadFrame]);
 
     // 1. Initial Setup & Mobile Detection
     useEffect(() => {
@@ -186,11 +245,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     useEffect(() => {
         let isCancelled = false;
 
-        // Stage 1: Load and decode critical initial 15 frames for instant loader completion
         const loadCriticalFrames = async () => {
             const criticalPromises: Promise<HTMLImageElement | null>[] = [];
             for (let i = 0; i < CRITICAL_LOAD_COUNT; i++) {
-                criticalPromises.push(loadAndDecodeFrame(i));
+                criticalPromises.push(loadFrame(i));
             }
             await Promise.all(criticalPromises);
 
@@ -206,15 +264,17 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
             }
 
-            // Stage 2: Background progressive loading queue (15-frame bursts)
+            // Stage 2: Background progressive loading queue in 10-frame idle bursts
             let nextIndex = CRITICAL_LOAD_COUNT;
 
             const processBackgroundQueue = () => {
                 if (isCancelled || nextIndex >= TOTAL_FRAMES) return;
-                const batchEnd = Math.min(nextIndex + 15, TOTAL_FRAMES);
+                const batchEnd = Math.min(nextIndex + 10, TOTAL_FRAMES);
 
                 for (let i = nextIndex; i < batchEnd; i++) {
-                    loadAndDecodeFrame(i);
+                    if (!imagesRef.current[i] && !inFlightRef.current.has(i)) {
+                        loadFrame(i);
+                    }
                 }
                 nextIndex = batchEnd;
 
@@ -222,7 +282,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
                         (window as any).requestIdleCallback(processBackgroundQueue);
                     } else {
-                        setTimeout(processBackgroundQueue, 20);
+                        setTimeout(processBackgroundQueue, 30);
                     }
                 }
             };
@@ -239,48 +299,58 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => {
             isCancelled = true;
         };
-    }, [drawFrame, loadAndDecodeFrame]);
+    }, [drawFrame, loadFrame]);
 
     // 3. Single rAF Hardware Accelerated Canvas Render Loop
     useEffect(() => {
+        let lastTarget = 0;
+
         const renderLoop = () => {
             const target = targetFrameRef.current;
             const current = currentFrameRef.current;
 
             // Crisp responsive lerp with immediate snap threshold
             const diff = target - current;
-            if (Math.abs(diff) < 0.2) {
+            if (Math.abs(diff) < 0.15) {
                 currentFrameRef.current = target;
             } else {
                 currentFrameRef.current += diff * 0.45;
             }
 
-            const activeTotal = TOTAL_FRAMES;
-            const frameIndex = Math.min(activeTotal - 1, Math.max(0, Math.round(currentFrameRef.current)));
+            const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
 
             if (frameIndex !== lastDrawnFrameRef.current) {
-                const images = imagesRef.current;
-                let img = images[frameIndex];
+                let img = imagesRef.current[frameIndex];
 
                 // Scroll-Aware Fallback: Use nearest pre-decoded frame if target isn't ready
                 if (!img) {
                     for (let offset = 1; offset < 15; offset++) {
-                        const prev = images[frameIndex - offset];
+                        const prev = imagesRef.current[frameIndex - offset];
                         if (prev) { img = prev; break; }
-                        const next = images[frameIndex + offset];
+                        const next = imagesRef.current[frameIndex + offset];
                         if (next) { img = next; break; }
                     }
-                    // Prioritize decoding target frame and surrounding buffer immediately
-                    loadAndDecodeFrame(frameIndex);
-                    for (let b = 1; b <= 5; b++) {
-                        if (frameIndex + b < TOTAL_FRAMES) loadAndDecodeFrame(frameIndex + b);
-                    }
+                    loadFrame(frameIndex);
                 }
 
                 if (img) {
                     lastDrawnFrameRef.current = frameIndex;
                     drawFrame(img);
                 }
+
+                // Prune decoded textures outside active sliding window for memory efficiency
+                manageMemoryCache(frameIndex);
+
+                // Priority preload upcoming frames in scroll direction
+                const isForward = target >= lastTarget;
+                preloadPriorityQueue(frameIndex, isForward);
+                lastTarget = target;
+            }
+
+            // Imperatively update typography progress without forcing React component re-renders
+            if (typographyRef.current) {
+                const p = targetFrameRef.current / (TOTAL_FRAMES - 1);
+                typographyRef.current.updateProgress(p);
             }
 
             animFrameIdRef.current = requestAnimationFrame(renderLoop);
@@ -292,9 +362,9 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 cancelAnimationFrame(animFrameIdRef.current);
             }
         };
-    }, [drawFrame, isMobile, loadAndDecodeFrame]);
+    }, [drawFrame, loadFrame, manageMemoryCache, preloadPriorityQueue]);
 
-    // 4. GSAP ScrollTrigger — Single Source of Truth for Hero Scroll & Typography
+    // 4. GSAP ScrollTrigger — Single Source of Truth for Hero Scroll
     useEffect(() => {
         if (!sectionRef.current || !pinWrapperRef.current) return;
 
@@ -312,16 +382,13 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                     const progress = self.progress; // 0.0 -> 1.0
-                    setScrollProgress(progress);
-
-                    const activeTotal = isMobile ? 160 : TOTAL_FRAMES;
-                    targetFrameRef.current = progress * (activeTotal - 1);
+                    scrollProgressRef.current = progress;
+                    targetFrameRef.current = progress * (TOTAL_FRAMES - 1);
                 },
             });
 
             const handleResizeRedraw = () => {
-                const activeTotal = isMobile ? 160 : TOTAL_FRAMES;
-                const frameIndex = Math.min(activeTotal - 1, Math.max(0, Math.round(currentFrameRef.current)));
+                const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
                 const img = imagesRef.current[frameIndex] || imagesRef.current[0];
 
                 if (img && canvasRef.current) {
@@ -341,7 +408,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         }, section);
 
         return () => ctx.revert();
-    }, [drawFrame, isMobile]);
+    }, [drawFrame]);
 
     return (
         <section
@@ -362,8 +429,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none select-none"
                 />
 
-                {/* Glassy Giant Background Typography */}
-                <HeroTypography progress={scrollProgress} isMobile={isMobile} />
+                {/* Glassy Giant Background Typography (Ref-updated with 0ms React state overhead) */}
+                <HeroTypography ref={typographyRef} revealed={revealed} isMobile={isMobile} />
 
                 {/* Foreground Hero Headline & CTA Buttons */}
                 <div ref={contentRef} className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

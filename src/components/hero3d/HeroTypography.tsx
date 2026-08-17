@@ -1,162 +1,234 @@
 "use client";
 
-import React from "react";
+import React, { useImperativeHandle, useRef, useEffect, useState } from "react";
+
+export interface HeroTypographyRef {
+    updateProgress: (p: number) => void;
+}
 
 interface HeroTypographyProps {
-    progress: number; // 0.0 to 1.0 from GSAP ScrollTrigger
+    progress?: number; // 0.0 to 1.0 from GSAP ScrollTrigger
     revealed?: boolean;
     isMobile?: boolean;
 }
 
-// Top-level memoized reveal character component with stable keys and GPU hardware acceleration
-const RevealChar = React.memo(function RevealChar({ char, p }: { char: string; p: number }) {
-    const opacity = Math.pow(p, 1.2);
-    return (
-        <span
-            className="inline-block overflow-hidden align-bottom whitespace-nowrap"
-            style={{
-                maxWidth: `${p * 0.85}em`,
-                opacity: opacity,
-                transform: `translate3d(${(1 - p) * -16}px, 0, 0) scale(${0.78 + p * 0.22})`,
-                filter: p < 0.98 ? `blur(${(1 - p) * 5}px)` : "none",
-                willChange: "transform, max-width, opacity, filter",
-            }}
-        >
-            {char}
-        </span>
-    );
-});
+export const HeroTypography = React.forwardRef<HeroTypographyRef, HeroTypographyProps>(
+    function HeroTypography({ progress = 0, revealed = true, isMobile = false }, ref) {
+        const [entryRevealed, setEntryRevealed] = useState(false);
+        const containerRef = useRef<HTMLDivElement>(null);
+        const word1Ref = useRef<HTMLDivElement>(null);
+        const word2Ref = useRef<HTMLDivElement>(null);
+        const word3Ref = useRef<HTMLDivElement>(null);
+        const charRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
 
-export function HeroTypography({ progress, revealed = true, isMobile = false }: HeroTypographyProps) {
-    const [entryRevealed, setEntryRevealed] = React.useState(false);
+        useEffect(() => {
+            setEntryRevealed(false);
+            const timer = setTimeout(() => {
+                setEntryRevealed(true);
+            }, 60);
+            return () => clearTimeout(timer);
+        }, [revealed]);
 
-    React.useEffect(() => {
-        setEntryRevealed(false);
-        const timer = setTimeout(() => {
-            setEntryRevealed(true);
-        }, 60);
-        return () => clearTimeout(timer);
-    }, [revealed]);
+        const applyProgress = (p: number) => {
+            const isVisible = revealed && entryRevealed;
 
-    // Helper to calculate eased progress for slow, graceful letter expansion
-    const getLetterProgress = (start: number, end: number) => {
-        if (progress <= start) return 0;
-        if (progress >= end) return 1;
-        const raw = (progress - start) / (end - start);
-        return Math.pow(raw, 1.3);
-    };
+            const getLetterProgress = (start: number, end: number) => {
+                if (p <= start) return 0;
+                if (p >= end) return 1;
+                const raw = (p - start) / (end - start);
+                return Math.pow(raw, 1.3);
+            };
 
-    // Phase 1: F -> FIRST (spread across 0.04 -> 0.30)
-    const iProg = getLetterProgress(0.04, 0.10);
-    const r1Prog = getLetterProgress(0.10, 0.16);
-    const sProg = getLetterProgress(0.16, 0.22);
-    const t1Prog = getLetterProgress(0.22, 0.28);
+            const iProg = getLetterProgress(0.04, 0.10);
+            const r1Prog = getLetterProgress(0.10, 0.16);
+            const sProg = getLetterProgress(0.16, 0.22);
+            const t1Prog = getLetterProgress(0.22, 0.28);
 
-    // Phase 2: T -> TORQUE (spread across 0.30 -> 0.65 so ALL letters complete before frame 140)
-    const oProg = getLetterProgress(0.30, 0.37);
-    const r2Prog = getLetterProgress(0.37, 0.44);
-    const qProg = getLetterProgress(0.44, 0.51);
-    const uProg = getLetterProgress(0.51, 0.58);
-    const eProg = getLetterProgress(0.58, 0.65);
+            const oProg = getLetterProgress(0.30, 0.37);
+            const r2Prog = getLetterProgress(0.37, 0.44);
+            const qProg = getLetterProgress(0.44, 0.51);
+            const uProg = getLetterProgress(0.51, 0.58);
+            const eProg = getLetterProgress(0.58, 0.65);
 
-    // Scroll-driven fill progress (0.0 to 1.0)
-    const fillProg = Math.min(1, Math.max(0, progress / 0.65));
+            const fillProg = Math.min(1, Math.max(0, p / 0.65));
 
-    // Frame 150 Hide Calculation:
-    // On mobile (160 total frames): max index = 159. Frame 150 = index 149 => 149 / 159.
-    // On desktop (192 total frames): max index = 191. Frame 150 = index 149 => 149 / 191.
-    const maxIndex = isMobile ? 159 : 191;
-    const frame150Progress = 149 / maxIndex;
-    const frame140Progress = 139 / maxIndex;
+            // Total 150 frames: maxIndex = 149
+            const maxIndex = 149;
+            const frame150Progress = 149 / maxIndex;
+            const frame140Progress = 139 / maxIndex;
 
-    let frameHideOpacity = 1;
-    if (progress >= frame150Progress) {
-        frameHideOpacity = 0;
-    } else if (progress > frame140Progress) {
-        frameHideOpacity = 1 - (progress - frame140Progress) / (frame150Progress - frame140Progress);
-    }
+            let frameHideOpacity = 1;
+            if (p >= frame150Progress) {
+                frameHideOpacity = 0;
+            } else if (p > frame140Progress) {
+                frameHideOpacity = 1 - (p - frame140Progress) / (frame150Progress - frame140Progress);
+            }
 
-    // Pure Delicate Light Outline Style: Zero background fill, clean stroke
-    const getXGlassStyle = () => {
-        return {
-            WebkitTextStroke: `0.6px rgba(255, 255, 255, ${(0.20 + fillProg * 0.20) * frameHideOpacity})`,
-            color: "transparent",
-            backgroundColor: "transparent",
-            backgroundImage: "none",
+            const strokeAlpha = (0.20 + fillProg * 0.20) * frameHideOpacity;
+            const strokeStyle = `0.6px rgba(255, 255, 255, ${strokeAlpha})`;
+
+            if (containerRef.current) {
+                containerRef.current.style.opacity = isVisible ? String(frameHideOpacity) : "0";
+                containerRef.current.style.visibility = frameHideOpacity < 0.01 ? "hidden" : "visible";
+            }
+
+            if (word1Ref.current) {
+                word1Ref.current.style.webkitTextStroke = strokeStyle;
+            }
+            if (word2Ref.current) {
+                word2Ref.current.style.webkitTextStroke = strokeStyle;
+            }
+            if (word3Ref.current) {
+                word3Ref.current.style.webkitTextStroke = strokeStyle;
+            }
+
+            const updateChar = (key: string, charP: number) => {
+                const el = charRefs.current.get(key);
+                if (!el) return;
+                const op = Math.pow(charP, 1.2);
+                el.style.maxWidth = `${charP * 0.85}em`;
+                el.style.opacity = String(op);
+                el.style.transform = `translate3d(${(1 - charP) * -16}px, 0, 0) scale(${0.78 + charP * 0.22})`;
+                el.style.filter = charP < 0.98 ? `blur(${(1 - charP) * 5}px)` : "none";
+            };
+
+            updateChar("I", iProg);
+            updateChar("R1", r1Prog);
+            updateChar("S", sProg);
+            updateChar("T1", t1Prog);
+            updateChar("O", oProg);
+            updateChar("R2", r2Prog);
+            updateChar("Q", qProg);
+            updateChar("U", uProg);
+            updateChar("E", eProg);
         };
-    };
 
-    const isVisible = revealed && entryRevealed;
+        useImperativeHandle(ref, () => ({
+            updateProgress: (p: number) => {
+                applyProgress(p);
+            },
+        }));
 
-    return (
-        <div
-            className="absolute inset-0 z-5 pointer-events-none flex items-center justify-center w-full max-w-full overflow-hidden px-4 select-none transition-opacity duration-300"
-            style={{
-                opacity: isVisible ? frameHideOpacity : 0,
-                visibility: frameHideOpacity < 0.01 ? "hidden" : "visible",
-            }}
-        >
-            {/* Perfectly centered glassy typography container */}
+        useEffect(() => {
+            applyProgress(progress);
+        }, [progress, entryRevealed, revealed]);
+
+        const isVisible = revealed && entryRevealed;
+
+        return (
             <div
-                className="flex items-center justify-center text-center gap-2 sm:gap-4 lg:gap-5 font-heading font-black tracking-tighter leading-none max-w-full overflow-hidden"
-                suppressHydrationWarning
-                translate="no"
+                ref={containerRef}
+                className="absolute inset-0 z-5 pointer-events-none flex items-center justify-center w-full max-w-full overflow-hidden px-4 select-none transition-opacity duration-300"
+                style={{
+                    opacity: isVisible ? 1 : 0,
+                }}
             >
-                {/* WORD 1: F -> FIRST (Slide in smoothly from LEFT to RIGHT) */}
                 <div
-                    className="flex items-center justify-center text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
-                    style={{
-                        ...getXGlassStyle(),
-                        opacity: isVisible ? frameHideOpacity : 0,
-                        transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(-140px, 0, 0)",
-                        filter: isVisible && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(18px)",
-                        transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
-                        transitionDelay: "200ms",
-                    }}
+                    className="flex items-center justify-center text-center gap-2 sm:gap-4 lg:gap-5 font-heading font-black tracking-tighter leading-none max-w-full overflow-hidden"
+                    suppressHydrationWarning
+                    translate="no"
                 >
-                    <span>F</span>
-                    <RevealChar key="char-I" char="I" p={iProg} />
-                    <RevealChar key="char-R1" char="R" p={r1Prog} />
-                    <RevealChar key="char-S" char="S" p={sProg} />
-                    <RevealChar key="char-T1" char="T" p={t1Prog} />
-                </div>
+                    {/* WORD 1: F -> FIRST */}
+                    <div
+                        ref={word1Ref}
+                        className="flex items-center justify-center text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
+                        style={{
+                            WebkitTextStroke: "0.6px rgba(255, 255, 255, 0.20)",
+                            color: "transparent",
+                            backgroundColor: "transparent",
+                            opacity: isVisible ? 1 : 0,
+                            transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(-140px, 0, 0)",
+                            filter: isVisible ? "blur(0px)" : "blur(18px)",
+                            transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
+                            transitionDelay: "200ms",
+                        }}
+                    >
+                        <span>F</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("I", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >I</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("R1", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >R</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("S", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >S</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("T1", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >T</span>
+                    </div>
 
-                {/* WORD 2: T -> TORQUE (Vertical Fill-Up & Expand effect from bottom) */}
-                <div
-                    className="flex items-center justify-center text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
-                    style={{
-                        ...getXGlassStyle(),
-                        opacity: isVisible ? frameHideOpacity : 0,
-                        transform: isVisible ? "translate3d(0, 0, 0) scale(1)" : "translate3d(0, 50px, 0) scaleY(0.15) scaleX(0.85)",
-                        filter: isVisible && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(22px)",
-                        transformOrigin: "bottom center",
-                        transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
-                        transitionDelay: "380ms",
-                    }}
-                >
-                    <span>T</span>
-                    <RevealChar key="char-O" char="O" p={oProg} />
-                    <RevealChar key="char-R2" char="R" p={r2Prog} />
-                    <RevealChar key="char-Q" char="Q" p={qProg} />
-                    <RevealChar key="char-U" char="U" p={uProg} />
-                    <RevealChar key="char-E" char="E" p={eProg} />
-                </div>
+                    {/* WORD 2: T -> TORQUE */}
+                    <div
+                        ref={word2Ref}
+                        className="flex items-center justify-center text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
+                        style={{
+                            WebkitTextStroke: "0.6px rgba(255, 255, 255, 0.20)",
+                            color: "transparent",
+                            backgroundColor: "transparent",
+                            opacity: isVisible ? 1 : 0,
+                            transform: isVisible ? "translate3d(0, 0, 0) scale(1)" : "translate3d(0, 50px, 0) scaleY(0.15) scaleX(0.85)",
+                            filter: isVisible ? "blur(0px)" : "blur(22px)",
+                            transformOrigin: "bottom center",
+                            transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
+                            transitionDelay: "380ms",
+                        }}
+                    >
+                        <span>T</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("O", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >O</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("R2", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >R</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("Q", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >Q</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("U", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >U</span>
+                        <span
+                            ref={(el) => { if (el) charRefs.current.set("E", el); }}
+                            className="inline-block overflow-hidden align-bottom whitespace-nowrap will-change-transform"
+                            style={{ maxWidth: "0em", opacity: 0 }}
+                        >E</span>
+                    </div>
 
-                {/* WORD 3: X (Slide in smoothly from RIGHT to LEFT) */}
-                <div
-                    className="text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
-                    style={{
-                        ...getXGlassStyle(),
-                        opacity: isVisible ? frameHideOpacity : 0,
-                        transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(140px, 0, 0)",
-                        filter: isVisible && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(18px)",
-                        transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
-                        transitionDelay: "560ms",
-                    }}
-                >
-                    <span>X</span>
+                    {/* WORD 3: X */}
+                    <div
+                        ref={word3Ref}
+                        className="text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
+                        style={{
+                            WebkitTextStroke: "0.6px rgba(255, 255, 255, 0.20)",
+                            color: "transparent",
+                            backgroundColor: "transparent",
+                            opacity: isVisible ? 1 : 0,
+                            transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(140px, 0, 0)",
+                            filter: isVisible ? "blur(0px)" : "blur(18px)",
+                            transition: "transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1600ms cubic-bezier(0.16, 1, 0.3, 1), filter 1600ms ease-out",
+                            transitionDelay: "560ms",
+                        }}
+                    >
+                        <span>X</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-}
+        );
+    }
+);
