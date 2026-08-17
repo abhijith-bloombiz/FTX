@@ -136,10 +136,11 @@ export function CinematicLoader() {
             checkReadyToExit();
         };
 
-        if (document.readyState === "complete") {
+        if (document.readyState === "complete" || (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__)) {
             pageLoadedRef.current = true;
         } else {
             window.addEventListener("load", handleLoad);
+            window.addEventListener("ftx_loader_complete", handleLoad);
         }
 
         // 2.2s Min Animation Duration for smooth, magnetic assembly sequence
@@ -254,6 +255,7 @@ export function CinematicLoader() {
                 cancelAnimationFrame(animationFrameIdRef.current);
             }
             window.removeEventListener("load", handleLoad);
+            window.removeEventListener("ftx_loader_complete", handleLoad);
             document.body.style.overflow = originalOverflow;
         };
     }, []);
