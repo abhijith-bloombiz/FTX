@@ -5,6 +5,7 @@ import React from "react";
 interface HeroTypographyProps {
     progress: number; // 0.0 to 1.0 from GSAP ScrollTrigger
     revealed?: boolean;
+    isMobile?: boolean;
 }
 
 // Top-level memoized reveal character component with stable keys and GPU hardware acceleration
@@ -26,7 +27,7 @@ const RevealChar = React.memo(function RevealChar({ char, p }: { char: string; p
     );
 });
 
-export function HeroTypography({ progress, revealed = true }: HeroTypographyProps) {
+export function HeroTypography({ progress, revealed = true, isMobile = false }: HeroTypographyProps) {
     const [entryRevealed, setEntryRevealed] = React.useState(false);
 
     React.useEffect(() => {
@@ -62,11 +63,11 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
     const fillProg = Math.min(1, Math.max(0, progress / 0.65));
 
     // Frame 150 Hide Calculation:
-    // frame_0150.jpg corresponds to progress = 149 / 191 (~0.7801).
-    // All letters finish revealing at progress 0.65.
-    // Fades out smoothly between frame 140 (~0.7277) and frame 150 (~0.7801).
-    const frame150Progress = 149 / 191;
-    const frame140Progress = 139 / 191;
+    // On mobile (160 total frames): max index = 159. Frame 150 = index 149 => 149 / 159.
+    // On desktop (192 total frames): max index = 191. Frame 150 = index 149 => 149 / 191.
+    const maxIndex = isMobile ? 159 : 191;
+    const frame150Progress = 149 / maxIndex;
+    const frame140Progress = 139 / maxIndex;
 
     let frameHideOpacity = 1;
     if (progress >= frame150Progress) {
@@ -103,7 +104,7 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
             >
                 {/* WORD 1: F -> FIRST (Slide in smoothly from LEFT to RIGHT) */}
                 <div
-                    className="flex items-center justify-center text-[clamp(2.2rem,6.5vw,6.5rem)] font-black uppercase text-transparent text-center"
+                    className="flex items-center justify-center text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
                     style={{
                         ...getXGlassStyle(),
                         opacity: isVisible ? frameHideOpacity : 0,
@@ -122,7 +123,7 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
 
                 {/* WORD 2: T -> TORQUE (Vertical Fill-Up & Expand effect from bottom) */}
                 <div
-                    className="flex items-center justify-center text-[clamp(2.2rem,6.5vw,6.5rem)] font-black uppercase text-transparent text-center"
+                    className="flex items-center justify-center text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
                     style={{
                         ...getXGlassStyle(),
                         opacity: isVisible ? frameHideOpacity : 0,
@@ -143,7 +144,7 @@ export function HeroTypography({ progress, revealed = true }: HeroTypographyProp
 
                 {/* WORD 3: X (Slide in smoothly from RIGHT to LEFT) */}
                 <div
-                    className="text-[clamp(2.2rem,6.5vw,6.5rem)] font-black uppercase text-transparent text-center"
+                    className="text-[clamp(3.4rem,8.5vw,6.5rem)] font-black uppercase text-transparent text-center"
                     style={{
                         ...getXGlassStyle(),
                         opacity: isVisible ? frameHideOpacity : 0,

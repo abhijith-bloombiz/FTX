@@ -24,6 +24,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const pinWrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
+    const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     const imagesRef = useRef<HTMLImageElement[]>([]);
     const targetFrameRef = useRef<number>(0);
@@ -35,7 +36,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    // High-DPI Cover-fit Canvas Drawing Function (Retina Sharp 2K/4K Resolution)
+    // High-DPI Cover-fit Canvas Drawing Function with Soft-Feathered YouTube Ambient Effect
     const drawFrame = useCallback((img: HTMLImageElement) => {
         if (!canvasRef.current || !img) return;
         const canvas = canvasRef.current;
@@ -59,22 +60,80 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const canvasHeight = canvas.height;
         if (!canvasWidth || !canvasHeight) return;
 
-        // Enable maximum image rendering clarity & high-quality smoothing
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
 
         const imgWidth = img.naturalWidth || 1920;
         const imgHeight = img.naturalHeight || 1080;
 
-        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight) * 1.005;
+        // 1. YouTube Ambient Video Player Extension Effect for Mobile (Fills top & bottom with blurred frame colors)
+        if (isMobile) {
+            const coverScale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight) * 1.05;
+            const coverW = imgWidth * coverScale;
+            const coverH = imgHeight * coverScale;
+            const coverX = (canvasWidth - coverW) / 2;
+            const coverY = (canvasHeight - coverH) / 2;
+
+            // Draw blurred ambient extension of current frame behind center car
+            ctx.filter = "blur(28px) brightness(0.60) saturate(1.2)";
+            ctx.drawImage(img, coverX, coverY, coverW, coverH);
+            ctx.filter = "none";
+        } else {
+            ctx.fillStyle = "#070707";
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
+
+        // 2. Foreground Crisp Main Car Frame with Soft Edge Feathering (Zero Seam/Separation Line!)
+        const mobileScaleMultiplier = isMobile ? 0.85 : 1.005;
+        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight) * mobileScaleMultiplier;
         const width = imgWidth * scale;
         const height = imgHeight * scale;
         const x = (canvasWidth - width) / 2;
         const y = (canvasHeight - height) / 2;
 
-        ctx.globalAlpha = 1.0;
-        ctx.drawImage(img, x, y, width, height);
-    }, []);
+        if (isMobile) {
+            if (!offscreenCanvasRef.current && typeof document !== "undefined") {
+                offscreenCanvasRef.current = document.createElement("canvas");
+            }
+            const offscreen = offscreenCanvasRef.current;
+            if (offscreen) {
+                const renderW = Math.ceil(width);
+                const renderH = Math.ceil(height);
+                if (offscreen.width !== renderW || offscreen.height !== renderH) {
+                    offscreen.width = renderW;
+                    offscreen.height = renderH;
+                }
+                const offCtx = offscreen.getContext("2d");
+                if (offCtx) {
+                    offCtx.globalCompositeOperation = "source-over";
+                    offCtx.clearRect(0, 0, renderW, renderH);
+                    offCtx.drawImage(img, 0, 0, renderW, renderH);
+
+                    // Apply linear alpha mask to feather top and bottom edges into transparency
+                    offCtx.globalCompositeOperation = "destination-in";
+                    const maskGrad = offCtx.createLinearGradient(0, 0, 0, renderH);
+                    const featherRatio = 0.20; // 20% soft edge fade zone
+
+                    maskGrad.addColorStop(0, "rgba(0, 0, 0, 0)"); // 0% opacity at edge
+                    maskGrad.addColorStop(featherRatio, "rgba(0, 0, 0, 1)"); // 100% opacity in center
+                    maskGrad.addColorStop(1 - featherRatio, "rgba(0, 0, 0, 1)");
+                    maskGrad.addColorStop(1, "rgba(0, 0, 0, 0)"); // 0% opacity at edge
+
+                    offCtx.fillStyle = maskGrad;
+                    offCtx.fillRect(0, 0, renderW, renderH);
+
+                    ctx.globalAlpha = 1.0;
+                    ctx.drawImage(offscreen, x, y);
+                }
+            } else {
+                ctx.globalAlpha = 1.0;
+                ctx.drawImage(img, x, y, width, height);
+            }
+        } else {
+            ctx.globalAlpha = 1.0;
+            ctx.drawImage(img, x, y, width, height);
+        }
+    }, [isMobile]);
 
     // 1. Initial Setup & Mobile Detection
     useEffect(() => {
@@ -115,15 +174,17 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, []);
 
-    // 2. Rapid Preloading of All 192 Frames
+    // 2. Rapid Preloading of Frames (160 frames on mobile, 192 on desktop)
     useEffect(() => {
-        const loadedImages: HTMLImageElement[] = new Array(TOTAL_FRAMES);
+        const frameLimit = isMobile ? 160 : TOTAL_FRAMES;
+        const loadedImages: HTMLImageElement[] = new Array(frameLimit);
 
         const loadFrame = (index: number) => {
+            if (index >= frameLimit) return;
             if (loadedImages[index]) return;
             const img = new Image();
             const frameNum = String(index + 1).padStart(4, "0");
-            img.src = `/video/frames/frame_${frameNum}.jpg`;
+            img.src = `/video/frames/frame_${frameNum}.webp`;
 
             if (index === 0) {
                 img.onload = () => {
@@ -139,20 +200,20 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         imagesRef.current = loadedImages;
 
         // Stage 1: Load first 30 frames immediately for instant zero-latency start
-        for (let i = 0; i < Math.min(30, TOTAL_FRAMES); i++) {
+        for (let i = 0; i < Math.min(30, frameLimit); i++) {
             loadFrame(i);
         }
 
         // Stage 2: Rapid background preloading in 40-frame concurrent bursts
         let nextBatch = 30;
         const burstLoad = () => {
-            if (nextBatch >= TOTAL_FRAMES) return;
-            const limit = Math.min(nextBatch + 40, TOTAL_FRAMES);
+            if (nextBatch >= frameLimit) return;
+            const limit = Math.min(nextBatch + 40, frameLimit);
             for (let i = nextBatch; i < limit; i++) {
                 loadFrame(i);
             }
             nextBatch = limit;
-            if (nextBatch < TOTAL_FRAMES) {
+            if (nextBatch < frameLimit) {
                 if (typeof window !== "undefined" && "requestIdleCallback" in window) {
                     (window as any).requestIdleCallback(burstLoad);
                 } else {
@@ -163,41 +224,51 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
         const timer = setTimeout(burstLoad, 30);
         return () => clearTimeout(timer);
-    }, [drawFrame]);
+    }, [drawFrame, isMobile]);
 
     // 3. Smooth Inertia Lerping Render Loop (Crisp 60FPS Frame Interpolation)
     useEffect(() => {
-        const renderLoop = () => {
-            const target = targetFrameRef.current;
-            const current = currentFrameRef.current;
+        let lastFrameTime = 0;
+        const fpsInterval = 1000 / 30; // 30 FPS target frame rate (~33.33ms)
 
-            // Lerp towards target frame for smooth inertia without ghosting
-            const diff = target - current;
-            if (Math.abs(diff) > 0.005) {
-                currentFrameRef.current += diff * 0.18;
-            } else {
-                currentFrameRef.current = target;
-            }
+        const renderLoop = (timestamp: number) => {
+            const elapsed = timestamp - lastFrameTime;
 
-            const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
+            if (elapsed >= fpsInterval) {
+                lastFrameTime = timestamp - (elapsed % fpsInterval);
 
-            if (frameIndex !== lastDrawnFrameRef.current) {
-                lastDrawnFrameRef.current = frameIndex;
-                const images = imagesRef.current;
-                let img = images[frameIndex];
+                const target = targetFrameRef.current;
+                const current = currentFrameRef.current;
 
-                // Fallback to nearest loaded frame if target frame isn't ready
-                if (!img || !img.complete) {
-                    for (let offset = 1; offset < 10; offset++) {
-                        const prev = images[frameIndex - offset];
-                        if (prev && prev.complete) { img = prev; break; }
-                        const next = images[frameIndex + offset];
-                        if (next && next.complete) { img = next; break; }
-                    }
+                // Lerp towards target frame for smooth inertia at 30 FPS
+                const diff = target - current;
+                if (Math.abs(diff) > 0.005) {
+                    currentFrameRef.current += diff * 0.25;
+                } else {
+                    currentFrameRef.current = target;
                 }
 
-                if (img && img.complete) {
-                    drawFrame(img);
+                const activeTotal = isMobile ? 160 : TOTAL_FRAMES;
+                const frameIndex = Math.min(activeTotal - 1, Math.max(0, Math.round(currentFrameRef.current)));
+
+                if (frameIndex !== lastDrawnFrameRef.current) {
+                    lastDrawnFrameRef.current = frameIndex;
+                    const images = imagesRef.current;
+                    let img = images[frameIndex];
+
+                    // Fallback to nearest loaded frame if target frame isn't ready
+                    if (!img || !img.complete) {
+                        for (let offset = 1; offset < 10; offset++) {
+                            const prev = images[frameIndex - offset];
+                            if (prev && prev.complete) { img = prev; break; }
+                            const next = images[frameIndex + offset];
+                            if (next && next.complete) { img = next; break; }
+                        }
+                    }
+
+                    if (img && img.complete) {
+                        drawFrame(img);
+                    }
                 }
             }
 
@@ -210,7 +281,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 cancelAnimationFrame(animFrameIdRef.current);
             }
         };
-    }, [drawFrame]);
+    }, [drawFrame, isMobile]);
 
     // 4. GSAP ScrollTrigger — Single Source of Truth for Hero Scroll & Typography
     useEffect(() => {
@@ -234,13 +305,15 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     // Update state for HeroTypography transformation
                     setScrollProgress(progress);
 
-                    // Set target frame for smooth inertia interpolation [0, 191]
-                    targetFrameRef.current = progress * (TOTAL_FRAMES - 1);
+                    // Set target frame for smooth inertia interpolation (1-160 on mobile, 1-192 on desktop)
+                    const activeTotal = isMobile ? 160 : TOTAL_FRAMES;
+                    targetFrameRef.current = progress * (activeTotal - 1);
                 },
             });
 
             const handleResizeRedraw = () => {
-                const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
+                const activeTotal = isMobile ? 160 : TOTAL_FRAMES;
+                const frameIndex = Math.min(activeTotal - 1, Math.max(0, Math.round(currentFrameRef.current)));
                 const img = imagesRef.current[frameIndex];
 
                 if (img && img.complete) {
@@ -271,7 +344,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         }, section);
 
         return () => ctx.revert();
-    }, [drawFrame]);
+    }, [drawFrame, isMobile]);
 
     return (
         <section
@@ -293,6 +366,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 <HeroTypography
                     progress={scrollProgress}
                     revealed={revealed}
+                    isMobile={isMobile}
                 />
 
                 {/* 3. FTX Content & Headline UI Overlay (z-20) */}

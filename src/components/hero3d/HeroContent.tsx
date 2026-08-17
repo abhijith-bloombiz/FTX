@@ -141,7 +141,7 @@ export function HeroContent({
                 <div className="space-y-1 text-center lg:text-left">
                     <div className="overflow-hidden py-0.5">
                         <h1
-                            className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out"
+                            className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out"
                             style={precisionStyle}
                         >
                             <span>{titleLine1}</span>
@@ -149,7 +149,7 @@ export function HeroContent({
                     </div>
                     <div className="overflow-hidden py-0.5">
                         <h1
-                            className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out"
+                            className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out"
                             style={protectionStyle}
                         >
                             <span>{titleLine2}</span>
@@ -160,7 +160,7 @@ export function HeroContent({
                     <div className="block lg:hidden pt-2 space-y-0.5 text-center">
                         <div className="overflow-hidden py-0.5">
                             <h2
-                                className="text-2xl sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
+                                className="text-[2.75rem] sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
                                 style={automotiveStyle}
                             >
                                 <span>{subLine1}</span>
@@ -168,7 +168,7 @@ export function HeroContent({
                         </div>
                         <div className="overflow-hidden py-0.5">
                             <h2
-                                className="text-2xl sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
+                                className="text-[2.75rem] sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
                                 style={perfectionStyle}
                             >
                                 <span>{subLine2}</span>
