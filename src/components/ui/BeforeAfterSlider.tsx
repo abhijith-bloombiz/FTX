@@ -91,7 +91,7 @@ export function BeforeAfterSlider({
                 setIsDragging(true);
                 handleMove(e.touches[0].clientX);
             }}
-            className="relative w-full aspect-[16/9] ftx-squircle-xl border border-ftx-surface-high cursor-ew-resize select-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime"
+            className="relative w-full aspect-[16/8.5] min-h-[340px] sm:min-h-[460px] max-h-[520px] ftx-squircle-xl border border-ftx-surface-high cursor-ew-resize select-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime"
             aria-label="Before and after transformation slider. Use left and right arrow keys to adjust."
         >
             {/* After Image (Background) */}
@@ -100,11 +100,14 @@ export function BeforeAfterSlider({
                     src={afterImage}
                     alt={`After: ${alt}`}
                     fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={100}
+                    priority
+                    unoptimized
+                    sizes="100vw"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
-                <div className="absolute bottom-4 right-4 px-3 py-1 bg-ftx-black/80 backdrop-blur-sm border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest rounded pointer-events-auto">
+                <div className="absolute bottom-4 right-4 px-3 py-1 bg-ftx-black/80 backdrop-blur-sm border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest rounded pointer-events-auto shadow-lg">
                     {afterLabel}
                 </div>
             </div>
@@ -118,11 +121,14 @@ export function BeforeAfterSlider({
                     src={beforeImage}
                     alt={`Before: ${alt}`}
                     fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={100}
+                    priority
+                    unoptimized
+                    sizes="100vw"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
-                <div className="absolute bottom-4 left-4 px-3 py-1 bg-ftx-black/80 backdrop-blur-sm border border-ftx-surface-high text-[10px] font-mono font-bold text-ftx-silver tracking-widest rounded pointer-events-auto">
+                <div className="absolute bottom-4 left-4 px-3 py-1 bg-ftx-black/80 backdrop-blur-sm border border-ftx-surface-high text-[10px] font-mono font-bold text-ftx-silver tracking-widest rounded pointer-events-auto shadow-lg">
                     {beforeLabel}
                 </div>
             </div>

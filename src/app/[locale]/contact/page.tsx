@@ -6,6 +6,7 @@ import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { ScrollScrubFloor } from "@/components/motion/ScrollScrubFloor";
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -119,11 +120,13 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                     </ScrollReveal>
 
                     {/* Right Column: Contact & Quotation Form */}
-                    <ScrollReveal type="editorial" delay={150} className="lg:col-span-7">
-                        <Suspense fallback={<div className="p-8 text-center text-xs font-mono text-ftx-silver">Loading Form...</div>}>
-                            <ContactForm locale={locale} messages={messages} />
-                        </Suspense>
-                    </ScrollReveal>
+                    <div className="lg:col-span-7">
+                        <ScrollScrubFloor>
+                            <Suspense fallback={<div className="p-8 text-center text-xs font-mono text-ftx-silver">Loading Form...</div>}>
+                                <ContactForm locale={locale} messages={messages} />
+                            </Suspense>
+                        </ScrollScrubFloor>
+                    </div>
                 </div>
             </div>
         </div>

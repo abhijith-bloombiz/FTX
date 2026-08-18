@@ -1,6 +1,6 @@
 "use client";
 
-import { RefObject } from "react";
+import React, { useRef, useCallback, useImperativeHandle } from "react";
 import Link from "next/link";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { Locale } from "@/i18n/config";
@@ -8,223 +8,283 @@ import { Locale } from "@/i18n/config";
 interface HeroContentProps {
     locale: Locale;
     messages: any;
-    scrollProgress?: number;
+    progress?: number;
     revealed?: boolean;
-    contentRef?: RefObject<HTMLDivElement>;
 }
 
-export function HeroContent({
-    locale,
-    messages,
-    scrollProgress = 0,
-    revealed = true,
-    contentRef,
-}: HeroContentProps) {
-    // Helper to calculate smooth fade, translate, and blur based on scrollProgress
-    const getProgressStyle = (start: number, end: number) => {
-        if (scrollProgress <= start) {
-            return {
-                opacity: 0,
-                transform: "translate3d(0, 35px, 0)",
-                filter: "blur(8px)",
-                pointerEvents: "none" as const,
+export interface HeroContentHandle {
+    setProgress: (progress: number) => void;
+}
+
+export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>(
+    function HeroContent({ locale, messages, progress: initialProgress = 0, revealed = true }, ref) {
+        const containerRef = useRef<HTMLDivElement>(null);
+
+        // Group 1 Individual Line Refs (Top Left)
+        const line1Ref = useRef<HTMLHeadingElement>(null); // "PRECISION"
+        const line2Ref = useRef<HTMLHeadingElement>(null); // "PROTECTION."
+
+        // Group 2 Individual Line Refs (Top Left - Same Position)
+        const line3Ref = useRef<HTMLHeadingElement>(null); // "AUTOMOTIVE"
+        const line4Ref = useRef<HTMLHeadingElement>(null); // "PERFECTION."
+
+        // CTA Button refs
+        const btn1Ref = useRef<HTMLAnchorElement>(null);
+        const btn2Ref = useRef<HTMLAnchorElement>(null);
+
+        const updateDOM = useCallback((p: number) => {
+            // Helper function for individual line staggered enter & exit
+            const animateLine = (
+                el: HTMLHeadingElement | null,
+                inStart: number,
+                inEnd: number,
+                outStart: number,
+                outEnd: number,
+                exitDirection: "left" | "fade" = "left"
+            ) => {
+                if (!el) return;
+                if (p < inStart) {
+                    el.style.opacity = "0";
+                    el.style.transform = "translate3d(0, 28px, 0)";
+                    el.style.filter = "blur(7px)";
+                    el.style.pointerEvents = "none";
+                } else if (p <= inEnd) {
+                    const inP = (p - inStart) / (inEnd - inStart);
+                    const op = Math.min(1, inP * 1.25).toFixed(3);
+                    const translateY = ((1 - inP) * 28).toFixed(1);
+                    const blurVal = ((1 - inP) * 7).toFixed(1);
+
+                    el.style.opacity = op;
+                    el.style.transform = `translate3d(0, ${translateY}px, 0)`;
+                    el.style.filter = `blur(${blurVal}px)`;
+                    el.style.pointerEvents = "auto";
+                } else if (p <= outStart) {
+                    el.style.opacity = "1";
+                    el.style.transform = "translate3d(0, 0, 0)";
+                    el.style.filter = "blur(0px)";
+                    el.style.pointerEvents = "auto";
+                } else if (p <= outEnd) {
+                    const outP = (p - outStart) / (outEnd - outStart);
+                    const op = (1 - outP).toFixed(3);
+                    const blurVal = (outP * 8).toFixed(1);
+
+                    if (exitDirection === "left") {
+                        const translateX = (-outP * 140).toFixed(1);
+                        el.style.opacity = op;
+                        el.style.transform = `translate3d(${translateX}px, 0, 0)`;
+                        el.style.filter = `blur(${blurVal}px)`;
+                    } else {
+                        el.style.opacity = op;
+                        el.style.filter = `blur(${blurVal}px)`;
+                    }
+                    el.style.pointerEvents = "none";
+                } else {
+                    el.style.opacity = "0";
+                    if (exitDirection === "left") {
+                        el.style.transform = "translate3d(-140px, 0, 0)";
+                    }
+                    el.style.filter = "blur(10px)";
+                    el.style.pointerEvents = "none";
+                }
             };
-        }
-        if (scrollProgress >= end) {
-            return {
-                opacity: 1,
-                transform: "translate3d(0, 0px, 0)",
-                filter: "blur(0px)",
-                pointerEvents: "auto" as const,
-            };
-        }
-        const p = (scrollProgress - start) / (end - start);
-        return {
-            opacity: p,
-            transform: `translate3d(0, ${(1 - p) * 35}px, 0)`,
-            filter: `blur(${(1 - p) * 8}px)`,
-            pointerEvents: p > 0.5 ? ("auto" as const) : ("none" as const),
-        };
-    };
 
-    // Helper for horizontal reveal (left to right)
-    const getLeftToRightStyle = (start: number, end: number) => {
-        if (scrollProgress <= start) {
-            return {
-                opacity: 0,
-                transform: "translate3d(-45px, 0, 0)",
-                filter: "blur(8px)",
-                pointerEvents: "none" as const,
-            };
-        }
-        if (scrollProgress >= end) {
-            return {
-                opacity: 1,
-                transform: "translate3d(0px, 0px, 0)",
-                filter: "blur(0px)",
-                pointerEvents: "auto" as const,
-            };
-        }
-        const p = (scrollProgress - start) / (end - start);
-        return {
-            opacity: p,
-            transform: `translate3d(${(1 - p) * -45}px, 0, 0)`,
-            filter: `blur(${(1 - p) * 8}px)`,
-            pointerEvents: p > 0.5 ? ("auto" as const) : ("none" as const),
-        };
-    };
+            // =========================================================================
+            // GROUP 1: PRECISION then PROTECTION.
+            // Line 1 ("PRECISION"): Enters 0.04 -> 0.16 | Holds 0.16 -> 0.32 | Exits Left 0.32 -> 0.42
+            // Line 2 ("PROTECTION."): Enters 0.12 -> 0.24 | Holds 0.24 -> 0.35 | Exits Left 0.35 -> 0.45
+            // =========================================================================
+            animateLine(line1Ref.current, 0.04, 0.16, 0.32, 0.42, "left");
+            animateLine(line2Ref.current, 0.12, 0.24, 0.35, 0.45, "left");
 
-    // Helper for vertical reveal from under button 1
-    const getFromUnderStyle = (start: number, end: number) => {
-        if (scrollProgress <= start) {
-            return {
-                opacity: 0,
-                transform: "translate3d(0, 40px, 0) scale(0.92)",
-                filter: "blur(8px)",
-                pointerEvents: "none" as const,
-            };
-        }
-        if (scrollProgress >= end) {
-            return {
-                opacity: 1,
-                transform: "translate3d(0, 0px, 0) scale(1)",
-                filter: "blur(0px)",
-                pointerEvents: "auto" as const,
-            };
-        }
-        const p = (scrollProgress - start) / (end - start);
-        return {
-            opacity: p,
-            transform: `translate3d(0, ${(1 - p) * 40}px, 0) scale(${0.92 + p * 0.08})`,
-            filter: `blur(${(1 - p) * 8}px)`,
-            pointerEvents: p > 0.5 ? ("auto" as const) : ("none" as const),
-        };
-    };
+            // =========================================================================
+            // GROUP 2: AUTOMOTIVE then PERFECTION. (Top-Left Same Spot)
+            // Line 3 ("AUTOMOTIVE"): Enters 0.42 -> 0.54 | Holds 0.54 -> 0.85 | Exits Fade 0.85 -> 0.96
+            // Line 4 ("PERFECTION."): Enters 0.50 -> 0.62 | Holds 0.62 -> 0.85 | Exits Fade 0.85 -> 0.98
+            // =========================================================================
+            animateLine(line3Ref.current, 0.42, 0.54, 0.85, 0.96, "fade");
+            animateLine(line4Ref.current, 0.50, 0.62, 0.85, 0.98, "fade");
 
-    // Staggered styles for each line
-    // Line 1: PRECISION (0.04 -> 0.18)
-    const precisionStyle = getProgressStyle(0.04, 0.18);
+            // =========================================================================
+            // CTA BUTTONS: Full Viewport Screen Edge Entrance
+            // Button 1 ("GET A QUOTE"): Slides smoothly from LEFT EDGE (-100vw -> 0)
+            // Button 2 ("EXPLORE SERVICES"): Slides smoothly from RIGHT EDGE (+100vw -> 0)
+            // =========================================================================
+            const btnInStart = 0.04;
+            const btnInEnd = 0.20;
+            const btnOutStart = 0.88;
+            const btnOutEnd = 1.00;
 
-    // Line 2: PROTECTION. (0.18 -> 0.32)
-    const protectionStyle = getProgressStyle(0.18, 0.32);
+            if (p < btnInStart) {
+                if (btn1Ref.current) {
+                    btn1Ref.current.style.opacity = "0";
+                    btn1Ref.current.style.transform = "translate3d(-100vw, 0, 0)";
+                    btn1Ref.current.style.filter = "blur(10px)";
+                    btn1Ref.current.style.pointerEvents = "none";
+                }
+                if (btn2Ref.current) {
+                    btn2Ref.current.style.opacity = "0";
+                    btn2Ref.current.style.transform = "translate3d(100vw, 0, 0)";
+                    btn2Ref.current.style.filter = "blur(10px)";
+                    btn2Ref.current.style.pointerEvents = "none";
+                }
+            } else if (p <= btnInEnd) {
+                const inP = (p - btnInStart) / (btnInEnd - btnInStart);
+                const op = Math.min(1, inP * 1.25).toFixed(3);
+                const blurVal = ((1 - inP) * 10).toFixed(1);
+                const tx1 = ((-100) * (1 - inP)).toFixed(1);
+                const tx2 = ((100) * (1 - inP)).toFixed(1);
 
-    // Line 3: AUTOMOTIVE (0.32 -> 0.46)
-    const automotiveStyle = getProgressStyle(0.32, 0.46);
+                if (btn1Ref.current) {
+                    btn1Ref.current.style.opacity = op;
+                    btn1Ref.current.style.transform = `translate3d(${tx1}vw, 0, 0)`;
+                    btn1Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn1Ref.current.style.pointerEvents = "auto";
+                }
+                if (btn2Ref.current) {
+                    btn2Ref.current.style.opacity = op;
+                    btn2Ref.current.style.transform = `translate3d(${tx2}vw, 0, 0)`;
+                    btn2Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn2Ref.current.style.pointerEvents = "auto";
+                }
+            } else if (p <= btnOutStart) {
+                if (btn1Ref.current) {
+                    btn1Ref.current.style.opacity = "1";
+                    btn1Ref.current.style.transform = "translate3d(0, 0, 0)";
+                    btn1Ref.current.style.filter = "blur(0px)";
+                    btn1Ref.current.style.pointerEvents = "auto";
+                }
+                if (btn2Ref.current) {
+                    btn2Ref.current.style.opacity = "1";
+                    btn2Ref.current.style.transform = "translate3d(0, 0, 0)";
+                    btn2Ref.current.style.filter = "blur(0px)";
+                    btn2Ref.current.style.pointerEvents = "auto";
+                }
+            } else if (p <= btnOutEnd) {
+                const outP = (p - btnOutStart) / (btnOutEnd - btnOutStart);
+                const op = (1 - outP).toFixed(3);
+                const blurVal = (outP * 10).toFixed(1);
+                const tx1 = ((-100) * outP).toFixed(1);
+                const tx2 = ((100) * outP).toFixed(1);
 
-    // Line 4: PERFECTION. (0.46 -> 0.60)
-    const perfectionStyle = getProgressStyle(0.46, 0.60);
+                if (btn1Ref.current) {
+                    btn1Ref.current.style.opacity = op;
+                    btn1Ref.current.style.transform = `translate3d(${tx1}vw, 0, 0)`;
+                    btn1Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn1Ref.current.style.pointerEvents = "none";
+                }
+                if (btn2Ref.current) {
+                    btn2Ref.current.style.opacity = op;
+                    btn2Ref.current.style.transform = `translate3d(${tx2}vw, 0, 0)`;
+                    btn2Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn2Ref.current.style.pointerEvents = "none";
+                }
+            } else {
+                if (btn1Ref.current) {
+                    btn1Ref.current.style.opacity = "0";
+                    btn1Ref.current.style.transform = "translate3d(-100vw, 0, 0)";
+                    btn1Ref.current.style.filter = "blur(10px)";
+                    btn1Ref.current.style.pointerEvents = "none";
+                }
+                if (btn2Ref.current) {
+                    btn2Ref.current.style.opacity = "0";
+                    btn2Ref.current.style.transform = "translate3d(100vw, 0, 0)";
+                    btn2Ref.current.style.filter = "blur(10px)";
+                    btn2Ref.current.style.pointerEvents = "none";
+                }
+            }
+        }, []);
 
-    // Staggered CTA button reveals starting IMMEDIATELY on first scroll
-    // Button 1: Get a Quote (0.04 -> 0.20, Left to Right on First Scroll)
-    const btn1Style = getLeftToRightStyle(0.04, 0.20);
+        useImperativeHandle(ref, () => ({
+            setProgress: (p: number) => {
+                updateDOM(p);
+            },
+        }), [updateDOM]);
 
-    // Button 2: Explore Services (0.18 -> 0.34, From Under Button 1)
-    const btn2Style = getFromUnderStyle(0.18, 0.34);
+        // Split title and subtitle safely into 2 lines each
+        const titleParts = messages?.hero?.title ? messages.hero.title.split(" ") : ["PRECISION", "PROTECTION."];
+        const titleLine1 = titleParts[0] || "PRECISION";
+        const titleLine2 = titleParts.slice(1).join(" ") || "PROTECTION.";
 
-    // Split title and subtitle safely into 2 lines each
-    const titleParts = messages?.hero?.title ? messages.hero.title.split(" ") : ["PRECISION", "PROTECTION."];
-    const titleLine1 = titleParts[0] || "PRECISION";
-    const titleLine2 = titleParts.slice(1).join(" ") || "PROTECTION.";
+        const subParts = messages?.hero?.subtitle ? messages.hero.subtitle.split(" ") : ["AUTOMOTIVE", "PERFECTION."];
+        const subLine1 = subParts[0] || "AUTOMOTIVE";
+        const subLine2 = subParts.slice(1).join(" ") || "PERFECTION.";
 
-    const subParts = messages?.hero?.subtitle ? messages.hero.subtitle.split(" ") : ["AUTOMOTIVE", "PERFECTION."];
-    const subLine1 = subParts[0] || "AUTOMOTIVE";
-    const subLine2 = subParts.slice(1).join(" ") || "PERFECTION.";
-
-    return (
-        <div
-            ref={contentRef}
-            className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[calc(100vh-6rem)] flex flex-col justify-between py-12 transition-opacity duration-300 pointer-events-none"
-            style={{ opacity: revealed ? 1 : 0 }}
-        >
-            {/* TOP SECTION: PRECISION & PROTECTION. + AUTOMOTIVE PERFECTION (Mobile View) */}
-            <div className="pt-4 pointer-events-auto">
-                <div className="space-y-1 text-center lg:text-left">
-                    <div className="overflow-hidden py-0.5">
-                        <h1
-                            className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out"
-                            style={precisionStyle}
-                        >
-                            <span>{titleLine1}</span>
-                        </h1>
+        return (
+            <div
+                ref={containerRef}
+                className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[calc(100vh-6rem)] flex flex-col justify-between py-12 transition-opacity duration-300 pointer-events-none"
+                style={{ opacity: revealed ? 1 : 0 }}
+            >
+                {/* TOP LEFT STACKED CONTAINER (Both Group 1 & Group 2 share this top-left position) */}
+                <div className="relative pt-4 pointer-events-auto min-h-[160px] sm:min-h-[180px] lg:min-h-[200px]">
+                    {/* GROUP 1: PRECISION PROTECTION. (Top Left) */}
+                    <div className="absolute top-4 left-0 w-full space-y-1 text-center lg:text-left">
+                        <div className="overflow-hidden py-0.5">
+                            <h1
+                                ref={line1Ref}
+                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform"
+                            >
+                                <span>{titleLine1}</span>
+                            </h1>
+                        </div>
+                        <div className="overflow-hidden py-0.5">
+                            <h1
+                                ref={line2Ref}
+                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform"
+                            >
+                                <span>{titleLine2}</span>
+                            </h1>
+                        </div>
                     </div>
-                    <div className="overflow-hidden py-0.5">
-                        <h1
-                            className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out"
-                            style={protectionStyle}
-                        >
-                            <span>{titleLine2}</span>
-                        </h1>
-                    </div>
 
-                    {/* AUTOMOTIVE PERFECTION — Mobile position (directly under PRECISION PROTECTION) */}
-                    <div className="block lg:hidden pt-2 space-y-0.5 text-center">
+                    {/* GROUP 2: AUTOMOTIVE PERFECTION. (Top Left - Stacked in exact same spot) */}
+                    <div className="absolute top-4 left-0 w-full space-y-1 text-center lg:text-left">
                         <div className="overflow-hidden py-0.5">
                             <h2
-                                className="text-[2.75rem] sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
-                                style={automotiveStyle}
+                                ref={line3Ref}
+                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] drop-shadow-2xl will-change-transform"
                             >
                                 <span>{subLine1}</span>
                             </h2>
                         </div>
                         <div className="overflow-hidden py-0.5">
                             <h2
-                                className="text-[2.75rem] sm:text-4xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
-                                style={perfectionStyle}
+                                ref={line4Ref}
+                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] drop-shadow-2xl will-change-transform"
                             >
                                 <span>{subLine2}</span>
                             </h2>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* BOTTOM SECTION: CTAs (Left) + AUTOMOTIVE PERFECTION (Desktop Right View) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-4 pt-4 lg:pt-8">
-                {/* CTAs & Buttons */}
-                <div className="lg:col-span-7 space-y-6 text-center lg:text-left pointer-events-auto">
-                    <div className="relative z-20 flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-                        <Link
-                            href={`/${locale}/contact`}
-                            className="ftx-btn-tech ftx-btn-specular group inline-flex items-center gap-2 px-8 py-4 text-xs font-mono font-bold tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright transition-all duration-500 ease-out shadow-lime-glow hover:scale-103"
-                            style={btn1Style}
-                        >
-                            <span>{messages.common.getQuote}</span>
-                            <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                        </Link>
-
-                        <Link
-                            href={`/${locale}/services`}
-                            className="ftx-btn-tech ftx-btn-specular inline-flex items-center gap-2 px-7 py-4 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high transition-all duration-500 ease-out"
-                            style={btn2Style}
-                        >
-                            <span>{messages.common.exploreServices}</span>
-                            <ChevronDown className="w-4 h-4" />
-                        </Link>
-                    </div>
-                </div>
-
-                {/* AUTOMOTIVE PERFECTION — Desktop position (bottom right) */}
-                <div className="hidden lg:flex lg:col-span-5 flex-col justify-end items-end text-right pointer-events-auto translate-y-16">
-                    <div className="space-y-1 text-right">
-                        <div className="overflow-hidden py-0.5">
-                            <h2
-                                className="text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
-                                style={automotiveStyle}
+                {/* BOTTOM SECTION: CTA Buttons */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-4 pt-4 lg:pt-8 overflow-hidden">
+                    <div className="lg:col-span-7 space-y-6 text-center lg:text-left pointer-events-auto w-full">
+                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 w-full pt-2">
+                            <Link
+                                ref={btn1Ref}
+                                href={`/${locale}/contact`}
+                                className="flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright transition-all duration-500 ease-out shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform"
                             >
-                                <span>{subLine1}</span>
-                            </h2>
-                        </div>
-                        <div className="overflow-hidden py-0.5">
-                            <h2
-                                className="text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] transition-all duration-500 ease-out drop-shadow-2xl"
-                                style={perfectionStyle}
+                                <span>{messages?.common?.getQuote || "GET A QUOTE"}</span>
+                                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </Link>
+
+                            <Link
+                                ref={btn2Ref}
+                                href={`/${locale}/services`}
+                                className="flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high transition-all duration-500 ease-out whitespace-nowrap min-w-0 will-change-transform"
                             >
-                                <span>{subLine2}</span>
-                            </h2>
+                                <span>{messages?.common?.exploreServices || "EXPLORE SERVICES"}</span>
+                                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
+        );
+    }
+);
+
+

@@ -7,6 +7,7 @@ import { WhyFTX } from "@/components/sections/WhyFTX";
 import { FeaturedWork } from "@/components/sections/FeaturedWork";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { ContactForm } from "@/components/ui/ContactForm";
+import { ScrollScrubFloor } from "@/components/motion/ScrollScrubFloor";
 
 async function getMessages(locale: Locale) {
     if (!locales.includes(locale as Locale)) {
@@ -47,11 +48,13 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
             <Testimonials locale={locale} messages={messages} />
 
             {/* 7. Book a Studio Visit / Quick Quote (Contacts) */}
-            <section id="contact" className="py-24 bg-ftx-black relative overflow-hidden">
+            <section id="contact" className="py-10 sm:py-12 bg-ftx-black relative overflow-hidden">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
-                        <ContactForm locale={locale} messages={messages} />
-                    </Suspense>
+                    <ScrollScrubFloor>
+                        <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
+                            <ContactForm locale={locale} messages={messages} />
+                        </Suspense>
+                    </ScrollScrubFloor>
                 </div>
             </section>
         </>

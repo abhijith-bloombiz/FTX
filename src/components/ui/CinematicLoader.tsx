@@ -143,8 +143,8 @@ export function CinematicLoader() {
             window.addEventListener("ftx_loader_complete", handleLoad);
         }
 
-        // 2.2s Min Animation Duration for smooth, magnetic assembly sequence
-        const MIN_ANIMATION_DURATION = prefersReducedMotion ? 400 : 2200;
+        // 3.0s Min Animation Duration for smooth, magnetic assembly sequence
+        const MIN_ANIMATION_DURATION = prefersReducedMotion ? 400 : 3000;
         const startTime = performance.now();
 
         const checkReadyToExit = () => {

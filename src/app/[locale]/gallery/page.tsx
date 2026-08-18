@@ -144,7 +144,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     className="ftx-border-card ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high min-h-[320px] sm:min-h-[360px] flex flex-col justify-end p-8 shadow-2xl"
                                 >
                                     <Image
-                                        src="/images/gallery/mclaren-ppf.jpg"
+                                        src="/images/services/ppf-main.png"
                                         alt="McLaren 720S Interior Restoration"
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-103"
@@ -190,7 +190,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Split Image Side */}
                                     <div className="relative w-full h-full min-h-[220px]">
                                         <Image
-                                            src="/images/gallery/sto-detailing.jpg"
+                                            src="/images/services/detailing-main.png"
                                             alt="Paint Correction Process"
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -243,7 +243,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
 
                 {/* Before & After Interactive Showcase Section if present */}
                 {beforeAfterItem && (
-                    <div className="mt-16 bg-ftx-surface p-6 sm:p-8 ftx-squircle-xl border border-ftx-surface-high space-y-6">
+                    <div className="mt-16 bg-ftx-surface p-5 sm:p-6 ftx-squircle-xl border border-ftx-surface-high shadow-2xl space-y-4">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div>
                                 <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">

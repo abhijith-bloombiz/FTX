@@ -8,7 +8,8 @@ export type ScrollRevealType =
     | "image-mask"
     | "horizontal"
     | "scale"
-    | "heading-inset";
+    | "heading-inset"
+    | "rise-from-floor";
 
 interface ScrollRevealProps {
     children: React.ReactNode;
@@ -17,6 +18,7 @@ interface ScrollRevealProps {
     delay?: number;
     duration?: number;
     threshold?: number;
+    once?: boolean;
     className?: string;
     style?: React.CSSProperties;
 }
@@ -28,6 +30,7 @@ export function ScrollReveal({
     delay = 0,
     duration = 850,
     threshold = 0.15,
+    once = false,
     className = "",
     style = {},
 }: ScrollRevealProps) {
@@ -52,9 +55,13 @@ export function ScrollReveal({
 
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    if (ref.current) observer.unobserve(ref.current);
+                if (once) {
+                    if (entry.isIntersecting) {
+                        setIsVisible(true);
+                        if (ref.current) observer.unobserve(ref.current);
+                    }
+                } else {
+                    setIsVisible(entry.isIntersecting);
                 }
             },
             { threshold }
@@ -68,7 +75,7 @@ export function ScrollReveal({
             observer.disconnect();
             window.removeEventListener("resize", checkMobile);
         };
-    }, [threshold]);
+    }, [threshold, once]);
 
     const getStyles = (): React.CSSProperties => {
         const baseTransition: React.CSSProperties = {
@@ -76,7 +83,7 @@ export function ScrollReveal({
             transitionDuration: `${duration}ms`,
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
             transitionDelay: `${delay}ms`,
-            willChange: "transform, opacity",
+            willChange: "transform, opacity, filter",
             ...style,
         };
 
@@ -84,13 +91,24 @@ export function ScrollReveal({
             return {
                 ...baseTransition,
                 opacity: 1,
-                transform: "translate3d(0, 0, 0) scale(1)",
+                transform: "perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1)",
                 filter: "blur(0px)",
+                transformOrigin: "bottom center",
                 clipPath: type === "heading-inset" ? "inset(0 0 0 0)" : undefined,
             };
         }
 
         switch (type) {
+            case "rise-from-floor":
+                const floorY = isMobile ? "60px" : "110px";
+                return {
+                    ...baseTransition,
+                    opacity: 0,
+                    transform: `perspective(1200px) rotateX(28deg) translate3d(0, ${floorY}, -50px) scale(0.92)`,
+                    filter: "blur(6px)",
+                    transformOrigin: "bottom center",
+                };
+
             case "card":
                 // Phenomenon Studio Card Entrance: translateY 80px (45px mobile) + scale 0.96 (0.98 mobile)
                 const cardY = isMobile ? "45px" : "80px";

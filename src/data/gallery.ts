@@ -54,7 +54,7 @@ export const galleryData: GalleryItem[] = [
         },
         category: "ceramic",
         vehicle: "Ferrari F8 Tributo",
-        image: "/images/gallery/ferrari-ceramic.jpg",
+        image: "/images/services/ceramic-main.png",
         description: {
             en: "4-Layer SiO2 obsidian glass coating cured under infrared heat lamps for intense hydrophobicity.",
             ar: "4 طبقات نانو سيراميك معالجة بأشعة الإنفراريد للحصول على لمعان ودرع حماية فائق من المياه.",
@@ -69,7 +69,7 @@ export const galleryData: GalleryItem[] = [
         },
         category: "detailing",
         vehicle: "Lamborghini Huracán STO",
-        image: "/images/gallery/sto-detailing.jpg",
+        image: "/images/services/detailing-main.png",
         description: {
             en: "Multi-stage dual-action polish eliminating swirl marks and restoring optical depth before protective coating.",
             ar: "تصحيح وتلميع ميكانيكي بمراحل متعددة لإزالة الدوائر والخدوش قبل تطبيق حماية السيراميك.",
@@ -84,9 +84,9 @@ export const galleryData: GalleryItem[] = [
         },
         category: "before-after",
         vehicle: "Mercedes-AMG G63",
-        image: "/images/gallery/g63-after.jpg",
-        beforeImage: "/images/gallery/g63-before.jpg",
-        afterImage: "/images/gallery/g63-after.jpg",
+        image: "/images/gallery/after.png",
+        beforeImage: "/images/gallery/before.png",
+        afterImage: "/images/gallery/after.png",
         description: {
             en: "Complete stone-chip prevention package with ceramic glass top coat for high-velocity highway driving.",
             ar: "باقة كاملة لحماية المقدمة من حصى الطرق مع سيراميك للجنوط والزجاج للقيادة على الطرق السريعة.",
@@ -101,7 +101,7 @@ export const galleryData: GalleryItem[] = [
         },
         category: "ppf",
         vehicle: "McLaren 720S",
-        image: "/images/gallery/mclaren-ppf.jpg",
+        image: "/images/services/ppf-main.png",
         description: {
             en: "Invisible self-healing thermoplastic protection ensuring zero orange-peel texture distortion.",
             ar: "فيلم حماية شفاف ذاتي المعالجة بدون أي تشويه لبنية الطلاء أو مظهر قشرة البرتقال.",
@@ -116,7 +116,7 @@ export const galleryData: GalleryItem[] = [
         },
         category: "detailing",
         vehicle: "Rolls-Royce Cullinan",
-        image: "/images/gallery/cullinan-detailing.jpg",
+        image: "/images/services/detailing-main.png",
         description: {
             en: "Bespoke interior skin nourishment, alcantara restoration, and hydrophobic leather shield.",
             ar: "تغذية وتنظيف دقيق للجلد الطبيعي وتجديد الألكانتارا وحماية الجلد بطبقة نانو كارهة للسوائل.",

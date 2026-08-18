@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { GalleryItem } from "@/types/gallery";
 import { Locale } from "@/i18n/config";
 
@@ -15,11 +14,19 @@ interface LightboxProps {
 }
 
 export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProps) {
+    const [showDetails, setShowDetails] = useState(false);
+    const [direction, setDirection] = useState<"next" | "prev">("next");
+    const [slideState, setSlideState] = useState<"idle" | "exiting">("idle");
+    const [displayItem, setDisplayItem] = useState<GalleryItem | null>(item);
+    const [isClosing, setIsClosing] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
     useEffect(() => {
+        setIsMounted(true);
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") onClose();
-            if (e.key === "ArrowLeft" && onPrev) onPrev();
-            if (e.key === "ArrowRight" && onNext) onNext();
+            if (e.key === "Escape") handleClose();
+            if (e.key === "ArrowLeft" && onPrev) handlePrev();
+            if (e.key === "ArrowRight" && onNext) handleNext();
         };
         if (item) {
             document.body.style.overflow = "hidden";
@@ -31,70 +38,168 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
         };
     }, [item, onClose, onPrev, onNext]);
 
-    if (!item) return null;
+    useEffect(() => {
+        if (item && item.id !== displayItem?.id) {
+            setSlideState("exiting");
+            const timer = setTimeout(() => {
+                setDisplayItem(item);
+                setSlideState("idle");
+            }, 180);
+            return () => clearTimeout(timer);
+        }
+    }, [item?.id]);
+
+    if (!item || !displayItem) return null;
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            onClose();
+        }, 220);
+    };
+
+    const handlePrev = () => {
+        if (!onPrev || slideState === "exiting") return;
+        setDirection("prev");
+        setSlideState("exiting");
+        setTimeout(() => {
+            onPrev();
+        }, 180);
+    };
+
+    const handleNext = () => {
+        if (!onNext || slideState === "exiting") return;
+        setDirection("next");
+        setSlideState("exiting");
+        setTimeout(() => {
+            onNext();
+        }, 180);
+    };
+
+    const getSlideClass = () => {
+        if (slideState === "exiting") {
+            return direction === "next"
+                ? "-translate-x-20 opacity-0 scale-95"
+                : "translate-x-20 opacity-0 scale-95";
+        }
+        return "translate-x-0 opacity-100 scale-100";
+    };
+
+    const getDetailsSlideClass = () => {
+        if (slideState === "exiting") {
+            return direction === "next"
+                ? "-translate-x-12 opacity-0"
+                : "translate-x-12 opacity-0";
+        }
+        return "translate-x-0 opacity-100";
+    };
 
     return (
-        <div className="fixed inset-0 z-50 bg-ftx-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
-            {/* Close Button */}
-            <button
-                onClick={onClose}
-                className="absolute top-6 right-6 z-10 p-3 text-ftx-silver hover:text-ftx-lime bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high rounded-full transition-colors"
-                aria-label="Close image lightbox"
-            >
-                <X className="w-6 h-6" />
-            </button>
-
-            {/* Prev / Next Controls */}
-            {onPrev && (
-                <button
-                    onClick={onPrev}
-                    className="absolute left-4 sm:left-8 z-10 p-3 text-ftx-silver hover:text-ftx-lime bg-ftx-surface/80 hover:bg-ftx-surface-high border border-ftx-surface-high rounded-full transition-colors"
-                    aria-label="Previous vehicle"
-                >
-                    <ChevronLeft className="w-6 h-6" />
-                </button>
-            )}
-
-            {onNext && (
-                <button
-                    onClick={onNext}
-                    className="absolute right-4 sm:right-8 z-10 p-3 text-ftx-silver hover:text-ftx-lime bg-ftx-surface/80 hover:bg-ftx-surface-high border border-ftx-surface-high rounded-full transition-colors"
-                    aria-label="Next vehicle"
-                >
-                    <ChevronRight className="w-6 h-6" />
-                </button>
-            )}
-
-            {/* Main Content Box */}
-            <div className="max-w-5xl w-full flex flex-col items-center">
-                <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] ftx-squircle-xl border border-ftx-surface-high shadow-2xl">
-                    <Image
-                        src={item.image}
-                        alt={item.title[locale]}
-                        fill
-                        className="object-cover"
-                        priority
-                    />
+        <div
+            className={`fixed inset-0 z-[99999] bg-black/50 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 pt-24 sm:pt-28 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
+                ? "opacity-0 backdrop-blur-none pointer-events-none"
+                : isMounted
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95"
+                }`}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) handleClose();
+            }}
+        >
+            {/* Top Navigation & Controls Bar */}
+            <div className="w-full flex items-center justify-between z-20 max-w-6xl">
+                <div className={`px-3.5 py-1.5 bg-ftx-surface/80 border border-ftx-surface-high text-[10px] sm:text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest rounded-full backdrop-blur-md shadow-md transition-all duration-300 ${isClosing ? "opacity-0 translate-y-[-10px]" : getDetailsSlideClass()}`}>
+                    {displayItem.vehicle}
                 </div>
 
-                <div className="w-full mt-6 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-ftx-surface-high pt-4">
-                    <div>
-                        <span className="text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
-                            {item.vehicle}
+                {/* Top Right Action Controls: Info (i) + Close (X) */}
+                <div className={`flex items-center gap-2 transition-all duration-300 ${isClosing ? "opacity-0 translate-y-[-10px]" : ""}`}>
+                    <button
+                        onClick={() => setShowDetails(!showDetails)}
+                        className={`p-2.5 border text-xs font-mono font-bold uppercase rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 ${showDetails
+                            ? "bg-ftx-lime text-ftx-black border-ftx-lime scale-105 shadow-lime-glow"
+                            : "bg-ftx-surface/90 hover:bg-ftx-surface-high border-ftx-surface-high text-ftx-silver hover:text-ftx-lime"
+                            }`}
+                        aria-label="Toggle vehicle details"
+                        title="Project Details"
+                    >
+                        <Info className="w-5 h-5" />
+                    </button>
+
+                    <button
+                        onClick={handleClose}
+                        className="p-2.5 text-ftx-silver hover:text-ftx-lime bg-ftx-surface/90 hover:bg-ftx-surface-high border border-ftx-surface-high rounded-full transition-colors backdrop-blur-md shadow-lg"
+                        aria-label="Close image lightbox"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Max Viewport Full Image Area with Embedded Navigation Controls */}
+            <div className="relative w-full max-w-6xl flex-1 my-2 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full h-full max-h-[70vh] flex items-center justify-center">
+                    <img
+                        key={displayItem.id}
+                        src={displayItem.image}
+                        alt={displayItem.title[locale]}
+                        className={`max-w-full max-h-[70vh] w-auto h-auto object-contain ftx-squircle-xl shadow-2xl border border-ftx-surface-high/50 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
+                            ? "scale-90 opacity-0"
+                            : !isMounted
+                                ? "scale-90 opacity-0"
+                                : getSlideClass()
+                            }`}
+                    />
+
+                    {/* Prev Control Aligned Perfectly to Image Center */}
+                    {onPrev && (
+                        <button
+                            onClick={handlePrev}
+                            className={`absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3 text-ftx-silver hover:text-ftx-lime bg-ftx-surface/85 hover:bg-ftx-surface-high border border-ftx-surface-high rounded-full transition-all shadow-xl backdrop-blur-md active:scale-95 ${isClosing ? "opacity-0 scale-90" : ""}`}
+                            aria-label="Previous vehicle"
+                        >
+                            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </button>
+                    )}
+
+                    {/* Next Control Aligned Perfectly to Image Center */}
+                    {onNext && (
+                        <button
+                            onClick={handleNext}
+                            className={`absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3 text-ftx-silver hover:text-ftx-lime bg-ftx-surface/85 hover:bg-ftx-surface-high border border-ftx-surface-high rounded-full transition-all shadow-xl backdrop-blur-md active:scale-95 ${isClosing ? "opacity-0 scale-90" : ""}`}
+                            aria-label="Next vehicle"
+                        >
+                            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Collapsible Info Drawer Overlay with Synchronized Smooth Transitions */}
+            <div
+                className={`w-full max-w-4xl z-30 overflow-hidden transition-all duration-500 cubic-bezier(0.16,1,0.3,1) ${showDetails && !isClosing
+                    ? "max-h-[300px] opacity-100 translate-y-0 mb-2"
+                    : "max-h-0 opacity-0 translate-y-4 pointer-events-none mb-0"
+                    }`}
+            >
+                <div className={`p-4 sm:p-6 bg-ftx-surface/95 border border-ftx-surface-high ftx-squircle-lg shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300 ${getDetailsSlideClass()}`}>
+                    <div className="space-y-1">
+                        <span className="text-[10px] font-mono font-bold tracking-widest text-ftx-lime uppercase">
+                            {displayItem.vehicle}
                         </span>
-                        <h3 className="text-lg sm:text-xl font-heading font-bold text-white mt-1">
-                            {item.title[locale]}
+                        <h3 className="text-base sm:text-lg font-heading font-bold text-white uppercase">
+                            {displayItem.title[locale]}
                         </h3>
-                        <p className="text-xs text-ftx-silver-muted mt-1 max-w-2xl font-body">
-                            {item.description[locale]}
+                        <p className="text-xs text-ftx-silver-muted max-w-xl font-body leading-relaxed">
+                            {displayItem.description[locale]}
                         </p>
                     </div>
 
                     <div className="flex flex-wrap gap-2 shrink-0">
-                        {item.tags.map((tag) => (
+                        {displayItem.tags.map((tag) => (
                             <span
                                 key={tag}
-                                className="px-2.5 py-1 text-[10px] font-mono text-ftx-silver bg-ftx-surface border border-ftx-surface-high ftx-squircle-sm"
+                                className="px-2.5 py-1 text-[10px] font-mono text-ftx-silver bg-ftx-obsidian border border-ftx-surface-high ftx-squircle-sm"
                             >
                                 #{tag}
                             </span>

@@ -9,6 +9,7 @@ import { navItems } from "@/config/navigation";
 import { Locale } from "@/i18n/config";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileMenu } from "./MobileMenu";
+import { AnimatedHamburger } from "./AnimatedHamburger";
 
 interface NavbarProps {
     locale: Locale;
@@ -166,13 +167,10 @@ export function Navbar({ locale, messages }: NavbarProps) {
                             }}
                         >
                             <LanguageSwitcher currentLocale={locale} />
-                            <button
+                            <AnimatedHamburger
+                                isOpen={mobileMenuOpen}
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="p-2 text-ftx-silver hover:text-ftx-lime bg-ftx-surface ftx-squircle-sm border border-ftx-surface-high"
-                                aria-label="Toggle mobile navigation menu"
-                            >
-                                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                            </button>
+                            />
                         </div>
                     </div>
                 </div>
