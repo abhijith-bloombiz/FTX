@@ -161,8 +161,8 @@ export function ScrollReveal({
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: "translate3d(0, 100%, 0)",
-                    clipPath: "inset(100% 0 0 0)",
+                    transform: "translate3d(0, 35px, 0)",
+                    filter: "blur(4px)",
                 };
 
             default:

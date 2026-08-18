@@ -5,6 +5,7 @@ import { servicesData } from "@/data/services";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -37,12 +38,12 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
     };
 
     return (
-        <div className="pt-24 pb-24 bg-ftx-black min-h-screen">
+        <div className="pt-24 pb-0 bg-ftx-black min-h-screen">
             {/* Global Header */}
             <PageHeader
-                badge={messages.servicesSection?.badge || messages.common.ourServices || "OUR SERVICES"}
-                titleLine1="PRECISION"
-                titleLine2="SERVICES."
+                badge={messages.servicesSection?.badge || messages.common.ourServices || (locale === "ar" ? "خدماتنا" : "OUR SERVICES")}
+                titleLine1={locale === "ar" ? "خدمات" : "PRECISION"}
+                titleLine2={locale === "ar" ? "احترافية." : "SERVICES."}
                 subtitle={messages.servicesPage?.heroSub || messages.hero?.description}
             />
 
@@ -68,7 +69,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                         <section
                             key={service.id}
                             id={service.id}
-                            className={`py-20 transition-colors ${index % 2 === 1 ? "bg-ftx-surface/20" : "bg-ftx-black"
+                            className={`py-10 sm:py-12 transition-colors ${index % 2 === 1 ? "bg-ftx-surface/20" : "bg-ftx-black"
                                 }`}
                         >
                             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,7 +167,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                             {/* Metric 1 */}
                             <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
                                 <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    10+
+                                    <AnimatedCounter target={10} suffix="+" />
                                 </div>
                                 <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
                                     {locale === "ar" ? "سنوات خبرة" : "YEARS EXPERIENCE"}
@@ -176,7 +177,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                             {/* Metric 2 */}
                             <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
                                 <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    5K+
+                                    <AnimatedCounter target={5} suffix="K+" />
                                 </div>
                                 <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
                                     {locale === "ar" ? "سيارة تم حمايتها" : "VEHICLES PROTECTED"}
@@ -186,7 +187,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                             {/* Metric 3 */}
                             <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
                                 <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    100%
+                                    <AnimatedCounter target={100} suffix="%" />
                                 </div>
                                 <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
                                     {locale === "ar" ? "تركيز على رضا العملاء" : "SATISFACTION FOCUS"}

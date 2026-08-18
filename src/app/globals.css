@@ -208,6 +208,49 @@ html[dir="rtl"] {
   animation: ambientGlow 8s infinite ease-in-out;
 }
 
+/* Smooth Luxury Dropdown Entrance Animation */
+@keyframes ftxDropdownEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-ftx-dropdown {
+  animation: ftxDropdownEnter 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Staggered Item Entrance Animation for Dropdown List Items */
+@keyframes ftxDropdownItemEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-ftx-dropdown-item {
+  animation: ftxDropdownItemEnter 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Luxury Dropdown Bi-directional Transition System */
+.ftx-dropdown-anim {
+  transition-property: transform, opacity, scale;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity, scale;
+}
+
 /* Micro Breathing Scale for Settled Cinematic Logo */
 @keyframes microBreath {
 

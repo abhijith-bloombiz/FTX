@@ -4,6 +4,7 @@ import { ArrowUpRight, ShieldCheck, Award, Wrench } from "lucide-react";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -17,44 +18,56 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
     const messages = await getMessages(locale);
 
     return (
-        <div className="pt-24 pb-20 bg-ftx-black">
+        <div className="pt-24 pb-0 bg-ftx-black">
             {/* Synchronized Global Header */}
             <PageHeader
-                badge={messages.about?.heroBadge || messages.nav?.about || "ABOUT FTX"}
-                titleLine1="SURGICAL"
-                titleLine2="PERFECTION."
+                badge={messages.about?.heroBadge || messages.nav?.about || (locale === "ar" ? "عن FTX" : "ABOUT FTX")}
+                titleLine1={locale === "ar" ? "دقة" : "SURGICAL"}
+                titleLine2={locale === "ar" ? "جراحية." : "PERFECTION."}
                 subtitle={messages.about?.heroSub || messages.intro?.p1}
             />
 
             {/* Studio Philosophy & Craftsmanship */}
-            <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="py-10 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     <ScrollReveal type="editorial" className="lg:col-span-6 space-y-6">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-ftx-surface border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime uppercase rounded">
                             <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>THE FTX STANDARD</span>
+                            <span>{locale === "ar" ? "معيار FTX" : "THE FTX STANDARD"}</span>
                         </div>
 
                         <h2 className="text-3xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight">
-                            PRECISION AUTOMOTIVE ENGINEERING MEETS SURGICAL DETAILING
+                            {locale === "ar"
+                                ? "هندسة السيارات الدقيقة تلتقي بالتلميع الجراحي"
+                                : "PRECISION AUTOMOTIVE ENGINEERING MEETS SURGICAL DETAILING"}
                         </h2>
 
                         <div className="space-y-4 text-xs sm:text-sm text-ftx-silver font-body leading-relaxed">
                             <p>{messages.intro.p1}</p>
                             <p>{messages.intro.p2}</p>
                             <p>
-                                Founded by passionate automotive perfectionists, FTX – First Torque X was created to set a new global benchmark in supercar protection film installation, ceramic paint coating, and bespoke paint correction in Dubai.
+                                {locale === "ar"
+                                    ? "تأسست FTX – First Torque X على يد نخبة من عشاق كمال السيارات، لوضع معيار عالمي جديد في تركيب أفلام حماية السيارات الفائقة، طلاء السيراميك، وتصحيح الطلاء في دبي."
+                                    : "Founded by passionate automotive perfectionists, FTX – First Torque X was created to set a new global benchmark in supercar protection film installation, ceramic paint coating, and bespoke paint correction in Dubai."}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 pt-4">
                             <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
-                                <div className="text-2xl font-mono font-black text-ftx-lime">100%</div>
-                                <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">Dust-Free Bays</div>
+                                <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
+                                    <AnimatedCounter target={100} suffix="%" />
+                                </div>
+                                <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
+                                    {locale === "ar" ? "كبائن خالية من الغبار" : "Dust-Free Bays"}
+                                </div>
                             </div>
                             <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
-                                <div className="text-2xl font-mono font-black text-ftx-lime">1,500+</div>
-                                <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">Supercars Protected</div>
+                                <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
+                                    <AnimatedCounter target={1500} suffix="+" />
+                                </div>
+                                <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
+                                    {locale === "ar" ? "سيارة فائقة تم حمايتها" : "Supercars Protected"}
+                                </div>
                             </div>
                         </div>
                     </ScrollReveal>
@@ -73,14 +86,14 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
             </section>
 
             {/* Facilities & Equipment Highlights */}
-            <section className="py-20 bg-ftx-obsidian">
+            <section className="py-10 sm:py-12 bg-ftx-obsidian">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <ScrollReveal type="heading-inset" className="text-center max-w-2xl mx-auto mb-16">
+                    <ScrollReveal type="editorial" className="text-center max-w-2xl mx-auto mb-16">
                         <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                            INFRASTRUCTURE
+                            {locale === "ar" ? "البنية التحتية" : "INFRASTRUCTURE"}
                         </span>
                         <h2 className="text-3xl font-heading font-black text-white uppercase mt-2">
-                            CLIMATE-CONTROLLED PRECISION BAYS
+                            {locale === "ar" ? "كبائن دقيقة ببيئة حرارية متحكم بها" : "CLIMATE-CONTROLLED PRECISION BAYS"}
                         </h2>
                     </ScrollReveal>
 
@@ -100,9 +113,13 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                                     </div>
                                 </div>
                                 <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">Surgical Plotter Cutting</h3>
+                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                        {locale === "ar" ? "قص كمبيوتري دقيق (Plotter)" : "Surgical Plotter Cutting"}
+                                    </h3>
                                     <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        Computer-guided DAP software plots vehicle-specific templates so blades never touch your vehicle's factory paint.
+                                        {locale === "ar"
+                                            ? "برنامج DAP للقص المباشر يضمن عدم ملامسة المشرط لطلاء المصنع إطلاقاً."
+                                            : "Computer-guided DAP software plots vehicle-specific templates so blades never touch your vehicle's factory paint."}
                                     </p>
                                 </div>
                             </div>
@@ -123,9 +140,13 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                                     </div>
                                 </div>
                                 <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">HEPA Filtered Air</h3>
+                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                        {locale === "ar" ? "نظام تصفية الهواء HEPA" : "HEPA Filtered Air"}
+                                    </h3>
                                     <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        Positive air pressure studio bays eliminate airborne dust particles during the PPF installation process.
+                                        {locale === "ar"
+                                            ? "نظام الضغط الموجابي يمنع دخول أي ذرات غبار أثناء تركيب فلم الحماية."
+                                            : "Positive air pressure studio bays eliminate airborne dust particles during the PPF installation process."}
                                     </p>
                                 </div>
                             </div>
@@ -146,9 +167,13 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                                     </div>
                                 </div>
                                 <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">Curing Infrared Lamps</h3>
+                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                        {locale === "ar" ? "أشعة التجفيف بالإنفراريد" : "Curing Infrared Lamps"}
+                                    </h3>
                                     <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        Shortwave infrared curing locks in ceramic coatings at optimal temperature matrices for maximum gloss and durability.
+                                        {locale === "ar"
+                                            ? "المعالجة بالأشعة تحت الحمراء تضمن ثبات السيراميك لأقصى لمعان ومتانة."
+                                            : "Shortwave infrared curing locks in ceramic coatings at optimal temperature matrices for maximum gloss and durability."}
                                     </p>
                                 </div>
                             </div>
@@ -157,15 +182,56 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                 </div>
             </section>
 
+            {/* Bottom Metrics Banner matching design specification with animated counters */}
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12">
+                <ScrollReveal type="editorial" delay={100}>
+                    <div className="bg-ftx-surface/80 ftx-squircle-xl p-8 sm:p-12 border border-ftx-surface-high shadow-2xl">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                            {/* Metric 1 */}
+                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
+                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
+                                    <AnimatedCounter target={10} suffix="+" />
+                                </div>
+                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                    {locale === "ar" ? "سنوات خبرة" : "YEARS EXPERIENCE"}
+                                </div>
+                            </div>
+
+                            {/* Metric 2 */}
+                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
+                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
+                                    <AnimatedCounter target={5} suffix="K+" />
+                                </div>
+                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                    {locale === "ar" ? "سيارة تم حمايتها" : "VEHICLES PROTECTED"}
+                                </div>
+                            </div>
+
+                            {/* Metric 3 */}
+                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
+                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
+                                    <AnimatedCounter target={100} suffix="%" />
+                                </div>
+                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                    {locale === "ar" ? "تركيز على رضا العملاء" : "SATISFACTION FOCUS"}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ScrollReveal>
+            </section>
+
             {/* Book Visit Banner */}
-            <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <section className="py-10 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <ScrollReveal type="scale">
                     <div className="p-12 bg-gradient-to-r from-ftx-surface via-ftx-obsidian to-ftx-surface border border-ftx-lime/30 ftx-squircle-xl space-y-6">
                         <h2 className="text-3xl font-heading font-black text-white uppercase">
-                            EXPERIENCE THE FTX STUDIO IN PERSON
+                            {locale === "ar" ? "عايش تجربة استوديو FTX بنفسك" : "EXPERIENCE THE FTX STUDIO IN PERSON"}
                         </h2>
                         <p className="text-xs sm:text-sm text-ftx-silver max-w-xl mx-auto font-body">
-                            Schedule a private consultation with our master detailers and inspect our active PPF & Ceramic projects.
+                            {locale === "ar"
+                                ? "احجز استشارة خاصة مع خبراء التلميع واطلع على أحدث مشاريع الحماية والسيراميك."
+                                : "Schedule a private consultation with our master detailers and inspect our active PPF & Ceramic projects."}
                         </p>
                         <div>
                             <Link

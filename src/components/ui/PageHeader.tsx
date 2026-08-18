@@ -8,9 +8,10 @@ interface PageHeaderProps {
     titleLine1?: string;
     titleLine2?: string;
     subtitle?: string;
+    singleLine?: boolean;
 }
 
-export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle }: PageHeaderProps) {
+export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle, singleLine = true }: PageHeaderProps) {
     const [revealed, setRevealed] = useState(false);
 
     useEffect(() => {
@@ -69,7 +70,7 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
     }
 
     return (
-        <section className="relative pt-4 sm:pt-6 pb-10 bg-ftx-black overflow-hidden">
+        <section className="relative pt-6 sm:pt-8 pb-0 bg-ftx-black overflow-hidden">
             {/* Ambient Radial Glow */}
             <div
                 className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-ftx-lime/5 rounded-full blur-[140px] pointer-events-none transition-all duration-1000"
@@ -77,9 +78,9 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
             />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-10 border-b border-ftx-surface-high/60">
-                    {/* Left Column: Badge & 2-Line Headline (White + Green) */}
-                    <div className="space-y-4 max-w-2xl">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-8 sm:pb-10 border-b border-ftx-surface-high/60">
+                    {/* Left Column: Badge & Single-Line / Multi-Line Headline */}
+                    <div className="space-y-4 max-w-3xl">
                         {badge && (
                             <div
                                 className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -96,7 +97,7 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
 
                         <div className="overflow-hidden py-1">
                             <h1
-                                className="text-4xl sm:text-6xl lg:text-7xl font-heading font-black text-white uppercase tracking-tight leading-[0.98] transition-all duration-850 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                                className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-tight transition-all duration-850 ease-[cubic-bezier(0.16,1,0.3,1)]"
                                 style={{
                                     opacity: revealed ? 1 : 0,
                                     transform: revealed ? "translate3d(0, 0, 0)" : "translate3d(0, 105%, 0)",
@@ -105,10 +106,17 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
                             >
                                 <span>{l1}</span>
                                 {l2 && (
-                                    <>
-                                        <br />
-                                        <span className="text-ftx-lime">{l2}</span>
-                                    </>
+                                    singleLine ? (
+                                        <>
+                                            {" "}
+                                            <span className="text-ftx-lime">{l2}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <br />
+                                            <span className="text-ftx-lime">{l2}</span>
+                                        </>
+                                    )
                                 )}
                             </h1>
                         </div>

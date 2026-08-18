@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { navItems } from "@/config/navigation";
 import { Locale } from "@/i18n/config";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -21,6 +21,36 @@ export function Navbar({ locale, messages }: NavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [revealed, setRevealed] = useState(false);
     const pathname = usePathname();
+
+    // Smooth Sliding Underline State & Refs
+    const navItemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+    const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+    const updateUnderlinePosition = useCallback((index: number) => {
+        const targetEl = navItemRefs.current[index];
+        if (targetEl) {
+            setUnderlineStyle({
+                left: targetEl.offsetLeft,
+                width: targetEl.offsetWidth,
+                opacity: 1,
+            });
+        }
+    }, []);
+
+    const resetUnderline = useCallback(() => {
+        const activeIndex = navItems.findIndex((item) => {
+            const itemHref = `/${locale}${item.href}`;
+            return item.href === ""
+                ? pathname === `/${locale}`
+                : pathname.startsWith(itemHref);
+        });
+
+        if (activeIndex !== -1) {
+            updateUnderlinePosition(activeIndex);
+        } else {
+            setUnderlineStyle((prev) => ({ ...prev, opacity: 0 }));
+        }
+    }, [pathname, locale, updateUnderlinePosition]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -58,6 +88,13 @@ export function Navbar({ locale, messages }: NavbarProps) {
             window.removeEventListener("scroll", handleScroll);
         };
     }, []);
+
+    // Recalculate underline on pathname or locale change and window resize
+    useEffect(() => {
+        resetUnderline();
+        window.addEventListener("resize", resetUnderline);
+        return () => window.removeEventListener("resize", resetUnderline);
+    }, [pathname, locale, resetUnderline]);
 
     return (
         <>
@@ -103,8 +140,8 @@ export function Navbar({ locale, messages }: NavbarProps) {
                             </div>
                         </Link>
 
-                        {/* Desktop Navigation Links - Staggered 100ms - 250ms */}
-                        <nav className="hidden md:flex items-center gap-8">
+                        {/* Desktop Navigation Links with Tight Underline Gap */}
+                        <nav className="relative hidden md:flex items-center gap-8 pb-0.5 pt-1">
                             {navItems.map((item, idx) => {
                                 const itemHref = `/${locale}${item.href}`;
                                 const isActive =
@@ -115,8 +152,12 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                 return (
                                     <Link
                                         key={item.key}
+                                        ref={(el) => {
+                                            navItemRefs.current[idx] = el;
+                                        }}
                                         href={itemHref}
-                                        className={`relative text-xs font-mono font-bold tracking-widest uppercase transition-all duration-700 ease-out py-1 ${isActive
+                                        onClick={() => updateUnderlinePosition(idx)}
+                                        className={`relative text-xs font-mono font-bold tracking-widest uppercase transition-colors duration-200 pb-0.5 pt-0.5 ${isActive
                                             ? "text-ftx-lime"
                                             : "text-ftx-silver hover:text-ftx-lime"
                                             }`}
@@ -128,12 +169,19 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                         }}
                                     >
                                         {messages.nav[item.key]}
-                                        {isActive && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-ftx-lime shadow-lime-glow" />
-                                        )}
                                     </Link>
                                 );
                             })}
+
+                            {/* Gliding Underline indicator with tight gap */}
+                            <span
+                                className="absolute bottom-0 h-0.5 bg-ftx-lime shadow-lime-glow transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+                                style={{
+                                    left: `${underlineStyle.left}px`,
+                                    width: `${underlineStyle.width}px`,
+                                    opacity: underlineStyle.opacity,
+                                }}
+                            />
                         </nav>
 
                         {/* Right Controls (Language + Quote CTA) - 350ms */}

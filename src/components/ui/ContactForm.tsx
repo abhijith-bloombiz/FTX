@@ -95,8 +95,8 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
         e.preventDefault();
         const validation = validateContactForm(formData);
 
-        if (!validation.isValid) {
-            setErrors(validation.errors);
+        if (!validation.isValid && !validation.success) {
+            setErrors(validation.errors || {});
             return;
         }
 

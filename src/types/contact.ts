@@ -10,6 +10,7 @@ export interface ContactFormData {
 
 export interface ContactFormResponse {
     success: boolean;
+    isValid?: boolean;
     message?: string;
     errors?: Partial<Record<keyof ContactFormData, string>>;
 }

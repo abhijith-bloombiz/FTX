@@ -26,11 +26,13 @@ export function validateContactForm(data: Partial<ContactFormData>): ContactForm
     if (Object.keys(errors).length > 0) {
         return {
             success: false,
+            isValid: false,
             errors,
         };
     }
 
     return {
         success: true,
+        isValid: true,
     };
 }
