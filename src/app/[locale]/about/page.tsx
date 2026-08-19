@@ -18,7 +18,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
     const messages = await getMessages(locale);
 
     return (
-        <div className="pt-24 pb-0 bg-ftx-black">
+        <div className="pt-24 pb-0 bg-black min-h-screen relative overflow-hidden">
+            {/* Atmospheric Lime Ambient Glow (Top Right) */}
+            <div className="absolute top-20 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_top_right,rgba(164,214,94,0.15),transparent_70%)] pointer-events-none z-0" />
             {/* Synchronized Global Header */}
             <PageHeader
                 badge={messages.about?.heroBadge || messages.nav?.about || (locale === "ar" ? "عن FTX" : "ABOUT FTX")}
@@ -86,13 +89,16 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
             </section>
 
             {/* Facilities & Equipment Highlights */}
-            <section className="py-10 sm:py-12 bg-ftx-obsidian">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <ScrollReveal type="editorial" className="text-center max-w-2xl mx-auto mb-16">
+            <section className="py-6 sm:py-8 bg-black relative overflow-hidden">
+                {/* Atmospheric Lime Ambient Glow (Bottom Left) */}
+                <div className="absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_left,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <ScrollReveal type="editorial" className="text-left rtl:text-right mb-6 sm:mb-8">
                         <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
                             {locale === "ar" ? "البنية التحتية" : "INFRASTRUCTURE"}
                         </span>
-                        <h2 className="text-3xl font-heading font-black text-white uppercase mt-2">
+                        <h2 className="text-2xl sm:text-3xl font-heading font-black text-white uppercase mt-1">
                             {locale === "ar" ? "كبائن دقيقة ببيئة حرارية متحكم بها" : "CLIMATE-CONTROLLED PRECISION BAYS"}
                         </h2>
                     </ScrollReveal>

@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback, useEffect, useState, useImperativeHandle } from "react";
 import Link from "next/link";
-import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { Locale } from "@/i18n/config";
 
 interface HeroContentProps {
@@ -234,7 +234,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 {/* TOP LEFT STACKED CONTAINER (Both Group 1 & Group 2 share this top-left position) */}
                 <div className="relative pt-4 pointer-events-auto min-h-[160px] sm:min-h-[180px] lg:min-h-[200px]">
                     {/* GROUP 1: PRECISION PROTECTION. (Top Left) */}
-                    <div className="absolute top-4 left-0 w-full space-y-1 text-center lg:text-left">
+                    <div className="absolute top-4 left-0 right-0 w-full space-y-1 text-center lg:text-left rtl:lg:text-right">
                         <div className="overflow-hidden py-0.5">
                             <h1
                                 ref={line1Ref}
@@ -254,7 +254,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     </div>
 
                     {/* GROUP 2: AUTOMOTIVE PERFECTION. (Top Left - Stacked in exact same spot) */}
-                    <div className="absolute top-4 left-0 w-full space-y-1 text-center lg:text-left">
+                    <div className="absolute top-4 left-0 right-0 w-full space-y-1 text-center lg:text-left rtl:lg:text-right">
                         <div className="overflow-hidden py-0.5">
                             <h2
                                 ref={line3Ref}
@@ -276,12 +276,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
 
                 {/* BOTTOM SECTION: CTA Buttons (Raised up on mobile for better touch access) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-12 sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
-                    <div className="lg:col-span-7 space-y-6 text-center lg:text-left pointer-events-auto w-full">
-                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 w-full pt-1 pb-2">
+                    <div className="lg:col-span-7 space-y-6 text-center lg:text-left rtl:lg:text-right pointer-events-auto w-full">
+                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start rtl:lg:justify-end gap-3 sm:gap-4 w-full pt-1 pb-2">
                             <Link
                                 ref={btn1Ref}
                                 href={`/${locale}/contact`}
-                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
+                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                             >
                                 <span>{messages?.common?.getQuote || "GET A QUOTE"}</span>
                                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -290,10 +290,10 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                             <Link
                                 ref={btn2Ref}
                                 href={`/${locale}/services`}
-                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
+                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
                             >
                                 <span>{messages?.common?.exploreServices || "EXPLORE SERVICES"}</span>
-                                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1 rtl:rotate-180" />
                             </Link>
                         </div>
                     </div>

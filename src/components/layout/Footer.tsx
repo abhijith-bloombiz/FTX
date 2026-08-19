@@ -14,10 +14,9 @@ interface FooterProps {
 
 export function Footer({ locale, messages }: FooterProps) {
     return (
-        <footer className="relative bg-ftx-black text-ftx-silver border-t border-ftx-surface-high overflow-hidden">
-            {/* Background Honeycomb Texture & Accent Glow */}
-            <div className="absolute inset-0 bg-honeycomb opacity-30 pointer-events-none z-0" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-ftx-lime/5 blur-3xl rounded-full pointer-events-none z-0" />
+        <footer className="relative bg-black text-ftx-silver border-t border-ftx-surface-high overflow-hidden">
+            {/* Background Honeycomb Texture */}
+            <div className="absolute inset-0 bg-honeycomb opacity-60 pointer-events-none z-0" />
 
             {/* Main Footer Links */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -46,7 +45,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                     href={contactConfig.social.instagram}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
+                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular animate-icon-seq-1"
                                     aria-label="Instagram"
                                 >
                                     <Instagram className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-12" />
@@ -55,7 +54,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                     href={contactConfig.social.youtube}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
+                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular animate-icon-seq-2"
                                     aria-label="YouTube"
                                 >
                                     <Youtube className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:-rotate-6" />
@@ -64,7 +63,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                     href={contactConfig.social.facebook}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
+                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular animate-icon-seq-3"
                                     aria-label="Facebook"
                                 >
                                     <Facebook className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-6" />
@@ -160,19 +159,17 @@ export function Footer({ locale, messages }: FooterProps) {
             </div>
 
             {/* Bottom Copyright */}
-            <ScrollReveal type="editorial" delay={400} duration={850}>
-                <div className="border-t border-ftx-surface-high/60 py-4 bg-ftx-obsidian relative z-10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ftx-silver-muted">
-                        <div>
-                            © {new Date().getFullYear()} {siteConfig.name}. {messages.common.allRightsReserved}
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <span>AUTOMOTIVE PRECISION & PROTECTION</span>
-                            <span className="text-ftx-lime font-bold">DUBAI STUDIO</span>
-                        </div>
+            <div className="border-t border-ftx-surface-high/60 py-4 bg-black relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ftx-silver-muted">
+                    <div>
+                        © {new Date().getFullYear()} {siteConfig.name}. {messages.common.allRightsReserved}
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <span>AUTOMOTIVE PRECISION & PROTECTION</span>
+                        <span className="text-ftx-lime font-bold">DUBAI STUDIO</span>
                     </div>
                 </div>
-            </ScrollReveal>
+            </div>
         </footer>
     );
 }

@@ -50,7 +50,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
     const beforeAfterItem = galleryData.find((g) => g.category === "before-after");
 
     return (
-        <div className="pt-24 pb-0 bg-ftx-black min-h-screen">
+        <div className="pt-24 pb-0 bg-black min-h-screen relative overflow-hidden">
+            {/* Atmospheric Lime Ambient Glow (Top Right) */}
+            <div className="absolute top-20 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_top_right,rgba(164,214,94,0.15),transparent_70%)] pointer-events-none z-0" />
             {/* Global Synchronized Header: BUILT TO BE SEEN. */}
             <PageHeader
                 badge={locale === "ar" ? "معرض الأعمال" : "THE GALLERY"}

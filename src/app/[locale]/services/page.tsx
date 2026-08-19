@@ -37,7 +37,10 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
     };
 
     return (
-        <div className="pt-24 pb-0 bg-ftx-black min-h-screen">
+        <div className="pt-24 pb-0 bg-black min-h-screen relative overflow-hidden">
+            {/* Atmospheric Lime Ambient Glow (Top Right) */}
+            <div className="absolute top-20 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_top_right,rgba(164,214,94,0.15),transparent_70%)] pointer-events-none z-0" />
             {/* Global Header */}
             <PageHeader
                 badge={messages.servicesSection?.badge || messages.common.ourServices || (locale === "ar" ? "خدماتنا" : "OUR SERVICES")}
@@ -68,10 +71,13 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                         <section
                             key={service.id}
                             id={service.id}
-                            className={`py-10 sm:py-12 transition-colors ${index % 2 === 1 ? "bg-ftx-surface/20" : "bg-ftx-black"
-                                }`}
+                            className="py-10 sm:py-12 bg-black relative overflow-hidden"
                         >
-                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            {/* Atmospheric Lime Ambient Glow (Alternating Left / Right) */}
+                            <div className={`absolute -bottom-24 ${isEven ? "-left-24" : "-right-24"} w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0`} />
+                            <div className={`absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_${isEven ? "left" : "right"},rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0`} />
+
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
                                     {/* Image Side - Directional Reveal Animation on Scroll */}
                                     <ScrollReveal

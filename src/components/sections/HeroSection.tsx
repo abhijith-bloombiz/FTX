@@ -460,7 +460,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 <HeroTypography ref={typographyRef} revealed={revealed} isMobile={isMobile} />
 
                 {/* Foreground Hero Headline & CTA Buttons */}
-                <div ref={contentRef} className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div ref={contentRef} className="relative z-10 w-full">
                     <HeroContent ref={contentHandleRef} locale={locale} messages={messages} revealed={revealed} />
                 </div>
 

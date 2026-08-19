@@ -23,7 +23,10 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     const beforeAfterItem = galleryData.find((g) => g.category === "before-after");
 
     return (
-        <section id="ourwork" className="py-10 sm:py-12 bg-ftx-black relative overflow-hidden">
+        <section id="ourwork" className="py-10 sm:py-12 bg-black relative overflow-hidden">
+            {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
+            <div className="absolute -bottom-24 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_right,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Row with Masked Text Reveal */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
