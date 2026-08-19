@@ -81,7 +81,7 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
                 word1Ref.current.style.webkitTextStroke = strokeStyle;
                 word1Ref.current.style.opacity = isVis ? String(frameHideOpacity.toFixed(3)) : "0";
                 word1Ref.current.style.transform = isVis ? "translate3d(0, 0, 0)" : "translate3d(-140px, 0, 0)";
-                word1Ref.current.style.filter = isVis && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(18px)";
+                word1Ref.current.style.filter = !isMobile && isVis && frameHideOpacity > 0.01 ? "blur(0px)" : !isMobile ? "blur(18px)" : "none";
             }
 
             // Word 2: TORQUE
@@ -89,7 +89,7 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
                 word2Ref.current.style.webkitTextStroke = strokeStyle;
                 word2Ref.current.style.opacity = isVis ? String(frameHideOpacity.toFixed(3)) : "0";
                 word2Ref.current.style.transform = isVis ? "translate3d(0, 0, 0) scale(1)" : "translate3d(0, 50px, 0) scaleY(0.15) scaleX(0.85)";
-                word2Ref.current.style.filter = isVis && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(22px)";
+                word2Ref.current.style.filter = !isMobile && isVis && frameHideOpacity > 0.01 ? "blur(0px)" : !isMobile ? "blur(22px)" : "none";
             }
 
             // Word 3: X
@@ -97,7 +97,7 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
                 word3Ref.current.style.webkitTextStroke = strokeStyle;
                 word3Ref.current.style.opacity = isVis ? String(frameHideOpacity.toFixed(3)) : "0";
                 word3Ref.current.style.transform = isVis ? "translate3d(0, 0, 0)" : "translate3d(140px, 0, 0)";
-                word3Ref.current.style.filter = isVis && frameHideOpacity > 0.01 ? "blur(0px)" : "blur(18px)";
+                word3Ref.current.style.filter = !isMobile && isVis && frameHideOpacity > 0.01 ? "blur(0px)" : !isMobile ? "blur(18px)" : "none";
             }
 
             const getLetterP = (start: number, end: number) => {
@@ -127,9 +127,9 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
                 el.style.maxWidth = `${(lp * 0.85).toFixed(3)}em`;
                 el.style.opacity = op.toFixed(3);
                 el.style.transform = `translate3d(${((1 - lp) * -16).toFixed(1)}px, 0, 0) scale(${(0.78 + lp * 0.22).toFixed(3)})`;
-                el.style.filter = lp < 0.98 ? `blur(${((1 - lp) * 5).toFixed(1)}px)` : "none";
+                el.style.filter = !isMobile && lp < 0.98 ? `blur(${((1 - lp) * 5).toFixed(1)}px)` : "none";
             });
-        }, [entryRevealed, revealed]);
+        }, [entryRevealed, revealed, isMobile]);
 
         React.useImperativeHandle(ref, () => ({
             setProgress: (p: number) => {

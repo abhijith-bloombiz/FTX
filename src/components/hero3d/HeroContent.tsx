@@ -274,10 +274,10 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     </div>
                 </div>
 
-                {/* BOTTOM SECTION: CTA Buttons */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-4 pt-4 lg:pt-8 overflow-hidden">
+                {/* BOTTOM SECTION: CTA Buttons (Raised up on mobile for better touch access) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-12 sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
                     <div className="lg:col-span-7 space-y-6 text-center lg:text-left pointer-events-auto w-full">
-                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 w-full pt-2">
+                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 w-full pt-1 pb-2">
                             <Link
                                 ref={btn1Ref}
                                 href={`/${locale}/contact`}

@@ -36,8 +36,53 @@ export default async function LocaleLayout({
     const messages = await getMessages(locale);
     const rtl = isRtl(locale);
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "AutoRepair",
+        "name": "FTX – First Torque X",
+        "image": "https://ftx.ae/brand/ftx-3d-logo.png",
+        "@id": "https://ftx.ae",
+        "url": "https://ftx.ae",
+        "telephone": "+97140000000",
+        "priceRange": "$$$$",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Al Quoz Industrial Area",
+            "addressLocality": "Dubai",
+            "addressRegion": "Dubai",
+            "postalCode": "00000",
+            "addressCountry": "AE"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 25.1328,
+            "longitude": 55.2285
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday"
+            ],
+            "opens": "09:00",
+            "closes": "20:00"
+        },
+        "sameAs": [
+            "https://instagram.com/ftx.ae",
+            "https://facebook.com/ftx.ae"
+        ]
+    };
+
     return (
         <div dir={rtl ? "rtl" : "ltr"} className={`min-h-screen bg-ftx-black text-ftx-silver ${rtl ? 'font-arabic' : 'font-body'}`}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <CustomCursor />
             <SmoothScrollProvider>
                 <CinematicLoader />

@@ -38,6 +38,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const animFrameIdRef = useRef<number | null>(null);
     const isHeroInViewRef = useRef<boolean>(true);
 
+    const lastDrawnFrameIndexRef = useRef<number>(-1);
+    const lastDrawnBlendRatioRef = useRef<number>(-1);
+    const cachedBottomGradRef = useRef<{ height: number; grad: CanvasGradient } | null>(null);
+
     const [revealed, setRevealed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isLowEnd, setIsLowEnd] = useState(false);
@@ -61,9 +65,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
-        // Hardware DPR Capping (Native devicePixelRatio up to 2x for full uncompromised image crispness)
+        // Hardware DPR Capping (Native devicePixelRatio capped at 1.5x on Mobile & 2x on Desktop)
+        const maxDpr = isMobile ? 1.5 : 2;
         const dpr = typeof window !== "undefined"
-            ? Math.min(window.devicePixelRatio || 1, 2)
+            ? Math.min(window.devicePixelRatio || 1, maxDpr)
             : 1;
 
         const displayWidth = canvas.clientWidth;
@@ -75,6 +80,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             if (canvas.width !== targetW || canvas.height !== targetH) {
                 canvas.width = targetW;
                 canvas.height = targetH;
+                cachedBottomGradRef.current = null; // Invalidate cached gradient on resize
             }
         }
 
@@ -83,7 +89,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         if (!canvasWidth || !canvasHeight) return;
 
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
+        ctx.imageSmoothingQuality = isMobile ? "medium" : "high";
 
         const imgWidth = img.naturalWidth || 1920;
         const imgHeight = img.naturalHeight || 1080;
@@ -94,23 +100,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         // Full cover scale calculation
         const fullCoverScale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight);
 
-        // Mobile Ambient Background Pass (No hardware-thrashing ctx.filter)
-        if (isMobile) {
-            ctx.save();
-            ctx.globalAlpha = 0.45;
-            ctx.drawImage(img, (canvasWidth - imgWidth * fullCoverScale) / 2, (canvasHeight - imgHeight * fullCoverScale) / 2, imgWidth * fullCoverScale, imgHeight * fullCoverScale);
-            ctx.restore();
-
-            const grad = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-            grad.addColorStop(0, "rgba(7,7,7,0.85)");
-            grad.addColorStop(0.2, "rgba(7,7,7,0)");
-            grad.addColorStop(0.8, "rgba(7,7,7,0)");
-            grad.addColorStop(1, "rgba(7,7,7,0.85)");
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        }
-
-        const scaleMultiplier = isMobile ? 0.92 : 1.0;
+        const scaleMultiplier = isMobile ? 0.95 : 1.0;
         const scale = fullCoverScale * scaleMultiplier;
         const width = imgWidth * scale;
         const height = imgHeight * scale;
@@ -127,16 +117,20 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             ctx.globalAlpha = 1.0;
         }
 
-        const bottomFadeH = isMobile ? canvasHeight * 0.35 : canvasHeight * 0.22;
+        const bottomFadeH = isMobile ? canvasHeight * 0.30 : canvasHeight * 0.22;
         const bottomFadeY = canvasHeight - bottomFadeH;
 
-        const bottomGrad = ctx.createLinearGradient(0, bottomFadeY, 0, canvasHeight);
-        bottomGrad.addColorStop(0, "rgba(7, 7, 7, 0)");
-        bottomGrad.addColorStop(0.35, "rgba(7, 7, 7, 0.45)");
-        bottomGrad.addColorStop(0.75, "rgba(7, 7, 7, 0.88)");
-        bottomGrad.addColorStop(1, "rgb(7, 7, 7)");
+        // Cached Bottom Gradient Reuse (Prevents 60 FPS JS Heap Garbage Collection)
+        if (!cachedBottomGradRef.current || cachedBottomGradRef.current.height !== canvasHeight) {
+            const grad = ctx.createLinearGradient(0, bottomFadeY, 0, canvasHeight);
+            grad.addColorStop(0, "rgba(7, 7, 7, 0)");
+            grad.addColorStop(0.35, "rgba(7, 7, 7, 0.45)");
+            grad.addColorStop(0.75, "rgba(7, 7, 7, 0.88)");
+            grad.addColorStop(1, "rgb(7, 7, 7)");
+            cachedBottomGradRef.current = { height: canvasHeight, grad };
+        }
 
-        ctx.fillStyle = bottomGrad;
+        ctx.fillStyle = cachedBottomGradRef.current.grad;
         ctx.fillRect(0, bottomFadeY, canvasWidth, bottomFadeH);
     }, [isMobile, isLowEnd]);
 
@@ -177,8 +171,11 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
     // Memory Management (Sliding Window Pruning with Fast Scroll Expansion)
     const manageMemoryAndQueue = useCallback((centerFrame: number, isForward: boolean) => {
-        const minKeep = Math.max(0, centerFrame - 15);
-        const maxKeep = Math.min(TOTAL_FRAMES - 1, centerFrame + 35);
+        // Mobile VRAM optimization: Keep 14 frames (-4/+10) vs 50 frames (-15/+35) on Desktop
+        const backKeep = isMobile ? 4 : 15;
+        const forwardKeep = isMobile ? 10 : 35;
+        const minKeep = Math.max(0, centerFrame - backKeep);
+        const maxKeep = Math.min(TOTAL_FRAMES - 1, centerFrame + forwardKeep);
 
         // 1. Release decoded images outside active window (keep index 0 as fallback safety)
         for (let i = 0; i < TOTAL_FRAMES; i++) {
@@ -189,20 +186,20 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             }
         }
 
-        // 2. Prioritize preloading ahead in current scroll direction (25 frames for fast scroll)
+        // 2. Prioritize preloading ahead in current scroll direction
         const queue: number[] = [];
         const step = isForward ? 1 : -1;
+        const forwardAhead = isMobile ? 10 : 25;
+        const backAhead = isMobile ? 4 : 8;
 
-        // Fast-scroll ahead buffer (25 frames)
-        for (let offset = 1; offset <= 25; offset++) {
+        for (let offset = 1; offset <= forwardAhead; offset++) {
             const targetIdx = centerFrame + offset * step;
             if (targetIdx >= 0 && targetIdx < TOTAL_FRAMES) {
                 queue.push(targetIdx);
             }
         }
 
-        // Secondary behind buffer (8 frames)
-        for (let offset = 1; offset <= 8; offset++) {
+        for (let offset = 1; offset <= backAhead; offset++) {
             const targetIdx = centerFrame - offset * step;
             if (targetIdx >= 0 && targetIdx < TOTAL_FRAMES) {
                 queue.push(targetIdx);
@@ -215,7 +212,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 loadFrame(idx);
             }
         });
-    }, [loadFrame]);
+    }, [loadFrame, isMobile]);
 
     // Initial Mobile & Low-End Hardware Capability Check
     useEffect(() => {
@@ -313,7 +310,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, [drawFrame, loadFrame]);
 
-    // Single rAF Render & Animation Loop with Adaptive Velocity Smoothing
+    // Single rAF Render & Animation Loop with Idle Guard & Adaptive Velocity Smoothing
     useEffect(() => {
         let lastFrameIdx = -1;
 
@@ -329,7 +326,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     currentFrameRef.current = target;
                 } else {
                     // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
-                    const lerpFactor = absDiff > 15 ? 0.26 : absDiff > 6 ? 0.20 : 0.16;
+                    const lerpFactor = absDiff > 15 ? 0.28 : absDiff > 6 ? 0.22 : 0.18;
                     currentFrameRef.current += diff * lerpFactor;
                 }
 
@@ -338,22 +335,29 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 const ceilIdx = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
                 const blendRatio = val - floorIdx;
 
-                let img1 = imagesRef.current[floorIdx];
-                let img2 = imagesRef.current[ceilIdx];
+                // Idle Canvas Redraw Guard: Skip 60fps canvas fillrate redraws when frame position is static
+                const isFrameIdle = absDiff < 0.001 && floorIdx === lastDrawnFrameIndexRef.current && (isMobile || Math.abs(blendRatio - lastDrawnBlendRatioRef.current) < 0.01);
 
-                // Fallback decoding lookup if target frame is still decoding during extreme fast scroll
-                if (!img1) {
-                    for (let offset = 1; offset < 25; offset++) {
-                        const prev = imagesRef.current[Math.max(0, floorIdx - offset)];
-                        if (prev) { img1 = prev; break; }
-                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, floorIdx + offset)];
-                        if (next) { img1 = next; break; }
+                if (!isFrameIdle) {
+                    let img1 = imagesRef.current[floorIdx];
+                    let img2 = imagesRef.current[ceilIdx];
+
+                    // Fallback decoding lookup if target frame is still decoding during extreme fast scroll
+                    if (!img1) {
+                        for (let offset = 1; offset < 25; offset++) {
+                            const prev = imagesRef.current[Math.max(0, floorIdx - offset)];
+                            if (prev) { img1 = prev; break; }
+                            const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, floorIdx + offset)];
+                            if (next) { img1 = next; break; }
+                        }
+                        loadFrame(floorIdx);
                     }
-                    loadFrame(floorIdx);
-                }
 
-                if (img1) {
-                    drawFrame(img1, img2, blendRatio);
+                    if (img1) {
+                        drawFrame(img1, img2, blendRatio);
+                        lastDrawnFrameIndexRef.current = floorIdx;
+                        lastDrawnBlendRatioRef.current = blendRatio;
+                    }
                 }
 
                 if (floorIdx !== lastFrameIdx) {
@@ -372,7 +376,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 cancelAnimationFrame(animFrameIdRef.current);
             }
         };
-    }, [drawFrame, loadFrame, manageMemoryAndQueue]);
+    }, [drawFrame, loadFrame, manageMemoryAndQueue, isMobile]);
 
     // GSAP ScrollTrigger Integration — Zero React Re-renders
     useEffect(() => {
@@ -386,8 +390,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 trigger: section,
                 pin: pinWrapper,
                 start: "top top",
-                end: "+=2200px",
-                scrub: isMobile ? 0.35 : true,
+                end: isMobile ? "+=1600px" : "+=2200px",
+                scrub: isMobile ? 0.2 : true,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
@@ -407,12 +411,14 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 const img = imagesRef.current[frameIndex] || imagesRef.current[0];
 
                 if (img && canvasRef.current) {
-                    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+                    const maxDpr = isMobile ? 1.5 : 2;
+                    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
                     const w = canvasRef.current.clientWidth;
                     const h = canvasRef.current.clientHeight;
                     if (w && h) {
                         canvasRef.current.width = Math.round(w * dpr);
                         canvasRef.current.height = Math.round(h * dpr);
+                        cachedBottomGradRef.current = null;
                     }
                     drawFrame(img);
                 }
@@ -423,13 +429,13 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         }, section);
 
         return () => ctx.revert();
-    }, [drawFrame]);
+    }, [drawFrame, isMobile]);
 
     return (
         <section
             ref={sectionRef}
             id="hero"
-            className="relative w-full h-[260vh] bg-[#070707] overflow-visible"
+            className="relative w-full h-[180vh] md:h-[260vh] bg-[#070707] overflow-visible"
         >
             <div
                 ref={pinWrapperRef}
