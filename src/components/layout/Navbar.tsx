@@ -130,7 +130,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                     src="/brand/ftx-3d-logo.png"
                                     alt="FTX – First Torque X"
                                     fill
-                                    className="object-contain object-left transition-all duration-300 group-hover:scale-102 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.85)] group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.45)]"
+                                    className="object-contain ltr:object-left rtl:object-right transition-all duration-300 group-hover:scale-102 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.85)] group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.45)]"
                                     priority
                                 />
                                 {/* Laser Light Beam Traveling strictly ALONG LOGO PNG CONTOURS on Hover */}

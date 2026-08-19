@@ -80,6 +80,7 @@ export function BeforeAfterSlider({
         <div
             ref={containerRef}
             tabIndex={0}
+            dir="ltr"
             onKeyDown={handleKeyDown}
             onMouseDown={(e) => {
                 e.preventDefault();

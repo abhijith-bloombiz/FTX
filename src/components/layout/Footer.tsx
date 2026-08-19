@@ -20,7 +20,7 @@ export function Footer({ locale, messages }: FooterProps) {
             <div className="absolute top-0 right-0 w-96 h-96 bg-ftx-lime/5 blur-3xl rounded-full pointer-events-none z-0" />
 
             {/* Main Footer Links */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     {/* Brand Info */}
                     <ScrollReveal type="card" delay={0} duration={850}>
@@ -31,7 +31,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                         src="/brand/ftx-3d-logo.png"
                                         alt="FTX – First Torque X"
                                         fill
-                                        className="object-contain object-left"
+                                        className="object-contain ltr:object-left rtl:object-right"
                                     />
                                 </div>
                             </Link>
@@ -161,7 +161,7 @@ export function Footer({ locale, messages }: FooterProps) {
 
             {/* Bottom Copyright */}
             <ScrollReveal type="editorial" delay={400} duration={850}>
-                <div className="border-t border-ftx-surface-high/60 py-6 bg-ftx-obsidian relative z-10">
+                <div className="border-t border-ftx-surface-high/60 py-4 bg-ftx-obsidian relative z-10">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ftx-silver-muted">
                         <div>
                             © {new Date().getFullYear()} {siteConfig.name}. {messages.common.allRightsReserved}

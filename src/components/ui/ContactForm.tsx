@@ -20,6 +20,13 @@ const serviceOptions = [
 ];
 
 export function ContactForm({ locale, messages }: ContactFormProps) {
+    const serviceOptions = [
+        { value: "", label: messages.contact?.selectService || "Select detailing service" },
+        { value: "ppf", label: messages.contact?.ppf || "Paint Protection Film (PPF)" },
+        { value: "ceramic", label: messages.contact?.ceramic || "Ceramic Coating" },
+        { value: "detailing", label: messages.contact?.detailing || "Professional Detailing" },
+    ];
+
     const searchParams = useSearchParams();
     const preService = searchParams.get("service") || "";
     const prePackage = searchParams.get("package") || "";
@@ -156,7 +163,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                     {messages.contact.formTitle}
                 </h3>
                 <p className="text-xs text-ftx-silver-muted mb-8 font-body">
-                    Fill out the details below for a customized studio quotation.
+                    {messages.contact?.formSub || "Fill out the details below for a customized studio quotation."}
                 </p>
 
                 {status === "success" && (
@@ -177,7 +184,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         {/* Full Name */}
                         <div>
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                                 {messages.contact.name} <span className="text-ftx-lime font-bold">*</span>
                             </label>
                             <input
@@ -185,16 +192,16 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                placeholder="Enter full name"
-                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ${errors.name ? "border-red-500" : "border-ftx-surface-high"
+                                placeholder={messages.contact?.namePlaceholder || "Enter full name"}
+                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.name ? "border-red-500" : "border-ftx-surface-high"
                                     }`}
                             />
-                            {errors.name && <p className="text-[10px] text-red-400 font-mono mt-1">{errors.name}</p>}
+                            {errors.name && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.name}</p>}
                         </div>
 
                         {/* Phone Number */}
                         <div>
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                                 {messages.contact.phone} <span className="text-ftx-lime font-bold">*</span>
                             </label>
                             <input
@@ -202,18 +209,18 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleChange}
-                                placeholder="Enter phone number"
-                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ${errors.phone ? "border-red-500" : "border-ftx-surface-high"
+                                placeholder={messages.contact?.phonePlaceholder || "Enter phone number"}
+                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.phone ? "border-red-500" : "border-ftx-surface-high"
                                     }`}
                             />
-                            {errors.phone && <p className="text-[10px] text-red-400 font-mono mt-1">{errors.phone}</p>}
+                            {errors.phone && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.phone}</p>}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         {/* Email Address */}
                         <div>
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                                 {messages.contact.email} <span className="text-ftx-lime font-bold">*</span>
                             </label>
                             <input
@@ -221,16 +228,16 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                placeholder="Enter email address"
-                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ${errors.email ? "border-red-500" : "border-ftx-surface-high"
+                                placeholder={messages.contact?.emailPlaceholder || "Enter email address"}
+                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.email ? "border-red-500" : "border-ftx-surface-high"
                                     }`}
                             />
-                            {errors.email && <p className="text-[10px] text-red-400 font-mono mt-1">{errors.email}</p>}
+                            {errors.email && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.email}</p>}
                         </div>
 
                         {/* Vehicle Make & Model */}
                         <div>
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                                 {messages.contact.vehicle} <span className="text-ftx-lime font-bold">*</span>
                             </label>
                             <input
@@ -238,12 +245,12 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 name="vehicleModel"
                                 value={formData.vehicleModel}
                                 onChange={handleChange}
-                                placeholder="Enter vehicle make & model"
-                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ${errors.vehicleModel ? "border-red-500" : "border-ftx-surface-high"
+                                placeholder={messages.contact?.vehiclePlaceholder || "Enter vehicle make & model"}
+                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-white border ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.vehicleModel ? "border-red-500" : "border-ftx-surface-high"
                                     }`}
                             />
                             {errors.vehicleModel && (
-                                <p className="text-[10px] text-red-400 font-mono mt-1">{errors.vehicleModel}</p>
+                                <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.vehicleModel}</p>
                             )}
                         </div>
                     </div>
@@ -251,14 +258,14 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         {/* Custom Animated Service Selection Dropdown */}
                         <div className="relative z-30" ref={dropdownRef}>
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                                 {messages.contact.service} <span className="text-ftx-lime font-bold">*</span>
                             </label>
 
                             <button
                                 type="button"
                                 onClick={() => setIsServiceOpen(!isServiceOpen)}
-                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 text-left flex items-center justify-between border ftx-squircle-sm text-xs font-mono focus:outline-none transition-all duration-300 ${isServiceOpen
+                                className={`w-full px-4 py-3 bg-ftx-obsidian/90 flex items-center justify-between border ftx-squircle-sm text-xs font-mono focus:outline-none transition-all duration-300 ltr:text-left rtl:text-right ${isServiceOpen
                                     ? "border-ftx-lime shadow-[0_0_20px_rgba(164,214,94,0.2)] text-white"
                                     : errors.service
                                         ? "border-red-500 text-white"
@@ -266,7 +273,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                     }`}
                             >
                                 <span className={formData.service ? "text-white font-bold" : "text-ftx-silver-muted"}>
-                                    {selectedServiceObj ? selectedServiceObj.label : "Select detailing service"}
+                                    {selectedServiceObj ? selectedServiceObj.label : (messages.contact?.selectService || "Select detailing service")}
                                 </span>
                                 <ChevronDown
                                     className={`w-4 h-4 text-ftx-silver transition-transform duration-300 ${isServiceOpen ? "rotate-180 text-ftx-lime" : ""
@@ -285,7 +292,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                                     key={opt.value}
                                                     type="button"
                                                     onClick={() => handleServiceSelect(opt.value)}
-                                                    className={`w-full px-4 py-2.5 text-left text-xs font-mono flex items-center justify-between transition-colors duration-150 ${isSelected
+                                                    className={`w-full px-4 py-2.5 text-xs font-mono flex items-center justify-between transition-colors duration-150 ltr:text-left rtl:text-right ${isSelected
                                                         ? "bg-ftx-lime/15 text-ftx-lime font-bold"
                                                         : opt.value === ""
                                                             ? "text-ftx-silver-muted hover:bg-ftx-surface-high hover:text-white"
@@ -301,12 +308,12 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 </div>
                             )}
 
-                            {errors.service && <p className="text-[10px] text-red-400 font-mono mt-1">{errors.service}</p>}
+                            {errors.service && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.service}</p>}
                         </div>
 
                         {/* Preferred Package */}
                         <div>
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                                 {messages.contact.package}
                             </label>
                             <input
@@ -314,15 +321,15 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 name="package"
                                 value={formData.package}
                                 onChange={handleChange}
-                                placeholder="Specify package or custom options"
-                                className="w-full px-4 py-3 bg-ftx-obsidian/90 text-white border border-ftx-surface-high ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors"
+                                placeholder={messages.contact?.packagePlaceholder || "Specify package or custom options"}
+                                className="w-full px-4 py-3 bg-ftx-obsidian/90 text-white border border-ftx-surface-high ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right"
                             />
                         </div>
                     </div>
 
                     {/* Message / Requirements */}
                     <div>
-                        <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2">
+                        <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
                             {messages.contact.message}
                         </label>
                         <textarea
@@ -330,8 +337,8 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                             rows={4}
                             value={formData.message}
                             onChange={handleChange}
-                            placeholder="Share any specific requests, timeline, or vehicle details..."
-                            className="w-full px-4 py-3 bg-ftx-obsidian/90 text-white border border-ftx-surface-high ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors resize-none"
+                            placeholder={messages.contact?.messagePlaceholder || "Share any specific requests, timeline, or vehicle details..."}
+                            className="w-full px-4 py-3 bg-ftx-obsidian/90 text-white border border-ftx-surface-high ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors resize-none ltr:text-left rtl:text-right"
                         />
                     </div>
 

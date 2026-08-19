@@ -48,10 +48,13 @@
     "servicesSection": {
         "badge": "MASTERCLASS SERVICES",
         "title": "WORLD-CLASS PROTECTION & DETAILING",
+        "flagship": "FLAGSHIP SERVICE",
         "ppfTitle": "PAINT PROTECTION FILM (PPF)",
         "ppfDesc": "Ultra-clear self-healing protection against rock chips, scratches, and road debris.",
+        "premiumProtection": "PREMIUM PROTECTION",
         "ceramicTitle": "CERAMIC COATING",
         "ceramicDesc": "Multi-layer nano-ceramic hydrophobic shield delivering permanent gloss and UV defense.",
+        "expertRestoration": "EXPERT RESTORATION",
         "detailingTitle": "PROFESSIONAL DETAILING",
         "detailingDesc": "Meticulous paint correction, interior restoration, and engine bay revival."
     },
@@ -60,7 +63,8 @@
         "title": "WITNESS THE FTX STANDARD",
         "subtitle": "Drag the slider to compare original vehicle condition with post-FTX ceramic & paint correction mastery.",
         "before": "BEFORE",
-        "after": "AFTER"
+        "after": "AFTER",
+        "slideToCompare": "SLIDE TO COMPARE"
     },
     "testimonials": {
         "badge": "CLIENT REVIEWS",
@@ -97,21 +101,39 @@
     },
     "contact": {
         "heroTitle": "LET'S PROTECT YOUR VEHICLE.",
-        "heroSub": "Get in touch with our studio team to discuss customized protection packages for your car.",
+        "heroSub": "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.",
         "formTitle": "REQUEST A PERSONALIZED QUOTE",
+        "formSub": "Fill out the details below for a customized studio quotation.",
         "name": "Full Name",
+        "namePlaceholder": "Enter full name",
         "phone": "Phone Number",
+        "phonePlaceholder": "Enter phone number",
         "email": "Email Address",
+        "emailPlaceholder": "Enter email address",
         "vehicle": "Vehicle Make & Model",
+        "vehiclePlaceholder": "Enter vehicle make & model",
         "service": "Select Service",
+        "selectService": "Select detailing service",
+        "ppf": "Paint Protection Film (PPF)",
+        "ceramic": "Ceramic Coating",
+        "detailing": "Professional Detailing",
         "package": "Select Package (Optional)",
+        "packagePlaceholder": "Specify package or custom options",
         "message": "Additional Details / Requirements",
+        "messagePlaceholder": "Share any specific requests, timeline, or vehicle details...",
         "submit": "SUBMIT QUOTE REQUEST",
         "submitting": "SUBMITTING...",
         "successMsg": "Thank you! Your quote request has been received. Our specialist will contact you shortly.",
         "errorMsg": "An error occurred while submitting your request. Please try again or WhatsApp us directly.",
         "visitStudio": "VISIT OUR STUDIO",
         "hours": "Working Hours",
-        "address": "Studio Address"
+        "address": "Studio Address",
+        "location": "Studio Location",
+        "openMaps": "Open in Google Maps",
+        "telephone": "Telephone",
+        "emailStudio": "Email Studio",
+        "operatingHours": "Operating Hours",
+        "addressArea": "AL QUOZ INDUSTRIAL AREA 3, DUBAI",
+        "addressFacility": "Climate-Controlled Supercar Enclosure & VIP Waiting Lounge"
     }
 }

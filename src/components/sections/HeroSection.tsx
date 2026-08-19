@@ -17,8 +17,8 @@ interface HeroSectionProps {
     messages: any;
 }
 
-const TOTAL_FRAMES = 140;
-const CRITICAL_LOAD_COUNT = 28; // 28 frames (140 / 5) required for loader completion
+const TOTAL_FRAMES = 130;
+const CRITICAL_LOAD_COUNT = 26; // 26 frames (130 / 5) required for loader completion
 
 export function HeroSection({ locale, messages }: HeroSectionProps) {
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [isLowEnd, setIsLowEnd] = useState(false);
 
-    // IntersectionObserver to pause heavy 60fps canvas re-renders when hero is off-screen
+    // IntersectionObserver to pause heavy 60fps canvas re-renders when hero pin container is off-screen
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -50,7 +50,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             },
             { threshold: 0 }
         );
-        if (sectionRef.current) observer.observe(sectionRef.current);
+        if (pinWrapperRef.current) observer.observe(pinWrapperRef.current);
         return () => observer.disconnect();
     }, []);
 
@@ -61,9 +61,9 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
-        // Dynamic Hardware DPR Capping (1.0 for low-end / 1.25 for mobile / 2.0 max for high-end desktop)
+        // Hardware DPR Capping (Native devicePixelRatio up to 2x for full uncompromised image crispness)
         const dpr = typeof window !== "undefined"
-            ? (isLowEnd ? 1.0 : (isMobile ? 1.25 : Math.min(window.devicePixelRatio || 1, 2)))
+            ? Math.min(window.devicePixelRatio || 1, 2)
             : 1;
 
         const displayWidth = canvas.clientWidth;
@@ -83,7 +83,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         if (!canvasWidth || !canvasHeight) return;
 
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = isMobile ? "medium" : "high";
+        ctx.imageSmoothingQuality = "high";
 
         const imgWidth = img.naturalWidth || 1920;
         const imgHeight = img.naturalHeight || 1080;
@@ -231,28 +231,28 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
         checkHardware();
 
-        if (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__) {
-            setRevealed(true);
-        }
-
-        const handleLoaderComplete = () => {
+        const handleSplashDone = () => {
             setRevealed(true);
         };
 
-        window.addEventListener("ftx_loader_complete", handleLoaderComplete);
+        if (typeof window !== "undefined" && (window as any).__FTX_SPLASH_DONE__) {
+            setRevealed(true);
+        }
+
+        window.addEventListener("ftx_splash_done", handleSplashDone);
         window.addEventListener("resize", checkHardware);
         return () => {
-            window.removeEventListener("ftx_loader_complete", handleLoaderComplete);
+            window.removeEventListener("ftx_splash_done", handleSplashDone);
             window.removeEventListener("resize", checkHardware);
         };
     }, []);
 
-    // 28-Frame Sequential Batch Preloader (140 / 5 = 5 batches of 28 frames)
+    // 26-Frame Sequential Batch Preloader (130 / 5 = 5 batches of 26 frames)
     useEffect(() => {
         let isCancelled = false;
 
         const loadSequentialBatches = async () => {
-            // Batch 1: Load initial 28 frames (0-27) - Required for loading screen completion
+            // Batch 1: Load initial 26 frames (0-25) - Required for loading screen completion
             const batch1Promises: Promise<HTMLImageElement | null>[] = [];
             for (let i = 0; i < CRITICAL_LOAD_COUNT; i++) {
                 batch1Promises.push(loadFrame(i));
@@ -265,42 +265,42 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             const firstImg = imagesRef.current[0];
             if (firstImg) drawFrame(firstImg);
 
-            // Signal loader readiness strictly after 28 frames are ready
+            // Signal loader readiness strictly after 26 frames are ready
             if (typeof window !== "undefined") {
                 (window as any).__FTX_LOADER_DONE__ = true;
                 window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
             }
 
-            // Batch 2: Load frames 28-55
+            // Batch 2: Load frames 26-51
             const batch2Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 28; i < 56; i++) {
+            for (let i = 26; i < 52; i++) {
                 batch2Promises.push(loadFrame(i));
             }
             await Promise.all(batch2Promises);
 
             if (isCancelled) return;
 
-            // Batch 3: Load frames 56-83
+            // Batch 3: Load frames 52-77
             const batch3Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 56; i < 84; i++) {
+            for (let i = 52; i < 78; i++) {
                 batch3Promises.push(loadFrame(i));
             }
             await Promise.all(batch3Promises);
 
             if (isCancelled) return;
 
-            // Batch 4: Load frames 84-111
+            // Batch 4: Load frames 78-103
             const batch4Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 84; i < 112; i++) {
+            for (let i = 78; i < 104; i++) {
                 batch4Promises.push(loadFrame(i));
             }
             await Promise.all(batch4Promises);
 
             if (isCancelled) return;
 
-            // Batch 5: Load final frames 112-139
+            // Batch 5: Load final frames 104-129
             const batch5Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 112; i < TOTAL_FRAMES; i++) {
+            for (let i = 104; i < TOTAL_FRAMES; i++) {
                 batch5Promises.push(loadFrame(i));
             }
             await Promise.all(batch5Promises);
@@ -386,7 +386,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 trigger: section,
                 pin: pinWrapper,
                 start: "top top",
-                end: "+=2400px",
+                end: "+=2200px",
                 scrub: isMobile ? 0.35 : true,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
@@ -429,11 +429,11 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         <section
             ref={sectionRef}
             id="hero"
-            className="relative w-full h-[280vh] bg-[#070707] overflow-visible"
+            className="relative w-full h-[260vh] bg-[#070707] overflow-visible"
         >
             <div
                 ref={pinWrapperRef}
-                className="sticky top-0 left-0 w-full h-screen overflow-hidden bg-[#070707] flex items-center justify-center"
+                className="top-0 left-0 w-full h-screen overflow-hidden bg-[#070707] flex items-center justify-center"
             >
                 {/* Background 3D Glow & Ambient Mesh */}
                 <HeroBackground />

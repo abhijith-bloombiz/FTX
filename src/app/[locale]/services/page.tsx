@@ -5,7 +5,6 @@ import { servicesData } from "@/data/services";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
-import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -157,45 +156,6 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                         </section>
                     );
                 })}
-            </div>
-
-            {/* Bottom Metrics Banner matching design specification */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-                <ScrollReveal type="editorial" delay={200}>
-                    <div className="bg-ftx-surface/80 ftx-squircle-xl p-8 sm:p-12 border border-ftx-surface-high shadow-2xl">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                            {/* Metric 1 */}
-                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
-                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={10} suffix="+" />
-                                </div>
-                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {locale === "ar" ? "سنوات خبرة" : "YEARS EXPERIENCE"}
-                                </div>
-                            </div>
-
-                            {/* Metric 2 */}
-                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
-                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={5} suffix="K+" />
-                                </div>
-                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {locale === "ar" ? "سيارة تم حمايتها" : "VEHICLES PROTECTED"}
-                                </div>
-                            </div>
-
-                            {/* Metric 3 */}
-                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
-                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={100} suffix="%" />
-                                </div>
-                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {locale === "ar" ? "تركيز على رضا العملاء" : "SATISFACTION FOCUS"}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </ScrollReveal>
             </div>
         </div>
     );

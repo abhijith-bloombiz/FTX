@@ -45,20 +45,22 @@ export function HeroBackground({
                         opacity: revealed ? 1 : 0,
                         pointerEvents: "none",
                         imageRendering: "-webkit-optimize-contrast",
-                        filter: "contrast(1.04) brightness(1.02)",
                     }}
                 />
             </div>
 
-            {/* 2. Static Green Ambient Glow (Adds automotive depth) */}
+            {/* 2. Static Green Ambient Glow (High performance radial gradient without 160px GPU blur pass) */}
             <div
-                className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-ftx-lime/10 rounded-full blur-[160px] mix-blend-screen pointer-events-none transition-opacity duration-1000"
-                style={{ opacity: revealed ? 0.75 : 0 }}
+                className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none transition-opacity duration-1000"
+                style={{
+                    opacity: revealed ? 0.75 : 0,
+                    background: "radial-gradient(circle, rgba(164, 214, 94, 0.12) 0%, rgba(164, 214, 94, 0.03) 45%, transparent 70%)",
+                }}
             />
 
-            {/* 3. Subtle Atmosphere Overlay (Clean & natural without black edge bar) */}
+            {/* 3. Subtle Atmosphere Overlay */}
             <div
-                className="absolute inset-0 opacity-15 mix-blend-screen pointer-events-none"
+                className="absolute inset-0 opacity-15 pointer-events-none"
                 style={{
                     backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(128, 255, 0, 0.08) 0%, rgba(15, 23, 18, 0.20) 70%, transparent 100%)`,
                 }}

@@ -156,6 +156,10 @@ export function CinematicLoader() {
 
         const triggerExitTransition = () => {
             setIsExiting(true);
+            if (typeof window !== "undefined") {
+                (window as any).__FTX_SPLASH_DONE__ = true;
+                window.dispatchEvent(new CustomEvent("ftx_splash_done"));
+            }
             setTimeout(() => {
                 setShouldRender(false);
                 document.body.style.overflow = originalOverflow;

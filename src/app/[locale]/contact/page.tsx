@@ -1,5 +1,3 @@
-"use client";
-
 import { Suspense } from "react";
 import { Phone, Mail, MapPin, Clock, MessageSquare, ExternalLink } from "lucide-react";
 import { contactConfig } from "@/config/contact";
@@ -24,10 +22,10 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
         <div className="pt-24 pb-0 bg-ftx-black min-h-screen">
             {/* Global Header */}
             <PageHeader
-                badge={messages.contact.subtitle || "STUDIO LOCATION & QUOTATION"}
-                titleLine1="GET IN"
-                titleLine2="TOUCH."
-                subtitle="Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below."
+                badge={messages.contact.formTitle || "STUDIO LOCATION & QUOTATION"}
+                titleLine1={locale === "ar" ? "تواصل" : "GET IN"}
+                titleLine2={locale === "ar" ? "معنا." : "TOUCH."}
+                subtitle={messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below."}
             />
 
             {/* Main Grid */}
@@ -35,8 +33,8 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     {/* Left Column: Contact Cards & Studio Info */}
                     <ScrollReveal type="editorial" className="lg:col-span-5 space-y-8">
-                        <div className="ftx-border-card ftx-squircle-xl">
-                            <div className="bg-ftx-surface p-6 sm:p-10 space-y-8">
+                        <div className="bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl overflow-hidden shadow-2xl hover:border-ftx-lime/50 transition-colors duration-300">
+                            <div className="p-6 sm:p-10 space-y-8">
                                 <h2 className="text-xl sm:text-2xl font-heading font-bold text-white uppercase tracking-wide border-b border-ftx-surface-high pb-5">
                                     {messages.contact.visitStudio}
                                 </h2>
@@ -47,7 +45,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                             <MapPin className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <div className="font-mono font-bold text-white uppercase">Studio Location</div>
+                                            <div className="font-mono font-bold text-white uppercase">{messages.contact?.location || "Studio Location"}</div>
                                             <div className="text-ftx-silver mt-1 leading-relaxed">{contactConfig.address[locale]}</div>
                                             <a
                                                 href={contactConfig.mapsUrl}
@@ -55,7 +53,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 text-ftx-lime font-mono text-[10px] mt-1.5 hover:underline"
                                             >
-                                                <span>Open in Google Maps</span>
+                                                <span>{messages.contact?.openMaps || "Open in Google Maps"}</span>
                                                 <ExternalLink className="w-3 h-3" />
                                             </a>
                                         </div>
@@ -66,7 +64,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                             <Phone className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <div className="font-mono font-bold text-white uppercase">Telephone</div>
+                                            <div className="font-mono font-bold text-white uppercase">{messages.contact?.telephone || "Telephone"}</div>
                                             <a href={`tel:${contactConfig.phoneRaw}`} className="font-mono text-ftx-silver hover:text-white mt-1 block">
                                                 {contactConfig.phone}
                                             </a>
@@ -78,7 +76,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                             <Mail className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <div className="font-mono font-bold text-white uppercase">Email Studio</div>
+                                            <div className="font-mono font-bold text-white uppercase">{messages.contact?.emailStudio || "Email Studio"}</div>
                                             <a href={`mailto:${contactConfig.email}`} className="font-mono text-ftx-silver hover:text-white mt-1 block">
                                                 {contactConfig.email}
                                             </a>
@@ -90,7 +88,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                             <Clock className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <div className="font-mono font-bold text-white uppercase">Operating Hours</div>
+                                            <div className="font-mono font-bold text-white uppercase">{messages.contact?.operatingHours || "Operating Hours"}</div>
                                             <div className="text-ftx-silver mt-1 leading-relaxed">{contactConfig.workingHours[locale]}</div>
                                         </div>
                                     </div>
@@ -111,15 +109,20 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                             </div>
                         </div>
 
-                        {/* Map Card */}
-                        <div className="ftx-border-card ftx-squircle-lg">
-                            <div className="bg-ftx-surface p-6 text-center space-y-3">
-                                <div className="text-xs font-mono font-bold text-ftx-lime uppercase">
-                                    AL QUOZ INDUSTRIAL AREA 3, DUBAI
-                                </div>
-                                <p className="text-xs text-ftx-silver-muted font-body">
-                                    Climate-Controlled Supercar Enclosure & VIP Waiting Lounge
-                                </p>
+                        {/* Interactive Google Map View Container */}
+                        <div className="bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl overflow-hidden shadow-2xl relative group hover:border-ftx-lime/50 transition-colors duration-300">
+                            <div className="relative w-full h-[280px] sm:h-[320px] bg-ftx-obsidian">
+                                <iframe
+                                    title="FTX Studio Location Map"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14446.857640277353!2d55.2287957!3d25.1453086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f6a27e366f019%3A0xb3ff76c24389df94!2sAl%20Quoz%20Industrial%20Area%203%20-%20Dubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0, filter: "grayscale(100%) invert(90%) contrast(120%)" }}
+                                    allowFullScreen
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    className="w-full h-full opacity-85 transition-opacity duration-300 group-hover:opacity-100"
+                                />
                             </div>
                         </div>
                     </ScrollReveal>

@@ -19,11 +19,10 @@ export function ServicesGrid({ locale, messages }: ServicesGridProps) {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
                     <div className="space-y-2">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
-                            <span>{messages?.services?.badge || "CORE SERVICES"}</span>
+                            <span>{messages?.servicesSection?.badge || messages?.services?.badge || "CORE SERVICES"}</span>
                         </div>
                         <TextReveal as="h2" className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-none">
-                            <span>MASTERCLASS PROTECTION</span>
-                            <span className="text-ftx-lime">.</span>
+                            <span>{messages?.servicesSection?.title || "WORLD-CLASS PROTECTION & DETAILING"}</span>
                         </TextReveal>
                     </div>
 
@@ -31,7 +30,7 @@ export function ServicesGrid({ locale, messages }: ServicesGridProps) {
                         href={`/${locale}/services`}
                         className="inline-flex items-center gap-2 text-xs font-mono font-bold text-ftx-silver hover:text-white uppercase tracking-wider transition-colors group/link self-start sm:self-auto"
                     >
-                        <span>{messages?.common?.viewAllServices || "VIEW ALL SERVICES"}</span>
+                        <span>{messages?.common?.viewAllServices || messages?.common?.exploreServices || "VIEW ALL SERVICES"}</span>
                         <ArrowRight className="w-4 h-4 text-ftx-lime transition-transform duration-200 group-hover/link:translate-x-1" />
                     </Link>
                 </div>
@@ -64,7 +63,7 @@ export function ServicesGrid({ locale, messages }: ServicesGridProps) {
                             {/* Top Header Overlay: Badge & Index Number (01) */}
                             <div className="relative z-20 flex items-center justify-between">
                                 <div className="px-3.5 py-1.5 bg-ftx-black/80 border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest uppercase ftx-squircle-sm backdrop-blur-md shadow-lg">
-                                    FLAGSHIP SERVICE
+                                    {messages?.servicesSection?.flagship || "FLAGSHIP SERVICE"}
                                 </div>
                                 <div className="text-3xl sm:text-4xl font-mono font-black text-white/50 group-hover:text-ftx-lime transition-colors drop-shadow-lg">
                                     01
@@ -75,10 +74,10 @@ export function ServicesGrid({ locale, messages }: ServicesGridProps) {
                             <div className="relative z-20 flex items-end justify-between gap-6 mt-auto">
                                 <div className="space-y-2 max-w-xl">
                                     <h3 className="text-2xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight group-hover:text-ftx-lime transition-colors drop-shadow-xl">
-                                        {messages?.services?.ppfTitle || "PAINT PROTECTION FILM"}
+                                        {messages?.servicesSection?.ppfTitle || "PAINT PROTECTION FILM (PPF)"}
                                     </h3>
                                     <p className="text-xs sm:text-sm text-gray-300 font-body leading-relaxed drop-shadow-md">
-                                        {messages?.services?.ppfDesc ||
+                                        {messages?.servicesSection?.ppfDesc ||
                                             "Self-healing, invisible shield against rock chips, scratches, and environmental contaminants. Preserves factory finish with ultra-durable protection."}
                                     </p>
                                 </div>
@@ -126,10 +125,10 @@ export function ServicesGrid({ locale, messages }: ServicesGridProps) {
                                 <div className="relative z-20 flex items-end justify-between gap-4">
                                     <div className="space-y-1">
                                         <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight group-hover:text-ftx-lime transition-colors drop-shadow-xl">
-                                            {messages?.services?.ceramicTitle || "CERAMIC COATING"}
+                                            {messages?.servicesSection?.ceramicTitle || "CERAMIC COATING"}
                                         </h3>
                                         <p className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-wider drop-shadow-md">
-                                            PREMIUM PROTECTION
+                                            {messages?.servicesSection?.premiumProtection || "PREMIUM PROTECTION"}
                                         </p>
                                     </div>
 
@@ -174,10 +173,10 @@ export function ServicesGrid({ locale, messages }: ServicesGridProps) {
                                 <div className="relative z-20 flex items-end justify-between gap-4">
                                     <div className="space-y-1">
                                         <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight group-hover:text-ftx-lime transition-colors drop-shadow-xl">
-                                            {messages?.services?.detailingTitle || "PRO DETAILING"}
+                                            {messages?.servicesSection?.detailingTitle || "PRO DETAILING"}
                                         </h3>
                                         <p className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-wider drop-shadow-md">
-                                            EXPERT RESTORATION
+                                            {messages?.servicesSection?.expertRestoration || "EXPERT RESTORATION"}
                                         </p>
                                     </div>
 

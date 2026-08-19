@@ -19,7 +19,7 @@ const RevealChar = React.memo(function RevealChar({ char, p }: { char: string; p
                 opacity: opacity,
                 transform: `translate3d(${(1 - p) * -16}px, 0, 0) scale(${0.78 + p * 0.22})`,
                 filter: p < 0.98 ? `blur(${(1 - p) * 5}px)` : "none",
-                willChange: "transform, max-width, opacity, filter",
+                willChange: p >= 0.99 ? "auto" : "transform, max-width, opacity, filter",
             }}
         >
             {char}
@@ -56,15 +56,15 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
             currentProgressRef.current = p;
             const isVis = revealed && entryRevealed;
 
-            const maxIndex = 149; // 150 total frames (0..149)
-            const frame150Progress = 149 / maxIndex; // 1.0
-            const frame140Progress = 139 / maxIndex;
+            const maxIndex = 129; // 130 total frames (0..129)
+            const frame130Progress = 129 / maxIndex; // 1.0
+            const frame120Progress = 119 / maxIndex;
 
             let frameHideOpacity = 1;
-            if (p >= frame150Progress) {
+            if (p >= frame130Progress) {
                 frameHideOpacity = 0;
-            } else if (p > frame140Progress) {
-                frameHideOpacity = 1 - (p - frame140Progress) / (frame150Progress - frame140Progress);
+            } else if (p > frame120Progress) {
+                frameHideOpacity = 1 - (p - frame120Progress) / (frame130Progress - frame120Progress);
             }
 
             const fillProg = Math.min(1, Math.max(0, p / 0.65));
@@ -152,7 +152,8 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
                 }}
             >
                 <div
-                    className="flex items-center justify-center text-center gap-2 sm:gap-4 lg:gap-5 font-heading font-black tracking-tighter leading-none max-w-full overflow-hidden"
+                    className="flex flex-row items-center justify-center text-center gap-2 sm:gap-4 lg:gap-5 font-heading font-black tracking-tighter leading-none max-w-full overflow-hidden"
+                    dir="ltr"
                     suppressHydrationWarning
                     translate="no"
                 >

@@ -92,7 +92,8 @@ export function ScrollReveal({
                 ...baseTransition,
                 opacity: 1,
                 transform: "perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1)",
-                filter: "blur(0px)",
+                filter: undefined,
+                willChange: "auto",
                 transformOrigin: "bottom center",
                 clipPath: type === "heading-inset" ? "inset(0 0 0 0)" : undefined,
             };

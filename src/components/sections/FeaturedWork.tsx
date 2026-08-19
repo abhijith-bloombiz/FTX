@@ -59,7 +59,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                     </h3>
                                 </div>
                                 <span className="px-3 py-1 bg-ftx-obsidian text-[10px] font-mono text-ftx-silver border border-ftx-surface-high ftx-squircle-sm self-start md:self-auto">
-                                    SLIDE TO COMPARE
+                                    {messages.beforeAfter?.slideToCompare || (locale === "ar" ? "اسحب للمقارنة" : "SLIDE TO COMPARE")}
                                 </span>
                             </div>
 

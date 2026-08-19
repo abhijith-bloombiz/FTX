@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback, useImperativeHandle } from "react";
+import React, { useRef, useCallback, useEffect, useState, useImperativeHandle } from "react";
 import Link from "next/link";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { Locale } from "@/i18n/config";
@@ -32,8 +32,26 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         const btn1Ref = useRef<HTMLAnchorElement>(null);
         const btn2Ref = useRef<HTMLAnchorElement>(null);
 
+        const [entryRevealed, setEntryRevealed] = useState(false);
+        const [transitionFinished, setTransitionFinished] = useState(false);
+
+        useEffect(() => {
+            if (revealed) {
+                const timer1 = setTimeout(() => {
+                    setEntryRevealed(true);
+                }, 100);
+                const timer2 = setTimeout(() => {
+                    setTransitionFinished(true);
+                }, 900);
+                return () => {
+                    clearTimeout(timer1);
+                    clearTimeout(timer2);
+                };
+            }
+        }, [revealed]);
+
         const updateDOM = useCallback((p: number) => {
-            // Helper function for individual line staggered enter & exit
+            // Helper function for individual line staggered enter & exit (used for Group 2)
             const animateLine = (
                 el: HTMLHeadingElement | null,
                 inStart: number,
@@ -90,11 +108,39 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
 
             // =========================================================================
             // GROUP 1: PRECISION then PROTECTION.
-            // Line 1 ("PRECISION"): Enters 0.04 -> 0.16 | Holds 0.16 -> 0.32 | Exits Left 0.32 -> 0.42
-            // Line 2 ("PROTECTION."): Enters 0.12 -> 0.24 | Holds 0.24 -> 0.35 | Exits Left 0.35 -> 0.45
+            // Visible immediately on page visit (p=0.00 -> 0.32), Exits Left 0.32 -> 0.42
             // =========================================================================
-            animateLine(line1Ref.current, 0.04, 0.16, 0.32, 0.42, "left");
-            animateLine(line2Ref.current, 0.12, 0.24, 0.35, 0.45, "left");
+            const animateGroup1Line = (
+                el: HTMLHeadingElement | null,
+                outStart: number,
+                outEnd: number
+            ) => {
+                if (!el) return;
+                if (p <= outStart) {
+                    el.style.opacity = entryRevealed ? "1" : "0";
+                    el.style.transform = entryRevealed ? "translate3d(0, 0, 0)" : "translate3d(0, 24px, 0)";
+                    el.style.filter = entryRevealed ? "blur(0px)" : "blur(6px)";
+                    el.style.pointerEvents = "auto";
+                } else if (p <= outEnd) {
+                    const outP = (p - outStart) / (outEnd - outStart);
+                    const op = (1 - outP).toFixed(3);
+                    const blurVal = (outP * 8).toFixed(1);
+                    const translateX = (-outP * 140).toFixed(1);
+
+                    el.style.opacity = op;
+                    el.style.transform = `translate3d(${translateX}px, 0, 0)`;
+                    el.style.filter = `blur(${blurVal}px)`;
+                    el.style.pointerEvents = "none";
+                } else {
+                    el.style.opacity = "0";
+                    el.style.transform = "translate3d(-140px, 0, 0)";
+                    el.style.filter = "blur(10px)";
+                    el.style.pointerEvents = "none";
+                }
+            };
+
+            animateGroup1Line(line1Ref.current, 0.32, 0.42);
+            animateGroup1Line(line2Ref.current, 0.35, 0.45);
 
             // =========================================================================
             // GROUP 2: AUTOMOTIVE then PERFECTION. (Top-Left Same Spot)
@@ -105,58 +151,22 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             animateLine(line4Ref.current, 0.50, 0.62, 0.85, 0.98, "fade");
 
             // =========================================================================
-            // CTA BUTTONS: Full Viewport Screen Edge Entrance
-            // Button 1 ("GET A QUOTE"): Slides smoothly from LEFT EDGE (-100vw -> 0)
-            // Button 2 ("EXPLORE SERVICES"): Slides smoothly from RIGHT EDGE (+100vw -> 0)
+            // CTA BUTTONS: Visible on Page Visit (p=0.00 -> 0.88), Exits to edges 0.88 -> 1.00
             // =========================================================================
-            const btnInStart = 0.04;
-            const btnInEnd = 0.20;
             const btnOutStart = 0.88;
             const btnOutEnd = 1.00;
 
-            if (p < btnInStart) {
+            if (p <= btnOutStart) {
                 if (btn1Ref.current) {
-                    btn1Ref.current.style.opacity = "0";
-                    btn1Ref.current.style.transform = "translate3d(-100vw, 0, 0)";
-                    btn1Ref.current.style.filter = "blur(10px)";
-                    btn1Ref.current.style.pointerEvents = "none";
-                }
-                if (btn2Ref.current) {
-                    btn2Ref.current.style.opacity = "0";
-                    btn2Ref.current.style.transform = "translate3d(100vw, 0, 0)";
-                    btn2Ref.current.style.filter = "blur(10px)";
-                    btn2Ref.current.style.pointerEvents = "none";
-                }
-            } else if (p <= btnInEnd) {
-                const inP = (p - btnInStart) / (btnInEnd - btnInStart);
-                const op = Math.min(1, inP * 1.25).toFixed(3);
-                const blurVal = ((1 - inP) * 10).toFixed(1);
-                const tx1 = ((-100) * (1 - inP)).toFixed(1);
-                const tx2 = ((100) * (1 - inP)).toFixed(1);
-
-                if (btn1Ref.current) {
-                    btn1Ref.current.style.opacity = op;
-                    btn1Ref.current.style.transform = `translate3d(${tx1}vw, 0, 0)`;
-                    btn1Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn1Ref.current.style.opacity = entryRevealed ? "1" : "0";
+                    btn1Ref.current.style.transform = entryRevealed ? "translate3d(0, 0, 0)" : "translate3d(-50px, 0, 0)";
+                    btn1Ref.current.style.filter = entryRevealed ? "blur(0px)" : "blur(6px)";
                     btn1Ref.current.style.pointerEvents = "auto";
                 }
                 if (btn2Ref.current) {
-                    btn2Ref.current.style.opacity = op;
-                    btn2Ref.current.style.transform = `translate3d(${tx2}vw, 0, 0)`;
-                    btn2Ref.current.style.filter = `blur(${blurVal}px)`;
-                    btn2Ref.current.style.pointerEvents = "auto";
-                }
-            } else if (p <= btnOutStart) {
-                if (btn1Ref.current) {
-                    btn1Ref.current.style.opacity = "1";
-                    btn1Ref.current.style.transform = "translate3d(0, 0, 0)";
-                    btn1Ref.current.style.filter = "blur(0px)";
-                    btn1Ref.current.style.pointerEvents = "auto";
-                }
-                if (btn2Ref.current) {
-                    btn2Ref.current.style.opacity = "1";
-                    btn2Ref.current.style.transform = "translate3d(0, 0, 0)";
-                    btn2Ref.current.style.filter = "blur(0px)";
+                    btn2Ref.current.style.opacity = entryRevealed ? "1" : "0";
+                    btn2Ref.current.style.transform = entryRevealed ? "translate3d(0, 0, 0)" : "translate3d(50px, 0, 0)";
+                    btn2Ref.current.style.filter = entryRevealed ? "blur(0px)" : "blur(6px)";
                     btn2Ref.current.style.pointerEvents = "auto";
                 }
             } else if (p <= btnOutEnd) {
@@ -192,7 +202,13 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     btn2Ref.current.style.pointerEvents = "none";
                 }
             }
-        }, []);
+        }, [entryRevealed]);
+
+        useEffect(() => {
+            if (revealed) {
+                updateDOM(initialProgress);
+            }
+        }, [revealed, initialProgress, updateDOM]);
 
         useImperativeHandle(ref, () => ({
             setProgress: (p: number) => {
@@ -222,7 +238,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         <div className="overflow-hidden py-0.5">
                             <h1
                                 ref={line1Ref}
-                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform"
+                                className={`text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                             >
                                 <span>{titleLine1}</span>
                             </h1>
@@ -230,7 +246,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         <div className="overflow-hidden py-0.5">
                             <h1
                                 ref={line2Ref}
-                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform"
+                                className={`text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
                             >
                                 <span>{titleLine2}</span>
                             </h1>
@@ -265,7 +281,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                             <Link
                                 ref={btn1Ref}
                                 href={`/${locale}/contact`}
-                                className="flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright transition-all duration-500 ease-out shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform"
+                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                             >
                                 <span>{messages?.common?.getQuote || "GET A QUOTE"}</span>
                                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -274,7 +290,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                             <Link
                                 ref={btn2Ref}
                                 href={`/${locale}/services`}
-                                className="flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high transition-all duration-500 ease-out whitespace-nowrap min-w-0 will-change-transform"
+                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-3.5 sm:py-4 text-[11px] sm:text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
                             >
                                 <span>{messages?.common?.exploreServices || "EXPLORE SERVICES"}</span>
                                 <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
@@ -286,5 +302,3 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         );
     }
 );
-
-
