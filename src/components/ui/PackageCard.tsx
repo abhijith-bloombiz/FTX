@@ -16,19 +16,19 @@ export function PackageCard({ packageData, locale, ctaText }: PackageCardProps) 
 
     return (
         <div
-            className={`relative flex flex-col justify-between p-6 sm:p-8 ftx-squircle-xl transition-all duration-500 hover:-translate-y-1.5 h-full ${popular
+            className={`relative flex flex-col justify-between p-6 sm:p-8 ftx-squircle-xl !overflow-visible transition-all duration-500 hover:-translate-y-1.5 h-full ${popular
                 ? "bg-ftx-obsidian border-2 border-ftx-lime shadow-lime-glow scale-[1.02] z-10"
                 : "bg-ftx-surface/80 hover:bg-ftx-surface border border-ftx-surface-high hover:border-ftx-silver/40"
                 }`}
         >
-            <div>
-                {/* Badge highlight */}
-                {(popular || badge) && (
-                    <div className="inline-block mb-4 px-3 py-1 bg-ftx-lime text-ftx-black text-[10px] font-mono font-bold tracking-widest uppercase ftx-btn-tech shadow-lime-glow">
-                        {badge ? badge[locale] : "POPULAR CHOICE"}
-                    </div>
-                )}
+            {/* Badge highlight - Floating on top of top border */}
+            {(popular || badge) && (
+                <div className="absolute -top-3.5 ltr:right-6 rtl:left-6 z-30 px-3 py-1 bg-ftx-lime text-ftx-black text-[10px] font-mono font-bold tracking-widest uppercase ftx-btn-tech shadow-lime-glow">
+                    {badge ? badge[locale] : (locale === "ar" ? "الأكثر شعبية" : "POPULAR CHOICE")}
+                </div>
+            )}
 
+            <div>
                 <h3 className="text-lg sm:text-xl font-heading font-bold text-white uppercase tracking-wide">
                     {name[locale]}
                 </h3>

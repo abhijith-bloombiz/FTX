@@ -226,6 +226,26 @@ html[dir="rtl"] {
   will-change: transform, opacity;
 }
 
+/* Smooth Gallery Grid Filtering Reveal Animation */
+@keyframes gridItemReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+    filter: blur(4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-grid-reveal {
+  animation: gridItemReveal 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
 /* Staggered Item Entrance Animation for Dropdown List Items */
 @keyframes ftxDropdownItemEnter {
   0% {

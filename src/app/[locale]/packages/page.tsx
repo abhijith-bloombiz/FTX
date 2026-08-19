@@ -61,50 +61,52 @@ export default function PackagesPage({ params: { locale } }: PackagesPageProps) 
 
             {/* Category Tabs */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6 sm:pb-8">
-                {/* Mobile Filter Button (sm:hidden) - Only Single Filter Icon */}
-                <div ref={dropdownRef} className="sm:hidden relative mb-4 flex justify-start">
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className={`p-2.5 ftx-btn-tech shadow-xl transition-all duration-200 flex items-center justify-center ${isOpen || activeCategory !== "ppf"
-                            ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-bold"
-                            : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                            }`}
-                        title="Filter Packages"
-                    >
-                        <Filter className="w-4 h-4" />
-                    </button>
+                {/* Mobile Filter Button (sm:hidden) - Positioned Right with RTL support */}
+                <div className="sm:hidden mb-6 flex justify-end">
+                    <div ref={dropdownRef} className="relative">
+                        <button
+                            onClick={() => setIsOpen(!isOpen)}
+                            className={`p-2.5 ftx-btn-tech shadow-xl transition-all duration-200 flex items-center justify-center ${isOpen || activeCategory !== "ppf"
+                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-bold"
+                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
+                                }`}
+                            title="Filter Packages"
+                        >
+                            <Filter className="w-4 h-4" />
+                        </button>
 
-                    <div
-                        className={`absolute left-0 top-full mt-2 z-50 min-w-[240px] bg-ftx-surface/95 backdrop-blur-md border border-ftx-surface-high ftx-squircle-lg p-2 shadow-2xl space-y-1.5 ftx-dropdown-anim origin-top-left ${isOpen
-                            ? "opacity-100 scale-100 translate-y-0 duration-250 pointer-events-auto"
-                            : "opacity-0 scale-[0.96] -translate-y-2 duration-200 pointer-events-none"
-                            }`}
-                    >
-                        {categories.map((cat, idx) => {
-                            const isActive = activeCategory === cat.id;
-                            const delay = isOpen ? idx * 45 : (categories.length - 1 - idx) * 35;
+                        <div
+                            className={`absolute ltr:right-0 rtl:left-0 top-full mt-2 z-50 min-w-[240px] bg-ftx-surface/95 backdrop-blur-md border border-ftx-surface-high ftx-squircle-lg p-2 shadow-2xl space-y-1.5 ftx-dropdown-anim ltr:origin-top-right rtl:origin-top-left ${isOpen
+                                ? "opacity-100 scale-100 translate-y-0 duration-250 pointer-events-auto"
+                                : "opacity-0 scale-[0.96] -translate-y-2 duration-200 pointer-events-none"
+                                }`}
+                        >
+                            {categories.map((cat, idx) => {
+                                const isActive = activeCategory === cat.id;
+                                const delay = isOpen ? idx * 45 : (categories.length - 1 - idx) * 35;
 
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => {
-                                        setActiveCategory(cat.id);
-                                        setIsOpen(false);
-                                    }}
-                                    style={{ transitionDelay: `${delay}ms` }}
-                                    className={`w-full text-left px-4 py-2.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech ftx-dropdown-anim flex items-center justify-between ${isOpen
-                                        ? "opacity-100 translate-x-0 duration-250"
-                                        : "opacity-0 -translate-x-2.5 duration-200 pointer-events-none"
-                                        } ${isActive
-                                            ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
-                                            : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                                        }`}
-                                >
-                                    <span>{cat.label}</span>
-                                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
-                                </button>
-                            );
-                        })}
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => {
+                                            setActiveCategory(cat.id);
+                                            setIsOpen(false);
+                                        }}
+                                        style={{ transitionDelay: `${delay}ms` }}
+                                        className={`w-full text-left rtl:text-right px-4 py-2.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech ftx-dropdown-anim flex items-center justify-between ${isOpen
+                                            ? "opacity-100 translate-x-0 duration-250"
+                                            : "opacity-0 -translate-x-2.5 duration-200 pointer-events-none"
+                                            } ${isActive
+                                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
+                                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
+                                            }`}
+                                    >
+                                        <span>{cat.label}</span>
+                                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 

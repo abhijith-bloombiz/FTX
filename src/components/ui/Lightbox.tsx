@@ -139,17 +139,36 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
             {/* Max Viewport Full Image Area with Embedded Navigation Controls */}
             <div className="relative w-full max-w-6xl flex-1 my-2 flex items-center justify-center overflow-hidden">
                 <div className="relative w-full h-full max-h-[70vh] flex items-center justify-center">
-                    <img
-                        key={displayItem.id}
-                        src={displayItem.image}
-                        alt={displayItem.title[locale]}
-                        className={`max-w-full max-h-[70vh] w-auto h-auto object-contain ftx-squircle-xl shadow-2xl border border-ftx-surface-high/50 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
-                            ? "scale-90 opacity-0"
-                            : !isMounted
+                    {displayItem.video || displayItem.isVideo ? (
+                        <video
+                            key={displayItem.id}
+                            src={displayItem.video}
+                            poster={displayItem.image}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            controls
+                            className={`max-w-full max-h-[70vh] w-auto h-auto object-contain ftx-squircle-xl shadow-2xl border border-ftx-surface-high/50 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
                                 ? "scale-90 opacity-0"
-                                : getSlideClass()
-                            }`}
-                    />
+                                : !isMounted
+                                    ? "scale-90 opacity-0"
+                                    : getSlideClass()
+                                }`}
+                        />
+                    ) : (
+                        <img
+                            key={displayItem.id}
+                            src={displayItem.image}
+                            alt={displayItem.title[locale]}
+                            className={`max-w-full max-h-[70vh] w-auto h-auto object-contain ftx-squircle-xl shadow-2xl border border-ftx-surface-high/50 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
+                                ? "scale-90 opacity-0"
+                                : !isMounted
+                                    ? "scale-90 opacity-0"
+                                    : getSlideClass()
+                                }`}
+                        />
+                    )}
 
                     {/* Prev Control Aligned Perfectly to Image Center */}
                     {onPrev && (

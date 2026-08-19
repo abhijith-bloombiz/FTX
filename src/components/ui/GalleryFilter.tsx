@@ -1,10 +1,25 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { LayoutGrid, List, Filter, ChevronDown } from "lucide-react";
-import { GalleryCategory } from "@/types/gallery";
+import {
+    LayoutGrid,
+    List,
+    Filter,
+    Image as ImageIcon,
+    Video as VideoIcon,
+    Layers,
+    ShieldCheck,
+    Sparkles,
+    Wrench,
+    Grid,
+    Tag
+} from "lucide-react";
+import { GalleryCategory, MediaTypeFilter } from "@/types/gallery";
 
 interface GalleryFilterProps {
+    mediaTypes: { id: MediaTypeFilter; label: string }[];
+    activeMediaType: MediaTypeFilter;
+    onSelectMediaType: (mediaType: MediaTypeFilter) => void;
     categories: { id: GalleryCategory; label: string }[];
     activeCategory: GalleryCategory;
     onSelectCategory: (category: GalleryCategory) => void;
@@ -13,109 +28,175 @@ interface GalleryFilterProps {
 }
 
 export function GalleryFilter({
+    mediaTypes,
+    activeMediaType,
+    onSelectMediaType,
     categories,
     activeCategory,
     onSelectCategory,
     layoutMode = "grid",
     onLayoutChange,
 }: GalleryFilterProps) {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [categoryOpen, setCategoryOpen] = useState(false);
+    const [formatOpen, setFormatOpen] = useState(false);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+    const formatDropdownRef = useRef<HTMLDivElement>(null);
 
-    const activeCatObj = categories.find((cat) => cat.id === activeCategory);
-
-    // Close mobile dropdown when clicking outside
+    // Close mobile dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
+            if (
+                categoryDropdownRef.current &&
+                !categoryDropdownRef.current.contains(event.target as Node)
+            ) {
+                setCategoryOpen(false);
+            }
+            if (
+                formatDropdownRef.current &&
+                !formatDropdownRef.current.contains(event.target as Node)
+            ) {
+                setFormatOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const getMediaIcon = (type: MediaTypeFilter) => {
+        switch (type) {
+            case "image":
+                return <ImageIcon className="w-3.5 h-3.5" />;
+            case "video":
+                return <VideoIcon className="w-3.5 h-3.5" />;
+            default:
+                return <Layers className="w-3.5 h-3.5" />;
+        }
+    };
+
+    const getCategoryIcon = (catId: GalleryCategory) => {
+        switch (catId) {
+            case "ppf":
+                return <ShieldCheck className="w-3.5 h-3.5" />;
+            case "ceramic":
+                return <Sparkles className="w-3.5 h-3.5" />;
+            case "detailing":
+                return <Wrench className="w-3.5 h-3.5" />;
+            default:
+                return <Grid className="w-3.5 h-3.5" />;
+        }
+    };
+
     return (
-        <div className="flex flex-row items-center justify-between gap-4 py-4 border-b border-ftx-surface-high/50 mb-8 relative">
-            {/* Mobile Filter Button (sm:hidden) - Only Single Filter Icon */}
-            <div ref={dropdownRef} className="sm:hidden relative">
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className={`p-2.5 ftx-btn-tech shadow-xl transition-all duration-200 flex items-center justify-center ${isOpen || activeCategory !== "all"
-                        ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-bold"
-                        : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                        }`}
-                    title="Filter Gallery"
-                >
-                    <Filter className="w-4 h-4" />
-                </button>
-
-                <div
-                    className={`absolute left-0 top-full mt-2 z-50 min-w-[200px] bg-ftx-surface/95 backdrop-blur-md border border-ftx-surface-high ftx-squircle-lg p-2 shadow-2xl space-y-1.5 ftx-dropdown-anim origin-top-left ${isOpen
-                        ? "opacity-100 scale-100 translate-y-0 duration-250 pointer-events-auto"
-                        : "opacity-0 scale-[0.96] -translate-y-2 duration-200 pointer-events-none"
-                        }`}
-                >
-                    {categories.map((cat, idx) => {
-                        const isActive = activeCategory === cat.id;
-                        const delay = isOpen ? idx * 45 : (categories.length - 1 - idx) * 35;
-
-                        return (
-                            <button
-                                key={cat.id}
-                                onClick={() => {
-                                    onSelectCategory(cat.id);
-                                    setIsOpen(false);
-                                }}
-                                style={{ transitionDelay: `${delay}ms` }}
-                                className={`w-full text-left px-4 py-2.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech ftx-dropdown-anim flex items-center justify-between ${isOpen
-                                    ? "opacity-100 translate-x-0 duration-250"
-                                    : "opacity-0 -translate-x-2.5 duration-200 pointer-events-none"
-                                    } ${isActive
-                                        ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
-                                        : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                                    }`}
-                            >
-                                <span>{cat.label}</span>
-                                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Desktop Category Filter Tabs (hidden sm:flex) */}
-            <div className="hidden sm:flex flex-wrap items-center gap-2">
-                {categories.map((cat) => {
-                    const isActive = activeCategory === cat.id;
-
-                    return (
+        <div className="py-4 border-b border-ftx-surface-high/50 mb-8 space-y-4">
+            {/* Mobile Controls Row (sm:hidden): Category Filter FIRST, Media Format SECOND */}
+            <div className="flex sm:hidden items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                    {/* 1. Category Single Icon Button (FIRST) */}
+                    <div ref={categoryDropdownRef} className="relative">
                         <button
-                            key={cat.id}
-                            onClick={() => onSelectCategory(cat.id)}
-                            className={`px-4 py-2 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech transition-all duration-200 border ${isActive
-                                ? "bg-ftx-lime text-ftx-black border-ftx-lime shadow-lime-glow"
-                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border-ftx-surface-high"
+                            onClick={() => {
+                                setCategoryOpen(!categoryOpen);
+                                setFormatOpen(false);
+                            }}
+                            className={`p-2.5 ftx-btn-tech shadow-xl transition-all duration-200 flex items-center justify-center ${categoryOpen || activeCategory !== "all"
+                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-bold"
+                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
+                                }`}
+                            title="Filter Category"
+                        >
+                            <Filter className="w-4 h-4" />
+                        </button>
+
+                        <div
+                            className={`absolute ltr:left-0 rtl:right-0 top-full mt-2 z-50 min-w-[200px] bg-ftx-surface/95 backdrop-blur-md border border-ftx-surface-high ftx-squircle-lg p-2 shadow-2xl space-y-1.5 ftx-dropdown-anim ltr:origin-top-left rtl:origin-top-right ${categoryOpen
+                                ? "opacity-100 scale-100 translate-y-0 duration-250 pointer-events-auto"
+                                : "opacity-0 scale-[0.96] -translate-y-2 duration-200 pointer-events-none"
                                 }`}
                         >
-                            {cat.label}
-                        </button>
-                    );
-                })}
-            </div>
+                            {categories.map((cat) => {
+                                const isActive = activeCategory === cat.id;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => {
+                                            onSelectCategory(cat.id);
+                                            setCategoryOpen(false);
+                                        }}
+                                        className={`w-full text-left rtl:text-right px-3.5 py-2 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech flex items-center justify-between ${isActive
+                                            ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
+                                            : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
+                                            }`}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            {getCategoryIcon(cat.id)}
+                                            <span>{cat.label}</span>
+                                        </span>
+                                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
 
-            {/* Right Side Layout Switcher */}
-            {onLayoutChange && (
-                <div className="flex items-center gap-3 self-end sm:self-auto">
-                    <span className="text-[10px] font-mono font-bold text-ftx-silver uppercase tracking-widest">
-                        LAYOUT
-                    </span>
-                    <div className="flex items-center gap-1 p-1 bg-ftx-surface border border-ftx-surface-high ftx-squircle-sm">
+                    {/* 2. Format Single Icon Button (SECOND) */}
+                    <div ref={formatDropdownRef} className="relative">
+                        <button
+                            onClick={() => {
+                                setFormatOpen(!formatOpen);
+                                setCategoryOpen(false);
+                            }}
+                            className={`p-2.5 ftx-btn-tech shadow-xl transition-all duration-200 flex items-center justify-center ${formatOpen || activeMediaType !== "all"
+                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-bold"
+                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
+                                }`}
+                            title="Filter Media Format"
+                        >
+                            <Tag className="w-4 h-4" />
+                        </button>
+
+                        <div
+                            className={`absolute ltr:left-0 rtl:right-0 top-full mt-2 z-50 min-w-[180px] bg-ftx-surface/95 backdrop-blur-md border border-ftx-surface-high ftx-squircle-lg p-2 shadow-2xl space-y-1.5 ftx-dropdown-anim ltr:origin-top-left rtl:origin-top-right ${formatOpen
+                                ? "opacity-100 scale-100 translate-y-0 duration-250 pointer-events-auto"
+                                : "opacity-0 scale-[0.96] -translate-y-2 duration-200 pointer-events-none"
+                                }`}
+                        >
+                            {mediaTypes.map((media) => {
+                                const isActive = activeMediaType === media.id;
+                                return (
+                                    <button
+                                        key={media.id}
+                                        onClick={() => {
+                                            onSelectMediaType(media.id);
+                                            setFormatOpen(false);
+                                        }}
+                                        className={`w-full text-left rtl:text-right px-3.5 py-2 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech flex items-center justify-between ${isActive
+                                            ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
+                                            : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
+                                            }`}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            {getMediaIcon(media.id)}
+                                            <span>{media.label}</span>
+                                        </span>
+                                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Smooth Animated Layout Switcher (Mobile) */}
+                {onLayoutChange && (
+                    <div className="relative grid grid-cols-2 items-center p-1 bg-ftx-surface border border-ftx-surface-high ftx-squircle-sm w-[68px] [direction:ltr]">
+                        {/* Smooth Active Sliding Pill */}
+                        <div
+                            className={`absolute top-1 bottom-1 w-[calc(50%-6px)] bg-ftx-lime rounded-md shadow-lime-glow transition-all duration-300 ease-out pointer-events-none ${layoutMode === "list" ? "left-[calc(50%+2px)]" : "left-1"
+                                }`}
+                        />
                         <button
                             onClick={() => onLayoutChange("grid")}
-                            className={`p-1.5 rounded transition-colors ${layoutMode === "grid"
-                                ? "bg-ftx-lime text-ftx-black"
-                                : "text-ftx-silver hover:text-white"
+                            className={`relative z-10 p-1.5 flex items-center justify-center rounded transition-colors duration-200 ${layoutMode === "grid" ? "text-ftx-black font-bold" : "text-ftx-silver hover:text-white"
                                 }`}
                             title="Grid Layout"
                         >
@@ -123,17 +204,103 @@ export function GalleryFilter({
                         </button>
                         <button
                             onClick={() => onLayoutChange("list")}
-                            className={`p-1.5 rounded transition-colors ${layoutMode === "list"
-                                ? "bg-ftx-lime text-ftx-black"
-                                : "text-ftx-silver hover:text-white"
+                            className={`relative z-10 p-1.5 flex items-center justify-center rounded transition-colors duration-200 ${layoutMode === "list" ? "text-ftx-black font-bold" : "text-ftx-silver hover:text-white"
                                 }`}
                             title="List Layout"
                         >
                             <List className="w-4 h-4" />
                         </button>
                     </div>
+                )}
+            </div>
+
+            {/* Desktop Layout (hidden sm:block): Top Row Category Filter + Layout Switcher, Bottom Row Media Format Filter SECOND */}
+            <div className="hidden sm:block space-y-4">
+                {/* Top Row: Category Filter Tabs FIRST + Layout Switcher */}
+                <div className="flex items-center justify-between gap-4">
+                    {/* 1. Category Filter Tabs (FIRST) */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-1.5 text-ftx-lime text-xs font-mono font-bold uppercase tracking-wider mr-1" title="Category Filter">
+                            <Filter className="w-3.5 h-3.5" />
+                        </div>
+                        {categories.map((cat) => {
+                            const isActive = activeCategory === cat.id;
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => onSelectCategory(cat.id)}
+                                    title={cat.label}
+                                    className={`px-4 py-1.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech transition-all duration-200 border flex items-center gap-2 ${isActive
+                                        ? "bg-ftx-lime text-ftx-black border-ftx-lime shadow-lime-glow"
+                                        : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border-ftx-surface-high"
+                                        }`}
+                                >
+                                    {getCategoryIcon(cat.id)}
+                                    <span>{cat.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Smooth Animated Layout Switcher (Desktop) */}
+                    {onLayoutChange && (
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-mono font-bold text-ftx-silver uppercase tracking-widest">
+                                LAYOUT
+                            </span>
+                            <div className="relative grid grid-cols-2 items-center p-1 bg-ftx-surface border border-ftx-surface-high ftx-squircle-sm w-[68px] [direction:ltr]">
+                                {/* Smooth Active Sliding Pill */}
+                                <div
+                                    className={`absolute top-1 bottom-1 w-[calc(50%-6px)] bg-ftx-lime rounded-md shadow-lime-glow transition-all duration-300 ease-out pointer-events-none ${layoutMode === "list" ? "left-[calc(50%+2px)]" : "left-1"
+                                        }`}
+                                />
+                                <button
+                                    onClick={() => onLayoutChange("grid")}
+                                    className={`relative z-10 p-1.5 flex items-center justify-center rounded transition-colors duration-200 ${layoutMode === "grid" ? "text-ftx-black font-bold" : "text-ftx-silver hover:text-white"
+                                        }`}
+                                    title="Grid Layout"
+                                >
+                                    <LayoutGrid className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => onLayoutChange("list")}
+                                    className={`relative z-10 p-1.5 flex items-center justify-center rounded transition-colors duration-200 ${layoutMode === "list" ? "text-ftx-black font-bold" : "text-ftx-silver hover:text-white"
+                                        }`}
+                                    title="List Layout"
+                                >
+                                    <List className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )}
+
+                {/* Bottom Row: Media Format Filter SECOND */}
+                <div className="flex items-center gap-2 pt-2">
+                    <div className="flex items-center gap-1.5 text-ftx-lime text-xs font-mono font-bold uppercase tracking-wider mr-1" title="Format Filter">
+                        <Tag className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {mediaTypes.map((media) => {
+                            const isActive = activeMediaType === media.id;
+                            return (
+                                <button
+                                    key={media.id}
+                                    onClick={() => onSelectMediaType(media.id)}
+                                    title={media.label}
+                                    className={`px-4 py-1.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech transition-all duration-200 border flex items-center gap-2 ${isActive
+                                        ? "bg-ftx-lime text-ftx-black border-ftx-lime shadow-lime-glow"
+                                        : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border-ftx-surface-high"
+                                        }`}
+                                >
+                                    {getMediaIcon(media.id)}
+                                    <span>{media.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
