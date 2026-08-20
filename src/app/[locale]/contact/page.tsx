@@ -131,11 +131,11 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                     </ScrollReveal>
 
                     {/* Right Column: Contact & Quotation Form */}
-                    <ScrollReveal type="editorial" delay={120} className="lg:col-span-7">
+                    <div className="lg:col-span-7">
                         <Suspense fallback={<div className="p-8 text-center text-xs font-mono text-ftx-silver">Loading Form...</div>}>
                             <ContactForm locale={locale} messages={messages} />
                         </Suspense>
-                    </ScrollReveal>
+                    </div>
                 </div>
             </div>
         </div>

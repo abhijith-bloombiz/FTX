@@ -14,8 +14,8 @@ interface ServicesGridProps {
 export function ServicesGrid({ locale, messages }: ServicesGridProps) {
     return (
         <section id="services" className="py-10 sm:py-12 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
-            <div className="absolute -bottom-24 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+            {/* Atmospheric Lime Ambient Glow (Bottom Right - Desktop Only for GPU Optimization) */}
+            <div className="hidden sm:block absolute -bottom-24 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_right,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}

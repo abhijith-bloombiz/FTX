@@ -27,7 +27,7 @@ export function Footer({ locale, messages }: FooterProps) {
                             <Link href={`/${locale}`} className="inline-block">
                                 <div className="relative w-44 h-12">
                                     <Image
-                                        src="/brand/ftx-3d-logo.png"
+                                        src="/brand/ftx-3d-logo.webp"
                                         alt="FTX – First Torque X"
                                         fill
                                         className="object-contain ltr:object-left rtl:object-right"

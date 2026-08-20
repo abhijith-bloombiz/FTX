@@ -82,19 +82,17 @@ export function MobileMenu({ isOpen, onClose, locale, messages }: MobileMenuProp
                                 ? pathname === `/${locale}`
                                 : pathname.startsWith(itemHref);
 
-                        const indexNum = String(idx + 1).padStart(2, "0");
-
                         // Forward entrance delay vs Reverse exit delay choreography
                         const delayMs = animateIn
                             ? idx * 60 + 60
                             : (navItems.length - 1 - idx) * 40;
 
                         return (
-                            <div key={item.key} className="overflow-hidden py-1">
+                            <div key={item.key} className={`overflow-hidden ${item.key === "home" ? "mb-2 sm:mb-2.5" : ""}`}>
                                 <Link
                                     href={itemHref}
                                     onClick={onClose}
-                                    className={`group flex items-center justify-between py-2 transition-all duration-400 ease-in-out transform ${animateIn
+                                    className={`group flex items-center justify-between py-0.5 transition-all duration-400 ease-in-out transform ${animateIn
                                         ? "opacity-100 translate-y-0 filter-none"
                                         : "opacity-0 -translate-y-8 blur-sm"
                                         }`}
@@ -102,26 +100,46 @@ export function MobileMenu({ isOpen, onClose, locale, messages }: MobileMenuProp
                                         transitionDelay: `${delayMs}ms`,
                                     }}
                                 >
-                                    <div className="flex items-baseline gap-3.5">
-                                        <span className="text-2xl sm:text-3xl font-heading font-black text-ftx-lime">
-                                            {indexNum}
-                                        </span>
+                                    <div className="flex items-center gap-3.5">
+                                        {/* Sleek green line indicator replacing numbers 01..06 */}
                                         <span
-                                            className={`text-2xl sm:text-3xl font-heading font-black uppercase tracking-tight transition-all duration-300 group-hover:translate-x-2.5 ${isActive
-                                                ? "text-ftx-lime drop-shadow-[0_0_15px_rgba(164,214,94,0.4)]"
-                                                : "text-white group-hover:text-ftx-lime"
+                                            className={`w-1 sm:w-1.5 rounded-full bg-ftx-lime transition-all duration-300 ${isActive
+                                                ? "h-8 sm:h-10 opacity-100 shadow-[0_0_14px_rgba(164,214,94,0.85)]"
+                                                : "h-5 sm:h-6 opacity-40 group-hover:opacity-100 group-hover:h-8 sm:group-hover:h-10 shadow-[0_0_8px_rgba(164,214,94,0.5)]"
                                                 }`}
-                                        >
-                                            {messages.nav[item.key]}
-                                        </span>
+                                        />
+                                        <div
+                                            className={`${item.key === "home"
+                                                ? "h-[33px] sm:h-[36px]"
+                                                : item.key === "about"
+                                                    ? "h-[37px] sm:h-[40px]"
+                                                    : item.key === "gallery"
+                                                        ? "h-[47px] sm:h-[52px]"
+                                                        : item.key === "services"
+                                                            ? "h-[48px] sm:h-[54px]"
+                                                            : item.key === "packages"
+                                                                ? "h-[50px] sm:h-[56px]"
+                                                                : "h-[52px] sm:h-[58px]"
+                                                } ${item.key === "contact" ? "aspect-[2030/775]" : "aspect-[2172/724]"} transition-all duration-300 group-hover:translate-x-2.5 ${isActive
+                                                    ? "bg-ftx-lime drop-shadow-[0_0_15px_rgba(164,214,94,0.6)]"
+                                                    : "bg-white group-hover:bg-ftx-lime"
+                                                }`}
+                                            style={{
+                                                maskImage: `url('/fonts/nav/${item.key}.svg')`,
+                                                WebkitMaskImage: `url('/fonts/nav/${item.key}.svg')`,
+                                                maskSize: "contain",
+                                                WebkitMaskSize: "contain",
+                                                maskRepeat: "no-repeat",
+                                                WebkitMaskRepeat: "no-repeat",
+                                                maskPosition: "center",
+                                                WebkitMaskPosition: "center",
+                                            }}
+                                            aria-label={messages.nav[item.key]}
+                                        />
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        {isActive ? (
-                                            <span className="w-2 h-2 rounded-full bg-ftx-lime shadow-lime-glow" />
-                                        ) : (
-                                            <ChevronRight className="w-5 h-5 text-ftx-silver/40 group-hover:text-ftx-lime group-hover:translate-x-1 transition-all duration-300 opacity-0 group-hover:opacity-100" />
-                                        )}
+                                        <ChevronRight className="w-5 h-5 text-ftx-silver/40 group-hover:text-ftx-lime group-hover:translate-x-1 transition-all duration-300 opacity-0 group-hover:opacity-100" />
                                     </div>
                                 </Link>
                             </div>

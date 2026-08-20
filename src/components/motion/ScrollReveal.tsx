@@ -55,16 +55,16 @@ export function ScrollReveal({
 
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (once) {
-                    if (entry.isIntersecting) {
-                        setIsVisible(true);
-                        if (ref.current) observer.unobserve(ref.current);
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    if (ref.current && (once || isMobile)) {
+                        observer.unobserve(ref.current);
                     }
-                } else {
-                    setIsVisible(entry.isIntersecting);
+                } else if (!once && !isMobile) {
+                    setIsVisible(false);
                 }
             },
-            { threshold }
+            { threshold: isMobile ? 0.05 : threshold }
         );
 
         if (ref.current) {
@@ -75,7 +75,7 @@ export function ScrollReveal({
             observer.disconnect();
             window.removeEventListener("resize", checkMobile);
         };
-    }, [threshold, once]);
+    }, [threshold, once, isMobile]);
 
     const getStyles = (): React.CSSProperties => {
         const baseTransition: React.CSSProperties = {

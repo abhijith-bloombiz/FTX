@@ -21,12 +21,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         const containerRef = useRef<HTMLDivElement>(null);
 
         // Group 1 Individual Line Refs (Top Left)
-        const line1Ref = useRef<HTMLHeadingElement>(null); // "PRECISION"
-        const line2Ref = useRef<HTMLHeadingElement>(null); // "PROTECTION."
+        const line1Ref = useRef<HTMLDivElement>(null); // "PRECISION"
+        const line2Ref = useRef<HTMLDivElement>(null); // "PROTECTION."
 
         // Group 2 Individual Line Refs (Top Left - Same Position)
-        const line3Ref = useRef<HTMLHeadingElement>(null); // "AUTOMOTIVE"
-        const line4Ref = useRef<HTMLHeadingElement>(null); // "PERFECTION."
+        const line3Ref = useRef<HTMLDivElement>(null); // "AUTOMOTIVE"
+        const line4Ref = useRef<HTMLDivElement>(null); // "PERFECTION."
 
         // CTA Button refs
         const btn1Ref = useRef<HTMLAnchorElement>(null);
@@ -53,7 +53,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         const updateDOM = useCallback((p: number) => {
             // Helper function for individual line staggered enter & exit (used for Group 2)
             const animateLine = (
-                el: HTMLHeadingElement | null,
+                el: HTMLDivElement | null,
                 inStart: number,
                 inEnd: number,
                 outStart: number,
@@ -111,7 +111,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             // Visible immediately on page visit (p=0.00 -> 0.32), Exits Left 0.32 -> 0.42
             // =========================================================================
             const animateGroup1Line = (
-                el: HTMLHeadingElement | null,
+                el: HTMLDivElement | null,
                 outStart: number,
                 outEnd: number
             ) => {
@@ -216,15 +216,6 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             },
         }), [updateDOM]);
 
-        // Split title and subtitle safely into 2 lines each
-        const titleParts = messages?.hero?.title ? messages.hero.title.split(" ") : ["PRECISION", "PROTECTION."];
-        const titleLine1 = titleParts[0] || "PRECISION";
-        const titleLine2 = titleParts.slice(1).join(" ") || "PROTECTION.";
-
-        const subParts = messages?.hero?.subtitle ? messages.hero.subtitle.split(" ") : ["AUTOMOTIVE", "PERFECTION."];
-        const subLine1 = subParts[0] || "AUTOMOTIVE";
-        const subLine2 = subParts.slice(1).join(" ") || "PERFECTION.";
-
         return (
             <div
                 ref={containerRef}
@@ -232,44 +223,90 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 style={{ opacity: revealed ? 1 : 0 }}
             >
                 {/* TOP LEFT STACKED CONTAINER (Both Group 1 & Group 2 share this top-left position) */}
-                <div className="relative pt-4 pointer-events-auto min-h-[160px] sm:min-h-[180px] lg:min-h-[200px]">
+                <div className="relative pt-4 pointer-events-auto min-h-[260px] sm:min-h-[280px] lg:min-h-[300px] xl:min-h-[340px]">
                     {/* GROUP 1: PRECISION PROTECTION. (Top Left) */}
-                    <div className="absolute top-4 left-0 right-0 w-full space-y-1 text-center lg:text-left rtl:lg:text-right">
-                        <div className="overflow-hidden py-0.5">
-                            <h1
+                    <div className="contents">
+                        {/* LINE 1: PRECISION */}
+                        <div className="absolute top-0 left-0 right-0 w-full flex justify-center lg:justify-start rtl:lg:justify-end overflow-hidden py-0.5 lg:-ml-[14px] rtl:ml-0 lg:rtl:-mr-[14px]">
+                            <div
                                 ref={line1Ref}
-                                className={`text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
-                            >
-                                <span>{titleLine1}</span>
-                            </h1>
+                                className={`h-24 sm:h-24 lg:h-30 xl:h-36 aspect-[2172/724] bg-white will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
+                                style={{
+                                    maskImage: "url('/fonts/home/precision.svg')",
+                                    WebkitMaskImage: "url('/fonts/home/precision.svg')",
+                                    maskSize: "contain",
+                                    WebkitMaskSize: "contain",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskPosition: "center",
+                                    WebkitMaskPosition: "center",
+                                }}
+                                aria-label="PRECISION"
+                                role="img"
+                            />
                         </div>
-                        <div className="overflow-hidden py-0.5">
-                            <h1
+
+                        {/* LINE 2: PROTECTION. */}
+                        <div className="absolute top-20 sm:top-20 lg:top-25 xl:top-30 left-0 right-0 w-full flex justify-center lg:justify-start rtl:lg:justify-end overflow-hidden py-0.5 lg:-ml-[14px] rtl:ml-0 lg:rtl:-mr-[14px]">
+                            <div
                                 ref={line2Ref}
-                                className={`text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-white uppercase tracking-tight leading-[1.02] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
-                            >
-                                <span>{titleLine2}</span>
-                            </h1>
+                                className={`h-24 sm:h-28 lg:h-34 xl:h-40 aspect-[2172/724] bg-white will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
+                                style={{
+                                    maskImage: "url('/fonts/home/protection.svg')",
+                                    WebkitMaskImage: "url('/fonts/home/protection.svg')",
+                                    maskSize: "contain",
+                                    WebkitMaskSize: "contain",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskPosition: "center",
+                                    WebkitMaskPosition: "center",
+                                }}
+                                aria-label="PROTECTION."
+                                role="img"
+                            />
                         </div>
                     </div>
 
                     {/* GROUP 2: AUTOMOTIVE PERFECTION. (Top Left - Stacked in exact same spot) */}
-                    <div className="absolute top-4 left-0 right-0 w-full space-y-1 text-center lg:text-left rtl:lg:text-right">
-                        <div className="overflow-hidden py-0.5">
-                            <h2
+                    <div className="contents">
+                        {/* LINE 3: AUTOMOTIVE */}
+                        <div className="absolute top-0 left-0 right-0 w-full flex justify-center lg:justify-start rtl:lg:justify-end overflow-hidden py-0.5 lg:-ml-[14px] rtl:ml-0 lg:rtl:-mr-[14px]">
+                            <div
                                 ref={line3Ref}
-                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] drop-shadow-2xl will-change-transform"
-                            >
-                                <span>{subLine1}</span>
-                            </h2>
+                                className="h-28 sm:h-33 lg:h-39 xl:h-45 aspect-[2172/724] bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime drop-shadow-[0_0_25px_rgba(164,214,94,0.5)] will-change-transform"
+                                style={{
+                                    maskImage: "url('/fonts/home/automotive.svg')",
+                                    WebkitMaskImage: "url('/fonts/home/automotive.svg')",
+                                    maskSize: "contain",
+                                    WebkitMaskSize: "contain",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskPosition: "center",
+                                    WebkitMaskPosition: "center",
+                                }}
+                                aria-label="AUTOMOTIVE"
+                                role="img"
+                            />
                         </div>
-                        <div className="overflow-hidden py-0.5">
-                            <h2
+
+                        {/* LINE 4: PERFECTION. */}
+                        <div className="absolute top-16 sm:top-15 lg:top-20 xl:top-24 left-0 right-0 w-full flex justify-center lg:justify-start rtl:lg:justify-end overflow-hidden py-0.5 lg:-ml-[11px] rtl:ml-0 lg:rtl:-mr-[11px]">
+                            <div
                                 ref={line4Ref}
-                                className="text-[3.25rem] sm:text-5xl lg:text-6xl font-heading font-black text-gradient-lime uppercase tracking-tight leading-[1.02] drop-shadow-2xl will-change-transform"
-                            >
-                                <span>{subLine2}</span>
-                            </h2>
+                                className="h-28 sm:h-35 lg:h-41 xl:h-47 aspect-[1983/793] bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime drop-shadow-[0_0_25px_rgba(164,214,94,0.5)] will-change-transform"
+                                style={{
+                                    maskImage: "url('/fonts/home/perfection.svg')",
+                                    WebkitMaskImage: "url('/fonts/home/perfection.svg')",
+                                    maskSize: "contain",
+                                    WebkitMaskSize: "contain",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskPosition: "center",
+                                    WebkitMaskPosition: "center",
+                                }}
+                                aria-label="PERFECTION."
+                                role="img"
+                            />
                         </div>
                     </div>
                 </div>

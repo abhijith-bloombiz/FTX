@@ -54,11 +54,9 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_right,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
 
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <ScrollScrubFloor>
-                        <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
-                            <ContactForm locale={locale} messages={messages} />
-                        </Suspense>
-                    </ScrollScrubFloor>
+                    <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
+                        <ContactForm locale={locale} messages={messages} />
+                    </Suspense>
                 </div>
             </section>
         </>

@@ -15,8 +15,8 @@ interface TestimonialsProps {
 export function Testimonials({ locale, messages }: TestimonialsProps) {
     return (
         <section className="py-10 sm:py-12 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Bottom Left) */}
-            <div className="absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
+            {/* Atmospheric Lime Ambient Glow (Bottom Left - Desktop Only for GPU Optimization) */}
+            <div className="hidden sm:block absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_left,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-left max-w-3xl mb-8 space-y-3">

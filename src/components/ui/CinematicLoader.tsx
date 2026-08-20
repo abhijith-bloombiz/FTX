@@ -135,7 +135,7 @@ export function CinematicLoader() {
         const assetsToPreload = [
             "/images/FTX loading/bg.webp",
             "/images/FTX loading/bg-mob.webp",
-            "/brand/ftx-3d-logo.png",
+            "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
         ];
 
@@ -371,8 +371,8 @@ export function CinematicLoader() {
                 <div
                     className="absolute inset-0 pointer-events-none z-30 overflow-hidden"
                     style={{
-                        maskImage: "url('/brand/ftx-3d-logo.png')",
-                        WebkitMaskImage: "url('/brand/ftx-3d-logo.png')",
+                        maskImage: "url('/brand/ftx-3d-logo.webp')",
+                        WebkitMaskImage: "url('/brand/ftx-3d-logo.webp')",
                         maskSize: "contain",
                         WebkitMaskSize: "contain",
                         maskRepeat: "no-repeat",

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
         siteName: "FTX – First Torque X",
         images: [
             {
-                url: "/brand/ftx-3d-logo.png",
+                url: "/brand/ftx-3d-logo.webp",
                 width: 1200,
                 height: 630,
                 alt: "FTX Automotive Protection Studio Dubai",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "FTX – Luxury Automotive Protection Studio Dubai",
         description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing in Dubai.",
-        images: ["/brand/ftx-3d-logo.png"],
+        images: ["/brand/ftx-3d-logo.webp"],
     },
     robots: {
         index: true,
@@ -60,10 +60,10 @@ export const metadata: Metadata = {
     },
     icons: {
         icon: [
-            { url: "/brand/ftx-3d-logo.png", type: "image/png" },
+            { url: "/brand/ftx-3d-logo.webp", type: "image/png" },
         ],
-        shortcut: "/brand/ftx-3d-logo.png",
-        apple: "/brand/ftx-3d-logo.png",
+        shortcut: "/brand/ftx-3d-logo.webp",
+        apple: "/brand/ftx-3d-logo.webp",
     },
 };
 

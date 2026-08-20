@@ -40,7 +40,7 @@ export default async function LocaleLayout({
         "@context": "https://schema.org",
         "@type": "AutoRepair",
         "name": "FTX – First Torque X",
-        "image": "https://ftx.ae/brand/ftx-3d-logo.png",
+        "image": "https://ftx.ae/brand/ftx-3d-logo.webp",
         "@id": "https://ftx.ae",
         "url": "https://ftx.ae",
         "telephone": "+97140000000",

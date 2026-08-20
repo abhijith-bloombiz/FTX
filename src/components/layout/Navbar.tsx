@@ -100,8 +100,8 @@ export function Navbar({ locale, messages }: NavbarProps) {
         <>
             <header
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-                    ? "bg-[#080808]/75 backdrop-blur-xl py-3.5 shadow-[0_10px_35px_rgba(0,0,0,0.8)]"
-                    : "bg-gradient-to-b from-[#0e0e0e]/80 via-[#0e0e0e]/40 to-transparent backdrop-blur-sm py-5"
+                    ? "bg-[#080808]/95 sm:bg-[#080808]/75 sm:backdrop-blur-xl py-3.5 shadow-[0_10px_35px_rgba(0,0,0,0.8)]"
+                    : "bg-gradient-to-b from-[#0e0e0e]/90 via-[#0e0e0e]/50 to-transparent sm:backdrop-blur-sm py-5"
                     }`}
             >
                 {/* Glowing Bottom Border Light Line */}
@@ -127,7 +127,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                         >
                             <div className="relative w-44 h-12 sm:w-56 sm:h-14">
                                 <Image
-                                    src="/brand/ftx-3d-logo.png"
+                                    src="/brand/ftx-3d-logo.webp"
                                     alt="FTX – First Torque X"
                                     fill
                                     className="object-contain ltr:object-left rtl:object-right transition-all duration-300 group-hover:scale-102 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.85)] group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.45)]"
@@ -140,14 +140,32 @@ export function Navbar({ locale, messages }: NavbarProps) {
                             </div>
                         </Link>
 
-                        {/* Desktop Navigation Links with Tight Underline Gap */}
-                        <nav className="relative hidden md:flex items-center gap-8 pb-0.5 pt-1">
+                        {/* Desktop Navigation Links with Styled SVG Typography */}
+                        <nav className="relative hidden md:flex items-center gap-7 pb-0.5 pt-1">
                             {navItems.map((item, idx) => {
                                 const itemHref = `/${locale}${item.href}`;
                                 const isActive =
                                     item.href === ""
                                         ? pathname === `/${locale}`
                                         : pathname.startsWith(itemHref);
+
+                                const aspectClass = item.key === "contact" ? "aspect-[2030/775]" : "aspect-[2172/724]";
+
+                                // home (17px), about (19px), gallery (24.5px), services (25px), packages (26.5px), contact (27.5px)
+                                const heightClass =
+                                    item.key === "home"
+                                        ? "h-4 lg:h-[17px]"
+                                        : item.key === "about"
+                                            ? "h-4.5 lg:h-[19px]"
+                                            : item.key === "gallery"
+                                                ? "h-5.5 lg:h-[24.5px]"
+                                                : item.key === "services"
+                                                    ? "h-6 lg:h-[25px]"
+                                                    : item.key === "packages"
+                                                        ? "h-[25px] lg:h-[26.5px]"
+                                                        : "h-6.5 lg:h-[27.5px]";
+
+                                const marginClass = "";
 
                                 return (
                                     <Link
@@ -157,10 +175,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                         }}
                                         href={itemHref}
                                         onClick={() => updateUnderlinePosition(idx)}
-                                        className={`relative text-xs font-mono font-bold tracking-widest uppercase transition-colors duration-200 pb-0.5 pt-0.5 ${isActive
-                                            ? "text-ftx-lime"
-                                            : "text-ftx-silver hover:text-ftx-lime"
-                                            }`}
+                                        className={`group relative flex items-center py-1 px-1 ${marginClass} transition-all duration-300`}
                                         style={{
                                             opacity: revealed ? 1 : 0,
                                             transform: revealed ? "translate3d(0, 0, 0)" : "translate3d(0, -15px, 0)",
@@ -168,7 +183,23 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                             transitionDelay: `${100 + idx * 50}ms`,
                                         }}
                                     >
-                                        {messages.nav[item.key]}
+                                        <div
+                                            className={`${heightClass} ${aspectClass} transition-all duration-300 ${isActive
+                                                ? "bg-ftx-lime drop-shadow-[0_0_10px_rgba(164,214,94,0.75)] scale-105"
+                                                : "bg-ftx-silver group-hover:bg-ftx-lime group-hover:drop-shadow-[0_0_8px_rgba(164,214,94,0.6)]"
+                                                }`}
+                                            style={{
+                                                maskImage: `url('/fonts/nav/${item.key}.svg')`,
+                                                WebkitMaskImage: `url('/fonts/nav/${item.key}.svg')`,
+                                                maskSize: "contain",
+                                                WebkitMaskSize: "contain",
+                                                maskRepeat: "no-repeat",
+                                                WebkitMaskRepeat: "no-repeat",
+                                                maskPosition: "center",
+                                                WebkitMaskPosition: "center",
+                                            }}
+                                            aria-label={messages.nav[item.key]}
+                                        />
                                     </Link>
                                 );
                             })}

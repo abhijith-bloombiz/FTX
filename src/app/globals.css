@@ -423,8 +423,8 @@ html[dir="rtl"] {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  mask-image: url('/brand/ftx-3d-logo.png');
-  -webkit-mask-image: url('/brand/ftx-3d-logo.png');
+  mask-image: url('/brand/ftx-3d-logo.webp');
+  -webkit-mask-image: url('/brand/ftx-3d-logo.webp');
   mask-size: contain;
   -webkit-mask-size: contain;
   mask-repeat: no-repeat;
