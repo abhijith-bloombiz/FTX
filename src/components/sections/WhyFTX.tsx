@@ -212,7 +212,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
                 <div
                     ref={mobilePinWrapperRef}
-                    className="w-full px-4 max-w-sm mx-auto bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-5rem)] py-2 z-10"
+                    className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-5rem)] py-2 z-10"
                 >
                     {/* Mobile Pinned Section Heading - Aligned with standard page grid */}
                     <div className="text-left w-full space-y-1 mb-3">
@@ -225,7 +225,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                     </div>
 
                     {/* MAIN PARENT CONTAINER (Plain flex wrapper fitting mobile screen size) */}
-                    <div className="w-full flex-1 flex flex-col justify-between gap-4 my-auto py-2">
+                    <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-between gap-4 my-auto py-2">
                         {/* TOP: 3D Image Card Deck Stage */}
                         <div className="relative w-full h-[250px] [perspective:1000px] [transform-style:preserve-3d]">
                             {pillars.map((item, idx) => {
