@@ -258,7 +258,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         </div>
 
                         {/* LINE 2 */}
-                        <div className="absolute top-[46px] sm:top-[86px] lg:top-[102px] xl:top-[126px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className="absolute top-[46px] sm:top-[56px] lg:top-[72px] xl:top-[96px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
                             {locale === "en" ? (
                                 <div
                                     ref={line2Ref}
@@ -319,7 +319,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         </div>
 
                         {/* LINE 4 */}
-                        <div className="absolute top-[46px] sm:top-[86px] lg:top-[102px] xl:top-[126px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className="absolute top-[46px] sm:top-[56px] lg:top-[72px] xl:top-[96px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
                             {locale === "en" ? (
                                 <div
                                     ref={line4Ref}
