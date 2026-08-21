@@ -111,38 +111,40 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         setCardStyles(newStyles);
     }, [pillars.length]);
 
-    // GSAP ScrollTrigger Mobile Section Pinning
+    // GSAP ScrollTrigger Mobile Section Pinning using official gsap.matchMedia
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        const isMobile = window.innerWidth < 640;
-        if (!isMobile || !mobilePinWrapperRef.current) return;
+        const pinWrapper = mobilePinWrapperRef.current;
+        const section = mobileSectionRef.current;
+        if (!pinWrapper || !section) return;
 
         const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
         if (motionQuery.matches) return;
 
-        const pinWrapper = mobilePinWrapperRef.current;
+        const mm = gsap.matchMedia();
 
-        const ctx = gsap.context(() => {
+        mm.add("(max-width: 639px)", () => {
             ScrollTrigger.create({
-                trigger: pinWrapper,
-                pin: true,
+                trigger: section,
+                pin: pinWrapper,
                 pinSpacing: true,
-                start: "top 80px",
-                end: "+=900px",
-                scrub: 0.35,
+                start: "top top+=70px",
+                end: "+=1000px",
+                scrub: 0.5,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                     updateMobileCards(self.progress);
                 },
             });
-            // Guarantee card 1 is visible immediately on load
+
+            // Guarantee first card is active initially
             updateMobileCards(0);
-        }, pinWrapper);
+        });
 
         return () => {
-            ctx.revert();
+            mm.revert();
         };
     }, [updateMobileCards]);
 
