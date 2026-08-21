@@ -154,7 +154,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                 // home (17px), about (19px), gallery (24.5px), services (25px), packages (26.5px), contact (27.5px)
                                 const heightClass =
                                     item.key === "home"
-                                        ? "h-4 lg:h-[17px]"
+                                        ? "h-4 lg:h-[18px]"
                                         : item.key === "about"
                                             ? "h-4.5 lg:h-[19px]"
                                             : item.key === "gallery"
@@ -162,8 +162,8 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                                 : item.key === "services"
                                                     ? "h-6 lg:h-[25px]"
                                                     : item.key === "packages"
-                                                        ? "h-[25px] lg:h-[26.5px]"
-                                                        : "h-6.5 lg:h-[27.5px]";
+                                                        ? "h-[27.5px] lg:h-[29px]"
+                                                        : "h-7 lg:h-[28px]";
 
                                 const marginClass = "";
 
@@ -183,23 +183,34 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                             transitionDelay: `${100 + idx * 50}ms`,
                                         }}
                                     >
-                                        <div
-                                            className={`${heightClass} ${aspectClass} transition-all duration-300 ${isActive
-                                                ? "bg-ftx-lime drop-shadow-[0_0_10px_rgba(164,214,94,0.75)] scale-105"
-                                                : "bg-ftx-silver group-hover:bg-ftx-lime group-hover:drop-shadow-[0_0_8px_rgba(164,214,94,0.6)]"
-                                                }`}
-                                            style={{
-                                                maskImage: `url('/fonts/nav/${item.key}.svg')`,
-                                                WebkitMaskImage: `url('/fonts/nav/${item.key}.svg')`,
-                                                maskSize: "contain",
-                                                WebkitMaskSize: "contain",
-                                                maskRepeat: "no-repeat",
-                                                WebkitMaskRepeat: "no-repeat",
-                                                maskPosition: "center",
-                                                WebkitMaskPosition: "center",
-                                            }}
-                                            aria-label={messages.nav[item.key]}
-                                        />
+                                        {locale === "en" ? (
+                                            <div
+                                                className={`${heightClass} ${aspectClass} transition-all duration-300 ${isActive
+                                                    ? "bg-ftx-lime drop-shadow-[0_0_10px_rgba(164,214,94,0.75)]"
+                                                    : "bg-ftx-silver group-hover:bg-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                                                    }`}
+                                                style={{
+                                                    maskImage: `url('/fonts/nav/${item.key}.svg')`,
+                                                    WebkitMaskImage: `url('/fonts/nav/${item.key}.svg')`,
+                                                    maskSize: "contain",
+                                                    WebkitMaskSize: "contain",
+                                                    maskRepeat: "no-repeat",
+                                                    WebkitMaskRepeat: "no-repeat",
+                                                    maskPosition: "center",
+                                                    WebkitMaskPosition: "center",
+                                                }}
+                                                aria-label={messages?.nav?.[item.key] || item.key}
+                                            />
+                                        ) : (
+                                            <span
+                                                className={`text-xs sm:text-sm font-heading font-bold uppercase tracking-widest transition-all duration-300 ${isActive
+                                                    ? "text-ftx-lime drop-shadow-[0_0_10px_rgba(164,214,94,0.75)]"
+                                                    : "text-ftx-silver group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                                                    }`}
+                                            >
+                                                {messages?.nav?.[item.key] || item.key}
+                                            </span>
+                                        )}
                                     </Link>
                                 );
                             })}

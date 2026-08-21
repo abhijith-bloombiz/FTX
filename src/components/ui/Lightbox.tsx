@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { GalleryItem } from "@/types/gallery";
 import { Locale } from "@/i18n/config";
+import { getVehicleLabel } from "@/data/gallery";
 
 interface LightboxProps {
     item: GalleryItem | null;
@@ -109,7 +110,7 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
             {/* Top Navigation & Controls Bar */}
             <div className="w-full flex items-center justify-between z-20 max-w-6xl">
                 <div className={`px-3.5 py-1.5 bg-ftx-surface/80 border border-ftx-surface-high text-[10px] sm:text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest rounded-full backdrop-blur-md shadow-md transition-all duration-300 ${isClosing ? "opacity-0 translate-y-[-10px]" : getDetailsSlideClass()}`}>
-                    {displayItem.vehicle}
+                    {getVehicleLabel(displayItem.vehicle, locale)}
                 </div>
 
                 {/* Top Right Action Controls: Info (i) + Close (X) */}
@@ -204,7 +205,7 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                 <div className={`p-4 sm:p-6 bg-ftx-surface/95 border border-ftx-surface-high ftx-squircle-lg shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300 ${getDetailsSlideClass()}`}>
                     <div className="space-y-1">
                         <span className="text-[10px] font-mono font-bold tracking-widest text-ftx-lime uppercase">
-                            {displayItem.vehicle}
+                            {getVehicleLabel(displayItem.vehicle, locale)}
                         </span>
                         <h3 className="text-base sm:text-lg font-heading font-bold text-white uppercase">
                             {displayItem.title[locale]}

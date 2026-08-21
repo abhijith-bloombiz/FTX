@@ -62,7 +62,7 @@ export function HeroBackground({
             <div
                 className="absolute inset-0 opacity-15 pointer-events-none"
                 style={{
-                    backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(128, 255, 0, 0.08) 0%, rgba(15, 23, 18, 0.20) 70%, transparent 100%)`,
+                    backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(164, 214, 94, 0.08) 0%, rgba(15, 23, 18, 0.20) 70%, transparent 100%)`,
                 }}
             />
         </div>

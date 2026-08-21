@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
-import { galleryData } from "@/data/gallery";
+import { galleryData, getVehicleLabel } from "@/data/gallery";
 import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { Locale } from "@/i18n/config";
@@ -71,7 +71,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                 afterImage={beforeAfterItem.afterImage}
                                 beforeLabel={messages.beforeAfter.before}
                                 afterLabel={messages.beforeAfter.after}
-                                alt={beforeAfterItem.vehicle}
+                                alt={getVehicleLabel(beforeAfterItem.vehicle, locale)}
                             />
                         </div>
                     </ScrollReveal>
@@ -104,8 +104,8 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-transparent to-transparent opacity-80" />
 
-                                        <div className="absolute top-4 left-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/30 text-[10px] font-mono text-ftx-lime uppercase rounded">
-                                            {item.vehicle}
+                                        <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/30 text-[10px] font-mono text-ftx-lime uppercase rounded">
+                                            {getVehicleLabel(item.vehicle, locale)}
                                         </div>
                                     </div>
 

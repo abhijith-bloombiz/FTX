@@ -202,67 +202,91 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             <section
                 ref={mobileSectionRef}
                 id="packages-mobile"
-                className="block sm:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-10 sm:py-12"
+                className="block sm:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-4"
             >
+                {/* Ambient Green Glow / Partition Background Shade */}
+                <div className="absolute -bottom-24 -left-24 w-[400px] h-[400px] bg-ftx-lime/15 blur-[100px] rounded-full pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_left,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
+
                 <div
                     ref={mobilePinWrapperRef}
-                    className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-black relative flex flex-col items-center"
+                    className="w-full px-4 max-w-sm mx-auto bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-5rem)] py-2 z-10"
                 >
                     {/* Mobile Pinned Section Heading - Aligned with standard page grid */}
-                    <div className="text-left w-full space-y-2 mb-6">
+                    <div className="text-left w-full space-y-1 mb-3">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                             <span>{messages.whyFtx.badge}</span>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-heading font-black text-white uppercase tracking-tight leading-[0.95]">
+                        <h2 className="text-2xl font-heading font-black text-white uppercase tracking-tight leading-[0.95]">
                             {messages.whyFtx.title}
                         </h2>
                     </div>
 
-                    {/* Overlapping 3D Deck Cards Stage */}
-                    <div className="relative w-full max-w-sm mx-auto h-[310px] my-auto [perspective:1000px] [transform-style:preserve-3d]">
-                        {pillars.map((item, idx) => {
-                            const IconComponent = item.icon;
-                            const style = cardStyles[idx] || { scale: 1, opacity: 1, translateY: 90, translateZ: -60, rotateX: -12 };
+                    {/* MAIN PARENT CONTAINER (Plain flex wrapper fitting mobile screen size) */}
+                    <div className="w-full flex-1 flex flex-col justify-between gap-4 my-auto py-2">
+                        {/* TOP: 3D Image Card Deck Stage */}
+                        <div className="relative w-full h-[250px] [perspective:1000px] [transform-style:preserve-3d]">
+                            {pillars.map((item, idx) => {
+                                const IconComponent = item.icon;
+                                const style = cardStyles[idx] || { scale: 1, opacity: 1, translateY: 90, translateZ: -60, rotateX: -12 };
 
-                            return (
-                                <div
-                                    key={idx}
-                                    className="absolute inset-0 w-full h-full will-change-transform [backface-visibility:hidden]"
-                                    style={{
-                                        zIndex: (idx + 1) * 10,
-                                        transform: `perspective(1000px) translate3d(0, ${style.translateY.toFixed(1)}px, ${style.translateZ.toFixed(1)}px) rotateX(${style.rotateX.toFixed(1)}deg) scale(${style.scale.toFixed(3)})`,
-                                        opacity: style.opacity.toFixed(2),
-                                        transformOrigin: "center bottom",
-                                        pointerEvents: style.opacity < 0.2 ? "none" : "auto",
-                                    }}
-                                >
-                                    <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface/95 backdrop-blur-xl border border-white/15 overflow-hidden flex flex-col h-full shadow-[0_16px_50px_rgba(0,0,0,0.95)]">
-                                        {/* Image Cover */}
-                                        <div className="relative w-full aspect-[16/9] overflow-hidden">
-                                            <img
-                                                src={item.image}
-                                                alt={item.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                            <div className="absolute top-3.5 left-3.5 p-2 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime">
-                                                <IconComponent className="w-4 h-4" />
+                                return (
+                                    <div
+                                        key={idx}
+                                        className="absolute inset-0 w-full h-full will-change-transform [backface-visibility:hidden]"
+                                        style={{
+                                            zIndex: (idx + 1) * 10,
+                                            transform: `perspective(1000px) translate3d(0, ${style.translateY.toFixed(1)}px, ${style.translateZ.toFixed(1)}px) rotateX(${style.rotateX.toFixed(1)}deg) scale(${style.scale.toFixed(3)})`,
+                                            opacity: style.opacity.toFixed(2),
+                                            transformOrigin: "center bottom",
+                                            pointerEvents: style.opacity < 0.2 ? "none" : "auto",
+                                        }}
+                                    >
+                                        {/* Styled Image Card Frame */}
+                                        <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface/95 backdrop-blur-xl border border-white/15 overflow-hidden h-full shadow-[0_16px_50px_rgba(0,0,0,0.95)]">
+                                            <div className="relative w-full h-full overflow-hidden">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                                                <div className="absolute top-3.5 left-3.5 p-2 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime">
+                                                    <IconComponent className="w-4 h-4" />
+                                                </div>
                                             </div>
                                         </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
 
-                                        <div className="px-4 pt-3.5 pb-4 space-y-2.5 flex-1 flex flex-col justify-start bg-gradient-to-b from-ftx-surface/90 to-ftx-obsidian/95">
-                                            <h3 className="text-base font-heading font-bold text-white uppercase tracking-wide group-hover:text-ftx-lime transition-colors">
+                        {/* BOTTOM: Content Card Fitting Available Space with Slide-Up Animation */}
+                        <div className="w-full flex-1 min-h-[120px] relative overflow-hidden flex flex-col justify-end">
+                            {pillars.map((item, idx) => {
+                                const isActive = activeCardIndex === idx;
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`w-full h-full transition-all duration-500 ease-out text-start flex flex-col justify-end ${isActive
+                                            ? "opacity-100 translate-y-0 relative z-10"
+                                            : "opacity-0 translate-y-6 absolute inset-x-0 bottom-0 pointer-events-none z-0"
+                                            }`}
+                                    >
+                                        <div className="space-y-2 flex flex-col justify-center h-full px-1 py-2">
+                                            <h3 className="text-lg font-heading font-bold text-white uppercase tracking-wide">
                                                 {item.title}
                                             </h3>
 
-                                            <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                            <p className="text-xs sm:text-sm text-ftx-silver-muted font-body leading-relaxed">
                                                 {item.desc}
                                             </p>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </section>

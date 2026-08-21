@@ -5,7 +5,7 @@ export interface GalleryItem {
     id: string;
     title: Record<"en" | "ar", string>;
     category: "ppf" | "ceramic" | "detailing" | "before-after" | "video";
-    vehicle: string;
+    vehicle: string | Record<"en" | "ar", string>;
     image: string;
     video?: string;
     isVideo?: boolean;

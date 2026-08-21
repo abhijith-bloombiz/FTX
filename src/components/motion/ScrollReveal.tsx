@@ -57,14 +57,14 @@ export function ScrollReveal({
             ([entry]) => {
                 if (entry.isIntersecting) {
                     setIsVisible(true);
-                    if (ref.current && (once || isMobile)) {
+                    if (ref.current && once) {
                         observer.unobserve(ref.current);
                     }
-                } else if (!once && !isMobile) {
+                } else if (!once) {
                     setIsVisible(false);
                 }
             },
-            { threshold: isMobile ? 0.05 : threshold }
+            { threshold: isMobile ? 0.08 : threshold }
         );
 
         if (ref.current) {

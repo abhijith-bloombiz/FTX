@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Play } from "lucide-react";
-import { galleryData } from "@/data/gallery";
+import { galleryData, getVehicleLabel } from "@/data/gallery";
 import { GalleryCategory, MediaTypeFilter } from "@/types/gallery";
 import { GalleryFilter } from "@/components/ui/GalleryFilter";
 import { Lightbox } from "@/components/ui/Lightbox";
@@ -109,7 +109,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 </span>
                                             )}
                                             <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                {filteredItems[0]?.vehicle || (locale === "ar" ? "سيراميك + PPF" : "CERAMIC + PPF")}
+                                                {filteredItems[0] ? getVehicleLabel(filteredItems[0].vehicle, locale) : (locale === "ar" ? "سيراميك + PPF" : "CERAMIC + PPF")}
                                             </div>
                                         </div>
 
@@ -157,7 +157,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 </span>
                                             )}
                                             <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                {filteredItems[1]?.vehicle || (locale === "ar" ? "العناية والتلميع" : "DETAILING")}
+                                                {filteredItems[1] ? getVehicleLabel(filteredItems[1].vehicle, locale) : (locale === "ar" ? "العناية والتلميع" : "DETAILING")}
                                             </div>
                                         </div>
 
@@ -208,7 +208,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 </span>
                                             )}
                                             <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                {filteredItems[2]?.vehicle}
+                                                {filteredItems[2] ? getVehicleLabel(filteredItems[2].vehicle, locale) : ""}
                                             </div>
                                         </div>
 
@@ -224,7 +224,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                         {/* Bottom Content */}
                                         <div className="relative z-10 space-y-1">
                                             <span className="text-[10px] font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                                {filteredItems[2]?.vehicle}
+                                                {filteredItems[2] ? getVehicleLabel(filteredItems[2].vehicle, locale) : ""}
                                             </span>
                                             <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
                                                 {filteredItems[2]?.title[locale]}
@@ -305,7 +305,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
 
                                                     <div className="relative z-10 flex items-center justify-between">
                                                         <span className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                            {item.vehicle}
+                                                            {getVehicleLabel(item.vehicle, locale)}
                                                         </span>
                                                         {(item.isVideo || item.video) && (
                                                             <span className="px-2.5 py-1 bg-ftx-lime text-ftx-black font-mono font-bold text-[10px] uppercase tracking-wider ftx-squircle-sm shadow-lime-glow flex items-center gap-1">
@@ -360,8 +360,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 fill
                                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
-                                            <div className="absolute top-4 left-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                {item.vehicle}
+                                            <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
+                                                {getVehicleLabel(item.vehicle, locale)}
                                             </div>
                                             {(item.isVideo || item.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center bg-ftx-black/30 group-hover:bg-ftx-black/10 transition-colors">
@@ -399,7 +399,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
                                     <div>
                                         <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                            {beforeAfterItem.vehicle}
+                                            {getVehicleLabel(beforeAfterItem.vehicle, locale)}
                                         </span>
                                         <h3 className="text-xl sm:text-2xl font-heading font-bold text-white uppercase mt-1">
                                             {beforeAfterItem.title[locale]}
@@ -415,7 +415,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     afterImage={beforeAfterItem.afterImage}
                                     beforeLabel={locale === "ar" ? "قبل" : "BEFORE"}
                                     afterLabel={locale === "ar" ? "بعد" : "AFTER"}
-                                    alt={beforeAfterItem.vehicle}
+                                    alt={getVehicleLabel(beforeAfterItem.vehicle, locale)}
                                 />
                             </div>
                         </ScrollReveal>
