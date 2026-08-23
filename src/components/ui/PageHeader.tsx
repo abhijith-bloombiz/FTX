@@ -70,7 +70,7 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
     }
 
     return (
-        <section className="relative pt-6 sm:pt-8 pb-0 bg-ftx-black overflow-hidden">
+        <section className="relative pt-4 sm:pt-6 pb-0 bg-ftx-black overflow-hidden">
             {/* Ambient Radial Glow */}
             <div
                 className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-ftx-lime/5 rounded-full blur-[140px] pointer-events-none transition-all duration-1000"

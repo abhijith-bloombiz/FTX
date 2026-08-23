@@ -58,52 +58,44 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     ]);
 
     const updateMobileCards = useCallback((progress: number) => {
-        // Map progress 0.0 -> 1.0 directly across 3 card transitions
+        // Map progress 0.0 -> 1.0 across 3 smooth card stack transitions
         const animProgress = Math.min(1, Math.max(0, progress));
+        // Calculate smooth continuous stage (0.0 -> 3.0)
+        const stage = animProgress * 3;
         const activeIdx = Math.min(pillars.length - 1, Math.floor(animProgress * 3.99));
         setActiveCardIndex(activeIdx);
 
         const newStyles = pillars.map((_, idx) => {
-            if (idx === 0) {
-                const depth = Math.min(3, animProgress * 3);
-                return {
-                    translateY: -depth * 8,
-                    translateZ: -depth * 35,
-                    rotateX: depth * 3.5,
-                    scale: Math.max(0.84, 1 - depth * 0.05),
-                    opacity: Math.max(0.40, 1 - depth * 0.20),
-                };
-            }
+            const dist = stage - idx;
 
-            const startEntry = (idx - 1) / 3;
-            const endEntry = idx / 3;
-
-            if (animProgress < startEntry) {
+            if (dist < 0) {
+                // Waiting in stack behind active card
+                const stackOffset = -dist;
                 return {
-                    translateY: 90,
-                    translateZ: -60,
-                    rotateX: -12,
-                    scale: 0.92,
-                    opacity: 0,
+                    translateY: stackOffset * 14,
+                    translateZ: -stackOffset * 45,
+                    rotateX: -stackOffset * 4,
+                    scale: Math.max(0.82, 1 - stackOffset * 0.05),
+                    opacity: Math.max(0.25, 1 - stackOffset * 0.22),
                 };
-            } else if (animProgress >= startEntry && animProgress <= endEntry) {
-                const entryProgress = (animProgress - startEntry) / (endEntry - startEntry);
-                // Silky 3D sine ease-in-out curve
-                const ease = (1 - Math.cos(entryProgress * Math.PI)) / 2;
-                const translateY = (1 - ease) * 90;
-                const translateZ = (1 - ease) * -60;
-                const rotateX = (1 - ease) * -12;
-                const opacity = ease;
-                const scale = 0.92 + ease * 0.08;
-                return { translateY, translateZ, rotateX, scale, opacity };
+            } else if (dist <= 1) {
+                // Currently swiping UP off top of stack
+                const ease = (1 - Math.cos(dist * Math.PI)) / 2;
+                return {
+                    translateY: -ease * 140,
+                    translateZ: ease * 50,
+                    rotateX: ease * 12,
+                    scale: 1 - ease * 0.04,
+                    opacity: Math.max(0, 1 - ease * 0.95),
+                };
             } else {
-                const depth = Math.min(3 - idx, (animProgress - endEntry) * 3);
+                // Swiped off stage completely
                 return {
-                    translateY: -depth * 8,
-                    translateZ: -depth * 35,
-                    rotateX: depth * 3.5,
-                    scale: Math.max(0.84, 1 - depth * 0.05),
-                    opacity: Math.max(0.40, 1 - depth * 0.20),
+                    translateY: -140,
+                    translateZ: 50,
+                    rotateX: 12,
+                    scale: 0.96,
+                    opacity: 0,
                 };
             }
         });
@@ -130,9 +122,9 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 pin: pinWrapper,
                 pinSpacing: true,
                 start: "top top+=70px",
-                end: "+=1000px",
-                scrub: 0.5,
-                anticipatePin: 1,
+                end: "+=1500px",
+                scrub: 0.3,
+                fastScrollEnd: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                     updateMobileCards(self.progress);
@@ -184,11 +176,11 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                         </div>
 
                                         <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                            <h3 className="text-lg font-heading font-bold text-white uppercase tracking-wide group-hover:text-ftx-lime transition-colors">
+                                            <h3 className="text-xl lg:text-2xl font-heading font-bold text-white uppercase tracking-wide group-hover:text-ftx-lime transition-colors">
                                                 {item.title}
                                             </h3>
 
-                                            <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                            <p className="text-sm sm:text-base text-ftx-silver-muted font-body leading-relaxed">
                                                 {item.desc}
                                             </p>
                                         </div>
@@ -204,7 +196,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             <section
                 ref={mobileSectionRef}
                 id="packages-mobile"
-                className="block sm:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-4"
+                className="block sm:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-10 sm:py-12"
             >
                 {/* Ambient Green Glow / Partition Background Shade */}
                 <div className="absolute -bottom-24 -left-24 w-[400px] h-[400px] bg-ftx-lime/15 blur-[100px] rounded-full pointer-events-none z-0" />
@@ -212,20 +204,20 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
                 <div
                     ref={mobilePinWrapperRef}
-                    className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-5rem)] py-2 z-10"
+                    className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-5rem)] py-4 z-10"
                 >
                     {/* Mobile Pinned Section Heading - Aligned with standard page grid */}
-                    <div className="text-left w-full space-y-1 mb-3">
+                    <div className="text-left w-full space-y-3 mb-8">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                             <span>{messages.whyFtx.badge}</span>
                         </div>
-                        <h2 className="text-2xl font-heading font-black text-white uppercase tracking-tight leading-[0.95]">
+                        <h2 className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-[0.95]">
                             {messages.whyFtx.title}
                         </h2>
                     </div>
 
                     {/* MAIN PARENT CONTAINER (Plain flex wrapper fitting mobile screen size) */}
-                    <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-between gap-4 my-auto py-2">
+                    <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-start gap-[30px] my-auto py-1">
                         {/* TOP: 3D Image Card Deck Stage */}
                         <div className="relative w-full h-[250px] [perspective:1000px] [transform-style:preserve-3d]">
                             {pillars.map((item, idx) => {
@@ -263,26 +255,26 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                             })}
                         </div>
 
-                        {/* BOTTOM: Content Card Fitting Available Space with Slide-Up Animation */}
-                        <div className="w-full flex-1 min-h-[120px] relative overflow-hidden flex flex-col justify-end">
+                        {/* BOTTOM: Content Card Fitting Available Space with Writing/Typewriter Animation */}
+                        <div className="w-full flex-1 min-h-[105px] relative overflow-hidden flex flex-col justify-start">
                             {pillars.map((item, idx) => {
                                 const isActive = activeCardIndex === idx;
 
                                 return (
                                     <div
                                         key={idx}
-                                        className={`w-full h-full transition-all duration-500 ease-out text-start flex flex-col justify-end ${isActive
-                                            ? "opacity-100 translate-y-0 relative z-10"
-                                            : "opacity-0 translate-y-6 absolute inset-x-0 bottom-0 pointer-events-none z-0"
+                                        className={`w-full h-full transition-all duration-300 ease-out text-start flex flex-col justify-start ${isActive
+                                            ? "opacity-100 relative z-10"
+                                            : "opacity-0 absolute inset-x-0 bottom-0 pointer-events-none z-0"
                                             }`}
                                     >
-                                        <div className="space-y-2 flex flex-col justify-center h-full px-1 py-2">
-                                            <h3 className="text-lg font-heading font-bold text-white uppercase tracking-wide">
-                                                {item.title}
+                                        <div className="space-y-1.5 flex flex-col justify-start h-full px-1 py-1">
+                                            <h3 className="text-xl sm:text-2xl font-heading font-bold text-white uppercase tracking-wide">
+                                                <TypewriterText text={item.title} isActive={isActive} speed={25} />
                                             </h3>
 
-                                            <p className="text-xs sm:text-sm text-ftx-silver-muted font-body leading-relaxed">
-                                                {item.desc}
+                                            <p className="text-sm sm:text-base text-ftx-silver-muted font-body leading-relaxed">
+                                                <TypewriterText text={item.desc} isActive={isActive} speed={12} delay={120} />
                                             </p>
                                         </div>
                                     </div>
@@ -293,5 +285,65 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 </div>
             </section>
         </>
+    );
+}
+
+function TypewriterText({
+    text,
+    isActive,
+    speed = 25,
+    delay = 0,
+    className = "",
+}: {
+    text: string;
+    isActive: boolean;
+    speed?: number;
+    delay?: number;
+    className?: string;
+}) {
+    const [displayedText, setDisplayedText] = useState("");
+
+    useEffect(() => {
+        if (!isActive) {
+            setDisplayedText("");
+            return;
+        }
+
+        let timeoutId: NodeJS.Timeout;
+        let intervalId: NodeJS.Timeout;
+        let index = 0;
+
+        const startTyping = () => {
+            intervalId = setInterval(() => {
+                if (index < text.length) {
+                    setDisplayedText(text.slice(0, index + 1));
+                    index++;
+                } else {
+                    clearInterval(intervalId);
+                }
+            }, speed);
+        };
+
+        if (delay > 0) {
+            timeoutId = setTimeout(() => {
+                startTyping();
+            }, delay);
+        } else {
+            startTyping();
+        }
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [text, isActive, speed, delay]);
+
+    return (
+        <span className={className}>
+            {displayedText}
+            {isActive && displayedText.length < text.length && (
+                <span className="inline-block w-1.5 h-4 ml-0.5 bg-ftx-lime animate-pulse align-middle" />
+            )}
+        </span>
     );
 }

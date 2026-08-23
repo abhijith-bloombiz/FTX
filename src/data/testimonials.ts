@@ -54,4 +54,34 @@ export const testimonialsData: TestimonialItem[] = [
             ar: "منذ الاستشارة الأولى وحتى التسليم النهائي تحت أضواء الاستوديو، تعامل فريق FTX مع سيارتي باهتمام فائق. تجربة 10/10.",
         },
     },
+    {
+        id: "t4",
+        name: "Sami Al-Hassan",
+        role: {
+            en: "McLaren Enthusiast",
+            ar: "عاشق مكلارين",
+        },
+        vehicle: "McLaren 720S Spider",
+        avatar: "/images/testimonials/avatar-1.jpg",
+        rating: 5,
+        content: {
+            en: "The full body Paint Protection Film is flawless. The carbon fiber details pop like never before under sunlight.",
+            ar: "فلم الحماية الكامل على هيكل 720S خالي من أي عيوب. ألياف الكربون تلمع بشكل مذهل تحت أشعة الشمس.",
+        },
+    },
+    {
+        id: "t5",
+        name: "David Sterling",
+        role: {
+            en: "V12 Aficionado",
+            ar: "مقتني محركات V12",
+        },
+        vehicle: "Lamborghini Revuelto",
+        avatar: "/images/testimonials/avatar-2.jpg",
+        rating: 5,
+        content: {
+            en: "Exceptional hydrophobic ceramic coating. Dust simply slides off, making maintenance effortless after high-speed drives.",
+            ar: "طلاء سيراميك طارد للماء استثنائي. الغبار ينزلق بسهولة وتصبح الصيانة فائقة السهولة بعد القيادة السريعة.",
+        },
+    },
 ];

@@ -113,9 +113,6 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                         <h4 className="text-base font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
                                             {item.title[locale]}
                                         </h4>
-                                        <p className="text-xs text-ftx-silver-muted mt-2 font-body line-clamp-2">
-                                            {item.description[locale]}
-                                        </p>
                                     </div>
                                 </div>
                             </ScrollReveal>

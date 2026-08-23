@@ -6,8 +6,7 @@ import { Send, CheckCircle2, AlertCircle, Loader2, ChevronDown, Check } from "lu
 import { ContactFormData } from "@/types/contact";
 import { validateContactForm } from "@/lib/validation/contact";
 import { Locale } from "@/i18n/config";
-
-import { ScrollRejoinForm } from "@/components/motion/ScrollRejoinForm";
+import { ScrollReveal } from "@/components/motion/ScrollReveal";
 
 interface ContactFormProps {
     locale: Locale;
@@ -146,7 +145,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     const selectedServiceObj = serviceOptions.find(opt => opt.value === formData.service);
 
     return (
-        <ScrollRejoinForm>
+        <ScrollReveal type="card">
             <div
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -369,6 +368,6 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                     </form>
                 </div>
             </div>
-        </ScrollRejoinForm>
+        </ScrollReveal>
     );
 }

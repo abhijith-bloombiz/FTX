@@ -225,7 +225,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 style={{ opacity: revealed ? 1 : 0 }}
             >
                 {/* TOP LEFT STACKED CONTAINER */}
-                <div className="relative pt-4 pointer-events-auto -translate-x-[10px] min-h-[360px] sm:min-h-[410px] lg:min-h-[470px] xl:min-h-[530px]">
+                <div className="relative pt-4 pointer-events-auto translate-x-0 sm:-translate-x-[10px] min-h-[360px] sm:min-h-[410px] lg:min-h-[470px] xl:min-h-[530px]">
                     {/* GROUP 1: PRECISION PROTECTION. */}
                     <div className="contents">
                         {/* LINE 1 */}
@@ -233,7 +233,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                             {locale === "en" ? (
                                 <div
                                     ref={line1Ref}
-                                    className={`-ml-[1px] h-[84px] sm:h-[104px] lg:h-[120px] xl:h-[136px] aspect-[2021/724] bg-white drop-shadow-[0_0_20px_rgba(255,255,255,0.25)] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
+                                    className={`-ml-[1px] h-[89px] sm:h-[109px] lg:h-[125px] xl:h-[141px] aspect-[2021/724] bg-white drop-shadow-[0_0_20px_rgba(255,255,255,0.25)] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                                     style={{
                                         maskImage: "url('/fonts/home/precision.svg')",
                                         WebkitMaskImage: "url('/fonts/home/precision.svg')",
@@ -258,7 +258,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         </div>
 
                         {/* LINE 2 */}
-                        <div className="absolute top-[46px] sm:top-[56px] lg:top-[72px] xl:top-[96px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className="absolute top-[51px] sm:top-[61px] lg:top-[77px] xl:top-[101px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
                             {locale === "en" ? (
                                 <div
                                     ref={line2Ref}
@@ -319,7 +319,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         </div>
 
                         {/* LINE 4 */}
-                        <div className="absolute top-[46px] sm:top-[56px] lg:top-[72px] xl:top-[96px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className="absolute top-[51px] sm:top-[61px] lg:top-[77px] xl:top-[101px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
                             {locale === "en" ? (
                                 <div
                                     ref={line4Ref}

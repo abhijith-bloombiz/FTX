@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Star, Quote } from "lucide-react";
 import { testimonialsData } from "@/data/testimonials";
 import { Locale } from "@/i18n/config";
-import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { TextReveal } from "@/components/motion/TextReveal";
 
 interface TestimonialsProps {
@@ -13,13 +12,86 @@ interface TestimonialsProps {
 }
 
 export function Testimonials({ locale, messages }: TestimonialsProps) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const [itemsPerPage, setItemsPerPage] = useState(1);
+    const touchStartX = useRef<number | null>(null);
+    const touchEndX = useRef<number | null>(null);
+
+    const isRTL = locale === "ar";
+
+    // Handle responsive items per page
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) {
+                setItemsPerPage(3);
+            } else if (window.innerWidth >= 640) {
+                setItemsPerPage(2);
+            } else {
+                setItemsPerPage(1);
+            }
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const maxIndex = Math.max(0, testimonialsData.length - itemsPerPage);
+
+    const handleNext = useCallback(() => {
+        setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, [maxIndex]);
+
+    const handlePrev = useCallback(() => {
+        setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+    }, [maxIndex]);
+
+    // Autoplay effect
+    useEffect(() => {
+        if (isPaused) return;
+
+        const interval = setInterval(() => {
+            handleNext();
+        }, 4500);
+
+        return () => clearInterval(interval);
+    }, [isPaused, handleNext]);
+
+    // Touch swipe handlers for mobile
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStartX.current || !touchEndX.current) return;
+        const distance = touchStartX.current - touchEndX.current;
+        const isSwipeLeft = distance > 40;
+        const isSwipeRight = distance < -40;
+
+        if (isSwipeLeft) {
+            isRTL ? handlePrev() : handleNext();
+        } else if (isSwipeRight) {
+            isRTL ? handleNext() : handlePrev();
+        }
+
+        touchStartX.current = null;
+        touchEndX.current = null;
+    };
+
     return (
-        <section className="py-10 sm:py-12 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Bottom Left - Desktop Only for GPU Optimization) */}
+        <section className="py-10 sm:py-16 bg-black relative overflow-hidden">
+            {/* Atmospheric Lime Ambient Glow */}
             <div className="hidden sm:block absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_left,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
+
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-left max-w-3xl mb-8 space-y-3">
+                {/* Header with Title */}
+                <div className="mb-8 sm:mb-10 text-left max-w-3xl space-y-3">
                     <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                         <span>{messages.testimonials.badge}</span>
                     </div>
@@ -28,43 +100,79 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                     </TextReveal>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {testimonialsData.map((item, index) => (
-                        <ScrollReveal key={item.id} type="card" delay={index * 140} duration={850}>
-                            <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-3.5 pb-5 px-6 sm:pt-4 sm:pb-6 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full">
-                                <Quote className="absolute top-4 right-6 w-8 h-8 text-ftx-lime/10 group-hover:text-ftx-lime/20 transition-colors z-10" />
+                {/* Carousel Track Container */}
+                <div
+                    className="overflow-hidden w-full relative touch-pan-y"
+                    onMouseEnter={() => setIsPaused(true)}
+                    onMouseLeave={() => setIsPaused(false)}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    <div
+                        className="flex transition-transform duration-500 ease-out"
+                        style={{
+                            transform: isRTL
+                                ? `translateX(${currentIndex * (100 / itemsPerPage)}%)`
+                                : `translateX(-${currentIndex * (100 / itemsPerPage)}%)`,
+                        }}
+                    >
+                        {testimonialsData.map((item) => (
+                            <div
+                                key={item.id}
+                                className="px-3 shrink-0"
+                                style={{ width: `${100 / itemsPerPage}%` }}
+                            >
+                                <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-6 px-6 sm:pt-5 sm:pb-7 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full min-h-[220px]">
+                                    <Quote className="absolute top-4 right-6 w-8 h-8 text-ftx-lime/10 group-hover:text-ftx-lime/20 transition-colors z-10" />
 
-                                <div className="space-y-3 relative z-10">
-                                    <div className="flex items-center gap-1 text-ftx-lime">
-                                        {[...Array(item.rating)].map((_, i) => (
-                                            <Star key={i} className="w-4 h-4 fill-ftx-lime" />
-                                        ))}
-                                    </div>
-
-                                    <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic">
-                                        "{item.content[locale]}"
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center gap-4 pt-4 mt-4 border-t border-ftx-surface-high relative z-10">
-                                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0">
-                                        <img
-                                            src={item.avatar}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-mono font-bold text-white uppercase">
-                                            {item.name}
+                                    <div className="space-y-3 relative z-10">
+                                        <div className="flex items-center gap-1 text-ftx-lime">
+                                            {[...Array(item.rating)].map((_, i) => (
+                                                <Star key={i} className="w-4 h-4 fill-ftx-lime" />
+                                            ))}
                                         </div>
-                                        <div className="text-[10px] font-mono text-ftx-lime">
-                                            {item.role[locale]} • {item.vehicle}
+
+                                        <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic">
+                                            "{item.content[locale]}"
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 pt-4 mt-4 border-t border-ftx-surface-high relative z-10">
+                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0">
+                                            <img
+                                                src={item.avatar}
+                                                alt={item.name}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-mono font-bold text-white uppercase">
+                                                {item.name}
+                                            </div>
+                                            <div className="text-[10px] font-mono text-ftx-lime">
+                                                {item.role[locale]} • {item.vehicle}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </ScrollReveal>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Carousel Pagination Dots */}
+                <div className="flex items-center justify-center gap-2 mt-8">
+                    {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrentIndex(idx)}
+                            aria-label={`Go to slide ${idx + 1}`}
+                            className={`h-2.5 rounded-full transition-all duration-300 ${currentIndex === idx
+                                ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
+                                : "w-2.5 bg-white/20 hover:bg-white/40"
+                                }`}
+                        />
                     ))}
                 </div>
             </div>
