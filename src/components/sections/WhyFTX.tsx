@@ -134,12 +134,12 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         mm.add("(max-width: 639px)", () => {
             ScrollTrigger.create({
                 trigger: section,
-                pin: pinWrapper,
+                pin: section,
                 pinSpacing: true,
+                anticipatePin: 1,
                 start: "top top+=70px",
-                end: "+=1500px",
-                scrub: 0.3,
-                fastScrollEnd: true,
+                end: "+=1400px",
+                scrub: 0.1,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                     updateMobileCards(self.progress);
@@ -272,7 +272,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                         </div>
 
                         {/* BOTTOM: Content Card Fitting Available Space with Smooth Fade Transition */}
-                        <div className="w-full flex-1 min-h-[105px] relative overflow-hidden flex flex-col justify-start">
+                        <div className="w-full flex-1 min-h-[160px] relative overflow-hidden">
                             {pillars.map((item, idx) => {
                                 const isActive = activeCardIndex === idx;
                                 const IconComponent = item.icon;
@@ -280,25 +280,25 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                 return (
                                     <div
                                         key={idx}
-                                        className={`w-full h-full transition-all duration-300 ease-out text-start flex flex-col justify-between ${isActive
-                                            ? "opacity-100 relative z-10 translate-y-0"
-                                            : "opacity-0 absolute inset-x-0 bottom-0 pointer-events-none z-0 translate-y-2"
+                                        className={`absolute inset-0 w-full h-full transition-all duration-300 ease-out flex flex-col justify-between p-1 ${isActive
+                                            ? "opacity-100 z-10 pointer-events-auto translate-y-0"
+                                            : "opacity-0 z-0 pointer-events-none translate-y-2"
                                             }`}
                                     >
-                                        <div className="space-y-1.5 flex flex-col justify-start px-1 py-1">
+                                        <div className="space-y-1.5 flex flex-col justify-start">
                                             <h3 className="text-xl sm:text-2xl font-heading font-bold text-white uppercase tracking-wide">
                                                 {item.title}
                                             </h3>
 
                                             <p className="text-sm sm:text-base text-ftx-silver-muted font-body leading-relaxed min-h-[50px]">
-                                                <TypewriterText text={item.desc} isActive={isActive} speed={18} delay={150} />
+                                                <TypewriterText text={item.desc} isActive={isActive} speed={18} delay={120} />
                                             </p>
                                         </div>
 
                                         {/* Center Aligned 3D Scroll-Animated Icon */}
                                         <div
                                             ref={(el) => { iconRefs.current[idx] = el; }}
-                                            className="pt-4 pb-2 flex items-center justify-center w-full my-auto [perspective:1000px] will-change-transform"
+                                            className="pt-2 pb-1 flex items-center justify-center w-full my-auto [perspective:1000px] will-change-transform"
                                         >
                                             <IconComponent className="w-20 h-20 text-ftx-lime animate-pulse transition-transform duration-100 ease-out" />
                                         </div>
