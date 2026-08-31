@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
+import { getSectionsForPage } from "@/lib/sections";
+
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
 }
@@ -33,6 +35,51 @@ export async function generateMetadata({ params: { locale } }: AboutPageProps) {
 
 export default async function AboutPage({ params: { locale } }: AboutPageProps) {
     const messages = await getMessages(locale);
+    const sections = await getSectionsForPage("about");
+
+    const heroSec = sections.find((s) => s.sectionKey === "hero");
+    const philosophySec = sections.find((s) => s.sectionKey === "philosophy");
+    const infraSec = sections.find((s) => s.sectionKey === "infrastructure");
+    const metricsSec = sections.find((s) => s.sectionKey === "metrics");
+
+    const isAr = locale === "ar";
+
+    const heroBadge = heroSec?.subtitle?.[locale] || messages.about?.heroBadge || messages.nav?.about || (isAr ? "عن FTX" : "ABOUT FTX");
+    const heroTitle = heroSec?.title?.[locale] || (isAr ? "دقة جراحية." : "SURGICAL PERFECTION.");
+    const heroSub = heroSec?.content?.[locale] || messages.about?.heroSub || messages.intro?.p1;
+
+    const philosophyBadge = philosophySec?.subtitle?.[locale] || (isAr ? "معيار FTX" : "THE FTX STANDARD");
+    const philosophyTitle = philosophySec?.title?.[locale] || (isAr ? "هندسة السيارات الدقيقة تلتقي بالتلميع الجراحي" : "PRECISION AUTOMOTIVE ENGINEERING MEETS SURGICAL DETAILING");
+    const philosophyContent = philosophySec?.content?.[locale] || messages.intro?.p1;
+    const philosophyImage = philosophySec?.metadata?.imageUrl || "/images/about/craftsmanship.jpg";
+
+    const infraBadge = infraSec?.subtitle?.[locale] || (isAr ? "البنية التحتية" : "INFRASTRUCTURE");
+    const infraTitle = infraSec?.title?.[locale] || (isAr ? "كبائن دقيقة ببيئة حرارية متحكم بها" : "CLIMATE-CONTROLLED PRECISION BAYS");
+    const infraContent = infraSec?.content?.[locale];
+
+    const infraCard1Image = infraSec?.metadata?.card1Image || "/images/about/plotter.jpg";
+    const infraCard1Title = infraSec?.metadata?.card1Title?.[locale] || (isAr ? "قص كمبيوتري دقيق (Plotter)" : "Surgical Plotter Cutting");
+    const infraCard1Desc = infraSec?.metadata?.card1Desc?.[locale] || (isAr ? "برنامج DAP للقص المباشر يضمن عدم ملامسة المشرط لطلاء المصنع إطلاقاً." : "Computer-guided DAP software plots vehicle-specific templates so blades never touch your vehicle's factory paint.");
+
+    const infraCard2Image = infraSec?.metadata?.card2Image || "/images/about/hepa-bay.jpg";
+    const infraCard2Title = infraSec?.metadata?.card2Title?.[locale] || (isAr ? "نظام تصفية الهواء HEPA" : "HEPA Filtered Air");
+    const infraCard2Desc = infraSec?.metadata?.card2Desc?.[locale] || (isAr ? "نظام الضغط الموجابي يمنع دخول أي ذرات غبار أثناء تركيب فلم الحماية." : "Positive air pressure studio bays eliminate airborne dust particles during the PPF installation process.");
+
+    const infraCard3Image = infraSec?.metadata?.card3Image || "/images/about/infrared.jpg";
+    const infraCard3Title = infraSec?.metadata?.card3Title?.[locale] || (isAr ? "أشعة التجفيف بالإنفراريد" : "Curing Infrared Lamps");
+    const infraCard3Desc = infraSec?.metadata?.card3Desc?.[locale] || (isAr ? "المعالجة بالأشعة تحت الحمراء تضمن ثبات السيراميك لأقصى لمعان ومتانة." : "Shortwave infrared curing locks in ceramic coatings at optimal temperature matrices for maximum gloss and durability.");
+
+    const metric1Val = Number(metricsSec?.metadata?.metric1Val) || 10;
+    const metric1Suffix = metricsSec?.metadata?.metric1Suffix ?? "+";
+    const metric1Label = metricsSec?.metadata?.metric1Label?.[locale] || (isAr ? "سنوات خبرة" : "YEARS EXPERIENCE");
+
+    const metric2Val = Number(metricsSec?.metadata?.metric2Val) || 5;
+    const metric2Suffix = metricsSec?.metadata?.metric2Suffix ?? "K+";
+    const metric2Label = metricsSec?.metadata?.metric2Label?.[locale] || (isAr ? "سيارة تم حمايتها" : "VEHICLES PROTECTED");
+
+    const metric3Val = Number(metricsSec?.metadata?.metric3Val) || 100;
+    const metric3Suffix = metricsSec?.metadata?.metric3Suffix ?? "%";
+    const metric3Label = metricsSec?.metadata?.metric3Label?.[locale] || (isAr ? "تركيز على رضا العملاء" : "SATISFACTION FOCUS");
 
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
@@ -43,10 +90,9 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
             />
             {/* Synchronized Global Header */}
             <PageHeader
-                badge={messages.about?.heroBadge || messages.nav?.about || (locale === "ar" ? "عن FTX" : "ABOUT FTX")}
-                titleLine1={locale === "ar" ? "دقة" : "SURGICAL"}
-                titleLine2={locale === "ar" ? "جراحية." : "PERFECTION."}
-                subtitle={messages.about?.heroSub || messages.intro?.p1}
+                badge={heroBadge}
+                title={heroTitle}
+                subtitle={heroSub}
             />
 
             {/* Studio Philosophy & Craftsmanship */}
@@ -55,23 +101,16 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                     <ScrollReveal type="editorial" className="lg:col-span-6 space-y-6">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-ftx-surface border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime uppercase rounded">
                             <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>{locale === "ar" ? "معيار FTX" : "THE FTX STANDARD"}</span>
+                            <span>{philosophyBadge}</span>
                         </div>
 
                         <h2 className="text-3xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight">
-                            {locale === "ar"
-                                ? "هندسة السيارات الدقيقة تلتقي بالتلميع الجراحي"
-                                : "PRECISION AUTOMOTIVE ENGINEERING MEETS SURGICAL DETAILING"}
+                            {philosophyTitle}
                         </h2>
 
                         <div className="space-y-4 text-xs sm:text-sm text-ftx-silver font-body leading-relaxed">
-                            <p>{messages.intro.p1}</p>
-                            <p>{messages.intro.p2}</p>
-                            <p>
-                                {locale === "ar"
-                                    ? "تأسست FTX – First Torque X على يد نخبة من عشاق كمال السيارات، لوضع معيار عالمي جديد في تركيب أفلام حماية السيارات الفائقة، طلاء السيراميك، وتصحيح الطلاء في دبي."
-                                    : "Founded by passionate automotive perfectionists, FTX – First Torque X was created to set a new global benchmark in supercar protection film installation, ceramic paint coating, and bespoke paint correction in Dubai."}
-                            </p>
+                            <p>{philosophyContent}</p>
+                            <p>{messages.intro?.p2}</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 pt-4">
@@ -97,7 +136,7 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                     <ScrollReveal type="image-mask" delay={150} className="lg:col-span-6 relative">
                         <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-ftx-surface-high shadow-2xl">
                             <Image
-                                src="/images/about/craftsmanship.jpg"
+                                src={philosophyImage}
                                 alt="FTX Studio Master Technicians"
                                 fill
                                 className="object-cover"
@@ -117,10 +156,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <ScrollReveal type="editorial" className="text-left rtl:text-right mb-6 sm:mb-8">
                         <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                            {locale === "ar" ? "البنية التحتية" : "INFRASTRUCTURE"}
+                            {infraBadge}
                         </span>
                         <h2 className="text-2xl sm:text-3xl font-heading font-black text-white uppercase mt-1">
-                            {locale === "ar" ? "كبائن دقيقة ببيئة حرارية متحكم بها" : "CLIMATE-CONTROLLED PRECISION BAYS"}
+                            {infraTitle}
                         </h2>
                     </ScrollReveal>
 
@@ -129,7 +168,7 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                             <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
                                 <div className="relative w-full aspect-[16/10] overflow-hidden">
                                     <Image
-                                        src="/images/about/plotter.jpg"
+                                        src={infraCard1Image}
                                         alt="Surgical Plotter Cutting"
                                         fill
                                         className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -141,12 +180,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                                 </div>
                                 <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
                                     <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                        {locale === "ar" ? "قص كمبيوتري دقيق (Plotter)" : "Surgical Plotter Cutting"}
+                                        {infraCard1Title}
                                     </h3>
                                     <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        {locale === "ar"
-                                            ? "برنامج DAP للقص المباشر يضمن عدم ملامسة المشرط لطلاء المصنع إطلاقاً."
-                                            : "Computer-guided DAP software plots vehicle-specific templates so blades never touch your vehicle's factory paint."}
+                                        {infraCard1Desc}
                                     </p>
                                 </div>
                             </div>
@@ -156,7 +193,7 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                             <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
                                 <div className="relative w-full aspect-[16/10] overflow-hidden">
                                     <Image
-                                        src="/images/about/hepa-bay.jpg"
+                                        src={infraCard2Image}
                                         alt="HEPA Filtered Air"
                                         fill
                                         className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -168,12 +205,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                                 </div>
                                 <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
                                     <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                        {locale === "ar" ? "نظام تصفية الهواء HEPA" : "HEPA Filtered Air"}
+                                        {infraCard2Title}
                                     </h3>
                                     <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        {locale === "ar"
-                                            ? "نظام الضغط الموجابي يمنع دخول أي ذرات غبار أثناء تركيب فلم الحماية."
-                                            : "Positive air pressure studio bays eliminate airborne dust particles during the PPF installation process."}
+                                        {infraCard2Desc}
                                     </p>
                                 </div>
                             </div>
@@ -183,7 +218,7 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                             <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
                                 <div className="relative w-full aspect-[16/10] overflow-hidden">
                                     <Image
-                                        src="/images/about/infrared.jpg"
+                                        src={infraCard3Image}
                                         alt="Curing Infrared Lamps"
                                         fill
                                         className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -195,12 +230,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                                 </div>
                                 <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
                                     <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                        {locale === "ar" ? "أشعة التجفيف بالإنفراريد" : "Curing Infrared Lamps"}
+                                        {infraCard3Title}
                                     </h3>
                                     <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        {locale === "ar"
-                                            ? "المعالجة بالأشعة تحت الحمراء تضمن ثبات السيراميك لأقصى لمعان ومتانة."
-                                            : "Shortwave infrared curing locks in ceramic coatings at optimal temperature matrices for maximum gloss and durability."}
+                                        {infraCard3Desc}
                                     </p>
                                 </div>
                             </div>
@@ -217,30 +250,30 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                             {/* Metric 1 */}
                             <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
                                 <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={10} suffix="+" />
+                                    <AnimatedCounter target={metric1Val} suffix={metric1Suffix} />
                                 </div>
                                 <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {locale === "ar" ? "سنوات خبرة" : "YEARS EXPERIENCE"}
+                                    {metric1Label}
                                 </div>
                             </div>
 
                             {/* Metric 2 */}
                             <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
                                 <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={5} suffix="K+" />
+                                    <AnimatedCounter target={metric2Val} suffix={metric2Suffix} />
                                 </div>
                                 <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {locale === "ar" ? "سيارة تم حمايتها" : "VEHICLES PROTECTED"}
+                                    {metric2Label}
                                 </div>
                             </div>
 
                             {/* Metric 3 */}
                             <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
                                 <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={100} suffix="%" />
+                                    <AnimatedCounter target={metric3Val} suffix={metric3Suffix} />
                                 </div>
                                 <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {locale === "ar" ? "تركيز على رضا العملاء" : "SATISFACTION FOCUS"}
+                                    {metric3Label}
                                 </div>
                             </div>
                         </div>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Shield, RefreshCw, Droplet, Sparkles, Wand2, Car, ArrowUpRight } from "lucide-react";
-import { servicesData } from "@/data/services";
+import { getCmsServices } from "@/lib/cms";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
@@ -33,6 +33,7 @@ export async function generateMetadata({ params: { locale } }: ServicesPageProps
 
 export default async function ServicesPage({ params: { locale } }: ServicesPageProps) {
     const messages = await getMessages(locale);
+    const servicesData = await getCmsServices();
 
     const getHighlightIcon = (iconName: string) => {
         switch (iconName) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Filter, ChevronDown } from "lucide-react";
+import { Filter, ChevronDown, Loader2 } from "lucide-react";
 import { packagesData } from "@/data/packages";
 import { PackageCard } from "@/components/ui/PackageCard";
 import { Locale } from "@/i18n/config";
@@ -13,11 +13,26 @@ interface PackagesPageProps {
 }
 
 export default function PackagesPage({ params: { locale } }: PackagesPageProps) {
+    const [allPackages, setAllPackages] = useState<any[]>(packagesData);
+    const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState<"ppf" | "ceramic" | "detailing">("ppf");
     const [isOpen, setIsOpen] = useState(false);
     const [isDesktopOpen, setIsDesktopOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const desktopDropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setLoading(true);
+        fetch("/api/admin/packages")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.packages && data.packages.length > 0) {
+                    setAllPackages(data.packages);
+                }
+            })
+            .catch(() => { })
+            .finally(() => setLoading(false));
+    }, []);
 
     const categories = [
         {
@@ -34,7 +49,7 @@ export default function PackagesPage({ params: { locale } }: PackagesPageProps) 
         },
     ] as const;
 
-    const filteredPackages = packagesData.filter((pkg) => pkg.category === activeCategory);
+    const filteredPackages = allPackages.filter((pkg) => pkg.category === activeCategory);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -175,17 +190,28 @@ export default function PackagesPage({ params: { locale } }: PackagesPageProps) 
                 </div>
 
                 {/* Packages Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
-                    {filteredPackages.map((pkg, idx) => (
-                        <ScrollReveal key={pkg.id} type="scale" delay={idx * 120} className="h-full">
-                            <PackageCard
-                                packageData={pkg}
-                                locale={locale}
-                                ctaText={locale === "ar" ? "طلب عرض سعر" : "REQUEST QUOTE"}
-                            />
-                        </ScrollReveal>
-                    ))}
-                </div>
+                {loading ? (
+                    <div className="py-20 flex flex-col items-center justify-center space-y-4 bg-ftx-surface/20 border border-ftx-surface-high/40 ftx-squircle-xl">
+                        <div className="p-3 rounded-full bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime shadow-lime-glow">
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                        </div>
+                        <p className="text-xs font-mono text-ftx-silver uppercase tracking-widest animate-pulse">
+                            {locale === "ar" ? "جاري تحميل الباقات من قاعدة البيانات..." : "LOADING PACKAGES FROM DATABASE..."}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
+                        {filteredPackages.map((pkg, idx) => (
+                            <ScrollReveal key={pkg.id} type="scale" delay={idx * 120} className="h-full">
+                                <PackageCard
+                                    packageData={pkg}
+                                    locale={locale}
+                                    ctaText={locale === "ar" ? "طلب عرض سعر" : "REQUEST QUOTE"}
+                                />
+                            </ScrollReveal>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

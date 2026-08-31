@@ -12,6 +12,7 @@ interface TestimonialsProps {
 }
 
 export function Testimonials({ locale, messages }: TestimonialsProps) {
+    const [testimonials, setTestimonials] = useState<any[]>(testimonialsData);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [itemsPerPage, setItemsPerPage] = useState(1);
@@ -19,6 +20,17 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
     const touchEndX = useRef<number | null>(null);
 
     const isRTL = locale === "ar";
+
+    useEffect(() => {
+        fetch("/api/admin/testimonials")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.testimonials && data.testimonials.length > 0) {
+                    setTestimonials(data.testimonials);
+                }
+            })
+            .catch(() => { });
+    }, []);
 
     // Handle responsive items per page
     useEffect(() => {
@@ -37,7 +49,7 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    const maxIndex = Math.max(0, testimonialsData.length - itemsPerPage);
+    const maxIndex = Math.max(0, testimonials.length - itemsPerPage);
 
     const handleNext = useCallback(() => {
         setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
@@ -85,10 +97,10 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
 
     return (
         <section className="py-10 sm:py-16 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Right Side) */}
+            {/* Atmospheric Lime Ambient Glow (Left Side) */}
             <div
-                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
-                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -119,41 +131,48 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                                 : `translateX(-${currentIndex * (100 / itemsPerPage)}%)`,
                         }}
                     >
-                        {testimonialsData.map((item) => (
-                            <div
-                                key={item.id}
-                                className="px-3 shrink-0"
-                                style={{ width: `${100 / itemsPerPage}%` }}
-                            >
-                                <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-4 px-6 sm:pt-5 sm:pb-5 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full min-h-[160px]">
-                                    <Quote className="absolute top-3 right-3 w-7 h-7 text-ftx-lime/20 group-hover:text-ftx-lime/40 transition-colors z-10" />
+                        {testimonials.map((item) => {
+                            const itemId = item.testimonialId || item.id || item._id;
+                            const contentText = typeof item.content === "object" ? item.content[locale] || item.content.en : item.content;
+                            const roleText = typeof item.role === "object" ? item.role[locale] || item.role.en : item.role;
 
-                                    <div className="relative z-10">
-                                        <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic pr-6">
-                                            "{item.content[locale]}"
-                                        </p>
-                                    </div>
+                            return (
+                                <div
+                                    key={itemId}
+                                    className="px-3 shrink-0"
+                                    style={{ width: `${100 / itemsPerPage}%` }}
+                                >
+                                    <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-4 px-6 sm:pt-5 sm:pb-5 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full min-h-[160px]">
+                                        <Quote className="absolute top-3 right-3 w-7 h-7 text-ftx-lime/20 group-hover:text-ftx-lime/40 transition-colors z-10" />
 
-                                    <div className="flex items-center gap-4 pt-3 mt-3 border-t border-ftx-surface-high relative z-10">
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0">
-                                            <img
-                                                src={item.avatar}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                            />
+                                        <div className="relative z-10">
+                                            <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic pr-6">
+                                                "{contentText}"
+                                            </p>
                                         </div>
-                                        <div>
-                                            <div className="text-xs font-mono font-bold text-white uppercase">
-                                                {item.name}
+
+                                        <div className="flex items-center gap-4 pt-3 mt-3 border-t border-ftx-surface-high relative z-10">
+                                            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0 bg-ftx-obsidian">
+                                                <img
+                                                    src={item.avatar || "/images/testimonials/avatar-1.jpg"}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                                />
                                             </div>
-                                            <div className="text-[10px] font-mono text-ftx-lime">
-                                                {item.role[locale]} • {item.vehicle}
+                                            <div>
+                                                <div className="text-xs font-mono font-bold text-white uppercase">
+                                                    {item.name}
+                                                </div>
+                                                <div className="text-[10px] font-mono text-ftx-lime">
+                                                    {roleText} • {item.vehicle}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 

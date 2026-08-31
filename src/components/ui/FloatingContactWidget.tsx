@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Phone, X, MessageCircle } from "lucide-react";
 import { contactConfig } from "@/config/contact";
 import { Locale, isRtl } from "@/i18n/config";
@@ -10,42 +11,24 @@ interface FloatingContactWidgetProps {
 }
 
 export function FloatingContactWidget({ locale }: FloatingContactWidgetProps) {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const rtl = isRtl(locale);
 
     useEffect(() => {
-        const handleScroll = () => {
-            const path = window.location.pathname;
-            const isHomePage =
-                path === "/" ||
-                path === `/${locale}` ||
-                path === `/${locale}/`;
-
-            let threshold = 100;
-            if (isHomePage) {
-                const heroEl = document.getElementById("hero-section");
-                if (heroEl) {
-                    // Pin distance is 3000px, frame scrub completes around 2500px - 2800px
-                    threshold = Math.max(2400, heroEl.offsetHeight - window.innerHeight - 200);
-                } else {
-                    threshold = 2400;
-                }
-            }
-
-            setIsVisible(window.scrollY >= threshold);
-        };
-
-        handleScroll();
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [locale]);
+        setIsVisible(true);
+    }, []);
 
     const whatsappUrl = `https://wa.me/${contactConfig.whatsappNumber}?text=${encodeURIComponent(
         locale === "ar"
             ? "مرحباً، أود الاستفسار عن خدمات FTX لحماية وتلميع السيارات."
             : "Hello, I would like to inquire about FTX automotive protection & detailing services."
     )}`;
+
+    if (pathname?.includes("/admin")) {
+        return null;
+    }
 
     return (
         <div

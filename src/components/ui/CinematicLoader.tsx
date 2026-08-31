@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * FTX Luxury Cinematic Loading Screen
@@ -114,6 +115,7 @@ function cubicBezierEaseInOut(t: number): number {
 }
 
 export function CinematicLoader() {
+    const pathname = usePathname();
     const [shouldRender, setShouldRender] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
     const [progressPct, setProgressPct] = useState(0);
@@ -325,7 +327,7 @@ export function CinematicLoader() {
         };
     }, []);
 
-    if (!shouldRender) return null;
+    if (!shouldRender || pathname?.includes("/admin")) return null;
 
     return (
         <div

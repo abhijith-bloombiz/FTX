@@ -40,7 +40,7 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                     <div className="order-2 lg:order-1 lg:col-span-5 relative w-full transform-gpu">
                         <div className="relative w-full aspect-[4/3] ftx-squircle-lg border border-ftx-surface-high shadow-2xl group overflow-hidden bg-ftx-obsidian">
                             <Image
-                                src="/images/about/craftsmanship.jpg"
+                                src={messages.intro?.image || "/images/about/craftsmanship.jpg"}
                                 alt="FTX Precision Studio Craftsmanship"
                                 fill
                                 decoding="async"
@@ -50,10 +50,10 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                         </div>
                         <div className="absolute -bottom-6 -right-6 hidden sm:block w-48 h-32 bg-ftx-surface border border-ftx-lime/40 ftx-squircle-sm p-4 shadow-2xl transform-gpu">
                             <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
-                                SURGICAL PRECISION
+                                {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
                             </div>
                             <div className="text-xs text-ftx-silver mt-1 font-body">
-                                Climate-Controlled Studio Bays
+                                {messages.intro?.badgeSub || "Climate-Controlled Studio Bays"}
                             </div>
                         </div>
                     </div>

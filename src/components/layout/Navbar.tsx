@@ -96,6 +96,10 @@ export function Navbar({ locale, messages }: NavbarProps) {
         return () => window.removeEventListener("resize", resetUnderline);
     }, [pathname, locale, resetUnderline]);
 
+    if (pathname?.includes("/admin")) {
+        return null;
+    }
+
     return (
         <>
             <header

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function CustomCursor() {
+    const pathname = usePathname();
     const dotRef = useRef<HTMLDivElement>(null);
     const ringRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
@@ -104,8 +106,8 @@ export function CustomCursor() {
         };
     }, [mounted]);
 
-    // Ensure initial hydration pass matches server (null) 100%
-    if (!mounted) return null;
+    // Ensure initial hydration pass matches server (null) 100%, and hide cursor on admin pages
+    if (!mounted || pathname?.includes("/admin")) return null;
 
     return (
         <div

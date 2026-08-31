@@ -90,8 +90,8 @@ export const servicesData: ServiceItem[] = [
         ],
         image: "/images/services/ppf-main.png",
         detailImages: [
-            "/images/gallery/mclaren-ppf.jpg",
             "/images/gallery/gt3rs-ppf.jpg",
+            "/images/gallery/ppf-studio-hero.jpg",
         ],
     },
     {
@@ -183,8 +183,8 @@ export const servicesData: ServiceItem[] = [
         ],
         image: "/images/services/ceramic-main.png",
         detailImages: [
-            "/images/gallery/ferrari-ceramic.jpg",
             "/images/gallery/ceramic-beading.jpg",
+            "/images/gallery/g63-after.jpg",
         ],
     },
     {
@@ -276,8 +276,8 @@ export const servicesData: ServiceItem[] = [
         ],
         image: "/images/services/detailing-main.png",
         detailImages: [
-            "/images/gallery/cullinan-detailing.jpg",
-            "/images/gallery/sto-detailing.jpg",
+            "/images/gallery/before.png",
+            "/images/gallery/after.png",
         ],
     },
 ];

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -47,8 +48,21 @@ interface SmoothScrollProviderProps {
 }
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
+    const pathname = usePathname();
     const [lenis, setLenis] = useState<Lenis | null>(null);
     const lenisRef = useRef<Lenis | null>(null);
+
+    // Reset scroll position on route changes
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        if (lenisRef.current) {
+            lenisRef.current.scrollTo(0, { immediate: true });
+        } else {
+            window.scrollTo(0, 0);
+        }
+        ScrollTrigger.refresh();
+    }, [pathname]);
 
     useEffect(() => {
         const prefersReducedMotion = window.matchMedia(

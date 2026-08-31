@@ -8,6 +8,8 @@ import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 
+import { getCmsPageSection } from "@/lib/cms";
+
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
 }
@@ -35,20 +37,39 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
 
 export default async function ContactPage({ params: { locale } }: ContactPageProps) {
     const messages = await getMessages(locale);
+    const contactSection = await getCmsPageSection("contact", "info");
+
+    const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "معلومات التواصل وموقع الاستوديو" : "GET IN TOUCH.");
+    const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.";
+    const headerDescription = contactSection?.content?.[locale];
+
+    const isAr = locale === "ar";
+    const address = isAr
+        ? (contactSection?.metadata?.addressAr || contactSection?.metadata?.address?.ar || contactConfig.address[locale])
+        : (contactSection?.metadata?.addressEn || contactSection?.metadata?.address?.en || contactConfig.address[locale]);
+
+    const workingHours = isAr
+        ? (contactSection?.metadata?.workingHoursAr || contactSection?.metadata?.workingHours?.ar || contactConfig.workingHours[locale])
+        : (contactSection?.metadata?.workingHoursEn || contactSection?.metadata?.workingHours?.en || contactConfig.workingHours[locale]);
+
+    const phone = contactSection?.metadata?.phone || contactConfig.phone;
+    const phoneRaw = phone.replace(/\s+/g, "");
+    const email = contactSection?.metadata?.email || contactConfig.email;
+    const mapsUrl = contactSection?.metadata?.mapsUrl || contactConfig.mapsUrl;
 
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Top Right) */}
+            {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
             <div
-                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
-                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 0%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
             {/* Global Header */}
             <PageHeader
-                badge={messages.contact.formTitle || "STUDIO LOCATION & QUOTATION"}
-                titleLine1={locale === "ar" ? "تواصل" : "GET IN"}
-                titleLine2={locale === "ar" ? "معنا." : "TOUCH."}
-                subtitle={messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below."}
+                badge={contactSection?.subtitle?.[locale] || messages.contact.formTitle || "STUDIO LOCATION & QUOTATION"}
+                titleLine1={headerTitle}
+                titleLine2=""
+                subtitle={headerDescription || headerSubtitle}
             />
 
             {/* Main Grid */}
@@ -69,9 +90,9 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                         </div>
                                         <div>
                                             <div className="font-mono font-bold text-white uppercase">{messages.contact?.location || "Studio Location"}</div>
-                                            <div className="text-ftx-silver mt-1 leading-relaxed">{contactConfig.address[locale]}</div>
+                                            <div className="text-ftx-silver mt-1 leading-relaxed">{address}</div>
                                             <a
-                                                href={contactConfig.mapsUrl}
+                                                href={mapsUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 text-ftx-lime font-mono text-[10px] mt-1.5 hover:underline"
@@ -88,8 +109,8 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                         </div>
                                         <div>
                                             <div className="font-mono font-bold text-white uppercase">{messages.contact?.telephone || "Telephone"}</div>
-                                            <a href={`tel:${contactConfig.phoneRaw}`} className="font-mono text-ftx-silver hover:text-white mt-1 block">
-                                                {contactConfig.phone}
+                                            <a href={`tel:${phoneRaw}`} className="font-mono text-ftx-silver hover:text-white mt-1 block">
+                                                {phone}
                                             </a>
                                         </div>
                                     </div>
@@ -100,8 +121,8 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                         </div>
                                         <div>
                                             <div className="font-mono font-bold text-white uppercase">{messages.contact?.emailStudio || "Email Studio"}</div>
-                                            <a href={`mailto:${contactConfig.email}`} className="font-mono text-ftx-silver hover:text-white mt-1 block">
-                                                {contactConfig.email}
+                                            <a href={`mailto:${email}`} className="font-mono text-ftx-silver hover:text-white mt-1 block">
+                                                {email}
                                             </a>
                                         </div>
                                     </div>
@@ -112,7 +133,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                         </div>
                                         <div>
                                             <div className="font-mono font-bold text-white uppercase">{messages.contact?.operatingHours || "Operating Hours"}</div>
-                                            <div className="text-ftx-silver mt-1 leading-relaxed">{contactConfig.workingHours[locale]}</div>
+                                            <div className="text-ftx-silver mt-1 leading-relaxed">{workingHours}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -137,7 +158,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                             <div className="relative w-full h-[280px] sm:h-[320px] bg-ftx-obsidian">
                                 <GoogleMapEmbed
                                     title="FTX Studio Location Map"
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14446.857640277353!2d55.2287957!3d25.1453086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f6a27e366f019%3A0xb3ff76c24389df94!2sAl%20Quoz%20Industrial%20Area%203%20-%20Dubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae"
+                                    src={mapsUrl}
                                 />
                             </div>
                         </div>

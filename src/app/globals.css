@@ -115,6 +115,24 @@ body {
   [role="button"] {
     cursor: none !important;
   }
+
+  /* Admin Portal Standard OS Cursor System Override */
+  .admin-portal,
+  .admin-portal * {
+    cursor: default !important;
+  }
+
+  .admin-portal button,
+  .admin-portal a,
+  .admin-portal [role="button"],
+  .admin-portal select {
+    cursor: pointer !important;
+  }
+
+  .admin-portal input,
+  .admin-portal textarea {
+    cursor: text !important;
+  }
 }
 
 html.lenis,
@@ -122,8 +140,10 @@ html.lenis-smooth {
   height: auto;
 }
 
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+.lenis.lenis-smooth [data-lenis-prevent],
+[data-lenis-prevent] {
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 .lenis.lenis-stopped {

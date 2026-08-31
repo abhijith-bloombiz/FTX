@@ -1,43 +1,35 @@
-import { NextResponse } from "next/server";
-import { validateContactForm } from "@/lib/validation/contact";
-import { ContactFormData } from "@/types/contact";
+import { NextRequest, NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/db";
+import { ContactInquiryModel } from "@/lib/models/ContactInquiry";
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
     try {
-        const body: ContactFormData = await request.json();
+        await connectToDatabase();
+        const body = await req.json();
 
-        // Validate incoming payload
-        const validation = validateContactForm(body);
+        const { name, email, phone, vehicleModel, serviceCategory, preferredDate, message } = body;
 
-        if (!validation.success) {
+        if (!name || !email || !phone || !message) {
             return NextResponse.json(
-                {
-                    success: false,
-                    message: "Validation failed. Please check the highlighted form fields.",
-                    errors: validation.errors,
-                },
+                { error: "Name, email, phone, and message are required." },
                 { status: 400 }
             );
         }
 
-        // In a production setup, send email via Nodemailer / SendGrid / Resend here.
-        console.log("New Quote Request Received:", body);
+        const inquiry = await ContactInquiryModel.create({
+            name,
+            email,
+            phone,
+            vehicleModel: vehicleModel || "",
+            serviceCategory: serviceCategory || "",
+            preferredDate: preferredDate || "",
+            message,
+            status: "new",
+        });
 
-        return NextResponse.json(
-            {
-                success: true,
-                message: "Your quote request has been received. Our specialist will contact you shortly.",
-            },
-            { status: 200 }
-        );
+        return NextResponse.json({ success: true, inquiryId: (inquiry._id as any).toString() });
     } catch (error) {
-        console.error("Contact API Error:", error);
-        return NextResponse.json(
-            {
-                success: false,
-                message: "An internal server error occurred. Please try again later.",
-            },
-            { status: 500 }
-        );
+        console.error("Contact Form Submission Error:", error);
+        return NextResponse.json({ error: "Failed to submit inquiry" }, { status: 500 });
     }
 }

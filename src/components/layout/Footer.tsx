@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Phone, Mail, MapPin, Clock, Instagram, Youtube, Facebook } from "lucide-react";
 import { navItems } from "@/config/navigation";
 import { contactConfig } from "@/config/contact";
@@ -13,6 +16,11 @@ interface FooterProps {
 }
 
 export function Footer({ locale, messages }: FooterProps) {
+    const pathname = usePathname();
+
+    if (pathname?.includes("/admin")) {
+        return null;
+    }
     return (
         <footer className="relative bg-black text-ftx-silver border-t border-ftx-surface-high overflow-hidden">
             {/* Background Honeycomb Texture */}
@@ -24,7 +32,7 @@ export function Footer({ locale, messages }: FooterProps) {
                     {/* Brand Info */}
                     <ScrollReveal type="card" delay={0} duration={850}>
                         <div className="space-y-4">
-                            <Link href={`/${locale}`} className="inline-block">
+                            <Link href={`/${locale}/admin/login`} className="inline-block" aria-label="Admin Portal">
                                 <div className="relative w-44 h-12">
                                     <Image
                                         src="/brand/ftx-3d-logo.webp"

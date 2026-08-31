@@ -31,25 +31,25 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             icon: Zap,
             title: messages.whyFtx.v1Title,
             desc: messages.whyFtx.v1Desc,
-            image: "/images/pillars/precision.jpg",
+            image: messages.whyFtx.v1Image || "/images/pillars/precision.jpg",
         },
         {
             icon: Shield,
             title: messages.whyFtx.v2Title,
             desc: messages.whyFtx.v2Desc,
-            image: "/images/pillars/protection.jpg",
+            image: messages.whyFtx.v2Image || "/images/pillars/protection.jpg",
         },
         {
             icon: Award,
             title: messages.whyFtx.v3Title,
             desc: messages.whyFtx.v3Desc,
-            image: "/images/pillars/craftsmanship.jpg",
+            image: messages.whyFtx.v3Image || "/images/pillars/craftsmanship.jpg",
         },
         {
             icon: Sparkles,
             title: messages.whyFtx.v4Title,
             desc: messages.whyFtx.v4Desc,
-            image: "/images/pillars/performance.jpg",
+            image: messages.whyFtx.v4Image || "/images/pillars/performance.jpg",
         },
     ];
 
@@ -148,10 +148,21 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
             // Guarantee first card is active initially
             updateMobileCards(0);
+
+            // Force refresh ScrollTrigger calculations after layout mount
+            setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 150);
         });
 
         return () => {
             mm.revert();
+            ScrollTrigger.getAll().forEach((st) => {
+                if (st.trigger === section || st.vars.pin === section) {
+                    st.kill();
+                }
+            });
+            ScrollTrigger.refresh();
         };
     }, [updateMobileCards]);
 
@@ -159,9 +170,10 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         <>
             {/* DESKTOP & TABLET LAYOUT (>= sm): Unchanged Standard Grid Section */}
             <section id="packages" className="hidden sm:block py-12 bg-black relative overflow-x-clip">
+                {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
                 <div
-                    className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
-                    style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                    className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                    style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
                 />
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-left max-w-3xl mb-8 space-y-3">
@@ -215,6 +227,11 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 id="packages-mobile"
                 className="block sm:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-10 sm:py-12"
             >
+                {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
+                <div
+                    className="absolute bottom-0 left-0 w-full h-[250px] pointer-events-none z-0"
+                    style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                />
 
                 <div
                     ref={mobilePinWrapperRef}
