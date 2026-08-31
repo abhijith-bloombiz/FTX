@@ -24,6 +24,23 @@ interface HomePageProps {
     params: { locale: Locale };
 }
 
+export async function generateMetadata({ params: { locale } }: HomePageProps) {
+    const isAr = locale === "ar";
+    return {
+        title: isAr ? "FTX – فيرست تورك اكس | استوديو حماية العناية الفائقة بالسيارات دبي" : "FTX – First Torque X | Luxury Automotive Protection & Detailing Studio Dubai",
+        description: isAr
+            ? "استوديو دبي الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء، والعناية الفائقة بالسيارات."
+            : "Dubai's premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
+        alternates: {
+            canonical: `https://ftx.ae/${locale}`,
+            languages: {
+                en: "https://ftx.ae/en",
+                ar: "https://ftx.ae/ar",
+            },
+        },
+    };
+}
+
 export default async function HomePage({ params: { locale } }: HomePageProps) {
     const messages = await getMessages(locale);
 

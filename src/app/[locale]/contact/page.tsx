@@ -15,6 +15,23 @@ interface ContactPageProps {
     params: { locale: Locale };
 }
 
+export async function generateMetadata({ params: { locale } }: ContactPageProps) {
+    const isAr = locale === "ar";
+    return {
+        title: isAr ? "اتصل بنا | FTX دبي - حماية وحفظ السيارات الفاخرة" : "Contact Us | FTX Studio Dubai - Bespoke Automotive Protection",
+        description: isAr
+            ? "تواصل مع استوديو FTX في القوز دبي لحجز موعد استشارة حماية وتلميع سيارتك."
+            : "Book a consultation or visit the FTX studio in Al Quoz, Dubai. Specialist Paint Protection Film, Ceramic Coating & Detailing.",
+        alternates: {
+            canonical: `https://ftx.ae/${locale}/contact`,
+            languages: {
+                en: "https://ftx.ae/en/contact",
+                ar: "https://ftx.ae/ar/contact",
+            },
+        },
+    };
+}
+
 export default async function ContactPage({ params: { locale } }: ContactPageProps) {
     const messages = await getMessages(locale);
 

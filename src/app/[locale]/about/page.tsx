@@ -14,6 +14,23 @@ interface AboutPageProps {
     params: { locale: Locale };
 }
 
+export async function generateMetadata({ params: { locale } }: AboutPageProps) {
+    const isAr = locale === "ar";
+    return {
+        title: isAr ? "عن FTX | استوديو حماية العناية بالسيارات دبي" : "About FTX | Surgical Perfection Automotive Studio Dubai",
+        description: isAr
+            ? "تعرف على فلسفة FTX وشغفنا بالكمال في حماية وتجميل أحدث السيارات الفاخرة والدقيقة في دبي."
+            : "Discover the ethos of FTX Dubai. Engineered for perfection with surgical paint protection, ceramic coatings, and high-end detailing.",
+        alternates: {
+            canonical: `https://ftx.ae/${locale}/about`,
+            languages: {
+                en: "https://ftx.ae/en/about",
+                ar: "https://ftx.ae/ar/about",
+            },
+        },
+    };
+}
+
 export default async function AboutPage({ params: { locale } }: AboutPageProps) {
     const messages = await getMessages(locale);
 
