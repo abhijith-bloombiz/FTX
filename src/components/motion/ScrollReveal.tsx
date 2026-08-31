@@ -30,7 +30,7 @@ export function ScrollReveal({
     delay = 0,
     duration = 850,
     threshold = 0.15,
-    once = false,
+    once = true,
     className = "",
     style = {},
 }: ScrollRevealProps) {

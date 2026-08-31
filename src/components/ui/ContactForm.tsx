@@ -157,15 +157,10 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                 ref={cardRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                style={{
-                    transform: "perspective(1500px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
-                    transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-                    transformStyle: "preserve-3d",
-                }}
-                className="bg-[#131313]/95 border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-colors duration-300 transform-gpu"
+                className="bg-[#121212] border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-colors duration-300 transform-gpu"
             >
                 {/* Form Card Ambient Corner Highlight */}
-                <div className="absolute top-0 right-0 w-40 h-40 bg-ftx-lime/10 blur-2xl rounded-bl-full pointer-events-none z-0" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-ftx-lime/5 rounded-bl-full pointer-events-none z-0" />
 
                 <div className="relative z-10">
                     <div className="rejoin-header">
@@ -204,7 +199,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                     value={formData.name}
                                     onChange={handleChange}
                                     placeholder={messages.contact?.namePlaceholder || "Enter full name"}
-                                    className={`w-full px-4 py-3 bg-black/50 backdrop-blur-md text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.name ? "border-red-500" : "border-ftx-surface-high"
+                                    className={`w-full px-4 py-3 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.name ? "border-red-500" : "border-ftx-surface-high"
                                         }`}
                                 />
                                 {errors.name && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.name}</p>}
@@ -221,7 +216,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                     value={formData.phone}
                                     onChange={handleChange}
                                     placeholder={messages.contact?.phonePlaceholder || "Enter phone number"}
-                                    className={`w-full px-4 py-3 bg-black/50 backdrop-blur-md text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.phone ? "border-red-500" : "border-ftx-surface-high"
+                                    className={`w-full px-4 py-3 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.phone ? "border-red-500" : "border-ftx-surface-high"
                                         }`}
                                 />
                                 {errors.phone && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.phone}</p>}
@@ -240,7 +235,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder={messages.contact?.emailPlaceholder || "Enter email address"}
-                                    className={`w-full px-4 py-2.5 bg-black/50 backdrop-blur-md text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.email ? "border-red-500" : "border-ftx-surface-high"
+                                    className={`w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.email ? "border-red-500" : "border-ftx-surface-high"
                                         }`}
                                 />
                                 {errors.email && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.email}</p>}
@@ -257,7 +252,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                     value={formData.vehicleModel}
                                     onChange={handleChange}
                                     placeholder={messages.contact?.vehiclePlaceholder || "Enter vehicle make & model"}
-                                    className={`w-full px-4 py-2.5 bg-black/50 backdrop-blur-md text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.vehicleModel ? "border-red-500" : "border-ftx-surface-high"
+                                    className={`w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.vehicleModel ? "border-red-500" : "border-ftx-surface-high"
                                         }`}
                                 />
                                 {errors.vehicleModel && (
@@ -276,7 +271,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 <button
                                     type="button"
                                     onClick={() => setIsServiceOpen(!isServiceOpen)}
-                                    className={`w-full px-4 py-2.5 bg-black/50 backdrop-blur-md flex items-center justify-between border ftx-squircle-sm text-xs font-mono focus:outline-none transition-all duration-300 ltr:text-left rtl:text-right ${isServiceOpen
+                                    className={`w-full px-4 py-2.5 bg-[#0a0a0a] flex items-center justify-between border ftx-squircle-sm text-xs font-mono focus:outline-none transition-all duration-300 ltr:text-left rtl:text-right ${isServiceOpen
                                         ? "border-ftx-lime shadow-[0_0_20px_rgba(164,214,94,0.2)] text-white"
                                         : errors.service
                                             ? "border-red-500 text-white"
@@ -294,7 +289,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
 
                                 {/* Animated Glassmorphic Dropdown Panel */}
                                 {isServiceOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-ftx-obsidian/95 border border-ftx-surface-high ftx-squircle-sm shadow-2xl backdrop-blur-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-ftx-obsidian border border-ftx-surface-high ftx-squircle-sm shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="py-1.5">
                                             {serviceOptions.map((opt) => {
                                                 const isSelected = formData.service === opt.value;
@@ -307,7 +302,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                                             ? "bg-ftx-lime/15 text-ftx-lime font-bold"
                                                             : opt.value === ""
                                                                 ? "text-ftx-silver-muted hover:bg-ftx-surface-high hover:text-white"
-                                                                : "text-ftx-silver hover:bg-ftx-surface-high hover:text-ftx-lime"
+                                                                : "text-ftx-silver hover:bg-[#1a1a1a] hover:text-ftx-lime"
                                                             }`}
                                                     >
                                                         <span>{opt.label}</span>
@@ -333,7 +328,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                     value={formData.package}
                                     onChange={handleChange}
                                     placeholder={messages.contact?.packagePlaceholder || "Specify package or custom options"}
-                                    className="w-full px-4 py-2.5 bg-black/50 backdrop-blur-md text-white border border-white/10 border-ftx-surface-high ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right"
+                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right"
                                 />
                             </div>
                         </div>
@@ -349,7 +344,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                                 value={formData.message}
                                 onChange={handleChange}
                                 placeholder={messages.contact?.messagePlaceholder || "Share any specific requests, timeline, or vehicle details..."}
-                                className="w-full px-4 py-2.5 bg-black/50 backdrop-blur-md text-white border border-white/10 border-ftx-surface-high ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors resize-none ltr:text-left rtl:text-right"
+                                className="w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors resize-none ltr:text-left rtl:text-right"
                             />
                         </div>
 
