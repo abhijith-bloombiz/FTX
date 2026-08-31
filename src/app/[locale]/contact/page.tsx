@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Phone, Mail, MapPin, Clock, MessageSquare, ExternalLink } from "lucide-react";
 import { contactConfig } from "@/config/contact";
 import { ContactForm } from "@/components/ui/ContactForm";
+import { GoogleMapEmbed } from "@/components/ui/GoogleMapEmbed";
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -134,16 +135,9 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                         {/* Interactive Google Map View Container */}
                         <div className="bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl overflow-hidden shadow-2xl relative group hover:border-ftx-lime/50 transition-colors duration-300">
                             <div className="relative w-full h-[280px] sm:h-[320px] bg-ftx-obsidian">
-                                <iframe
+                                <GoogleMapEmbed
                                     title="FTX Studio Location Map"
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14446.857640277353!2d55.2287957!3d25.1453086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f6a27e366f019%3A0xb3ff76c24389df94!2sAl%20Quoz%20Industrial%20Area%203%20-%20Dubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0, filter: "grayscale(100%) invert(90%) contrast(120%)" }}
-                                    allowFullScreen
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    className="w-full h-full opacity-85 transition-opacity duration-300 group-hover:opacity-100"
                                 />
                             </div>
                         </div>

@@ -8,6 +8,28 @@ import { LENIS_CONFIG } from "./motion.constants";
 
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
+
+    // Global safety guard for React Fiber commitDeletionEffects:
+    // Prevents third-party scripts (e.g. Google Maps iframe, translate) from causing
+    // "NotFoundError: Failed to execute 'removeChild' on 'Node'" unmount crashes.
+    const originalRemoveChild = Node.prototype.removeChild;
+    Node.prototype.removeChild = function <T extends Node>(child: T): T {
+        if (child.parentNode !== this) {
+            if (child.parentNode) {
+                return child.parentNode.removeChild(child) as T;
+            }
+            return child;
+        }
+        return originalRemoveChild.call(this, child) as T;
+    };
+
+    const originalInsertBefore = Node.prototype.insertBefore;
+    Node.prototype.insertBefore = function <T extends Node>(node: T, child: Node | null): T {
+        if (child && child.parentNode !== this) {
+            return this.appendChild(node) as T;
+        }
+        return originalInsertBefore.call(this, node, child) as T;
+    };
 }
 
 interface LenisContextValue {

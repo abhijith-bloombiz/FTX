@@ -48,7 +48,10 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     }, []);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!cardRef.current) return;
+        if (!cardRef.current || typeof window === "undefined") return;
+        // Only run 3D hover tilt on desktop pointer devices
+        if (!window.matchMedia("(pointer: fine)").matches) return;
+
         const card = cardRef.current;
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -159,7 +162,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                     transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
                     transformStyle: "preserve-3d",
                 }}
-                className="bg-ftx-surface/30 backdrop-blur-md border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-colors duration-300"
+                className="bg-[#131313]/95 border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-colors duration-300 transform-gpu"
             >
                 {/* Form Card Ambient Corner Highlight */}
                 <div className="absolute top-0 right-0 w-40 h-40 bg-ftx-lime/10 blur-2xl rounded-bl-full pointer-events-none z-0" />

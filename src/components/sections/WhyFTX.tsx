@@ -326,25 +326,31 @@ function TypewriterText({
     delay?: number;
     className?: string;
 }) {
-    const [displayedText, setDisplayedText] = useState("");
+    const textRef = useRef<HTMLSpanElement>(null);
+    const [isTyping, setIsTyping] = useState(false);
 
     useEffect(() => {
         if (!isActive) {
-            setDisplayedText("");
+            if (textRef.current) textRef.current.textContent = "";
+            setIsTyping(false);
             return;
         }
 
         let timeoutId: NodeJS.Timeout;
         let intervalId: NodeJS.Timeout;
         let index = 0;
+        setIsTyping(true);
 
         const startTyping = () => {
             intervalId = setInterval(() => {
                 if (index < text.length) {
-                    setDisplayedText(text.slice(0, index + 1));
+                    if (textRef.current) {
+                        textRef.current.textContent = text.slice(0, index + 1);
+                    }
                     index++;
                 } else {
                     clearInterval(intervalId);
+                    setIsTyping(false);
                 }
             }, speed);
         };
@@ -364,11 +370,12 @@ function TypewriterText({
     }, [text, isActive, speed, delay]);
 
     return (
-        <span className={className}>
-            {displayedText}
-            {isActive && displayedText.length < text.length && (
-                <span className="inline-block w-1.5 h-4 ml-0.5 bg-ftx-lime animate-pulse align-middle" />
-            )}
+        <span className={`inline-block ${className}`}>
+            <span ref={textRef} />
+            <span
+                aria-hidden="true"
+                className={`inline-block w-1.5 h-4 ml-0.5 bg-ftx-lime animate-pulse align-middle transition-opacity duration-150 ${isTyping ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            />
         </span>
     );
 }
