@@ -20,8 +20,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Top Right) */}
-            <div className="absolute top-20 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_top_right,rgba(164,214,94,0.15),transparent_70%)] pointer-events-none z-0" />
+            <div
+                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 0%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+            />
             {/* Synchronized Global Header */}
             <PageHeader
                 badge={messages.about?.heroBadge || messages.nav?.about || (locale === "ar" ? "عن FTX" : "ABOUT FTX")}
@@ -91,8 +93,10 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
             {/* Facilities & Equipment Highlights */}
             <section className="py-6 sm:py-8 bg-black relative overflow-hidden">
                 {/* Atmospheric Lime Ambient Glow (Bottom Left) */}
-                <div className="absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_left,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
+                <div
+                    className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                    style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                />
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <ScrollReveal type="editorial" className="text-left rtl:text-right mb-6 sm:mb-8">
                         <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">

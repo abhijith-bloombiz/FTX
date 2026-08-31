@@ -43,6 +43,7 @@ export function ScrollReveal({
             setIsMobile(window.innerWidth < 768);
         };
         checkMobile();
+        window.addEventListener("resize", checkMobile, { passive: true });
 
         const prefersReducedMotion = window.matchMedia(
             "(prefers-reduced-motion: reduce)"
@@ -50,7 +51,9 @@ export function ScrollReveal({
 
         if (prefersReducedMotion) {
             setIsVisible(true);
-            return;
+            return () => {
+                window.removeEventListener("resize", checkMobile);
+            };
         }
 
         const observer = new IntersectionObserver(
@@ -83,7 +86,6 @@ export function ScrollReveal({
             transitionDuration: `${duration}ms`,
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
             transitionDelay: `${delay}ms`,
-            willChange: "transform, opacity, filter",
             ...style,
         };
 

@@ -32,7 +32,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     const preService = searchParams.get("service") || "";
     const prePackage = searchParams.get("package") || "";
 
-    const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, scale: 1 });
+    const cardRef = useRef<HTMLDivElement>(null);
     const [isServiceOpen, setIsServiceOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +48,8 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     }, []);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const card = e.currentTarget;
+        if (!cardRef.current) return;
+        const card = cardRef.current;
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -59,11 +60,14 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
         const rotateX = -((y - centerY) / centerY) * 2;
         const rotateY = ((x - centerX) / centerX) * 2;
 
-        setTilt({ rotateX, rotateY, scale: 1.002 });
+        card.style.transform = `perspective(1500px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.002, 1.002, 1.002)`;
+        card.style.transition = "transform 0.08s ease-out";
     };
 
     const handleMouseLeave = () => {
-        setTilt({ rotateX: 0, rotateY: 0, scale: 1 });
+        if (!cardRef.current) return;
+        cardRef.current.style.transform = "perspective(1500px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+        cardRef.current.style.transition = "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)";
     };
 
     const [formData, setFormData] = useState<ContactFormData>({
@@ -147,11 +151,12 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     return (
         <ScrollReveal type="card">
             <div
+                ref={cardRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 style={{
-                    transform: `perspective(1500px) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(${tilt.scale}, ${tilt.scale}, ${tilt.scale})`,
-                    transition: tilt.scale === 1 ? "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)" : "transform 0.08s ease-out",
+                    transform: "perspective(1500px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
+                    transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
                     transformStyle: "preserve-3d",
                 }}
                 className="bg-ftx-surface/30 backdrop-blur-md border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-colors duration-300"

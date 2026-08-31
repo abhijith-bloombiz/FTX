@@ -14,6 +14,7 @@ export function CustomCursor() {
     const mousePos = useRef({ x: -100, y: -100 });
     const ringPos = useRef({ x: -100, y: -100 });
     const rafId = useRef<number | null>(null);
+    const isRafRunning = useRef(false);
 
     useEffect(() => {
         setMounted(true);
@@ -27,9 +28,44 @@ export function CustomCursor() {
             return;
         }
 
+        const startRafIfNeeded = () => {
+            if (isRafRunning.current) return;
+            isRafRunning.current = true;
+            rafId.current = requestAnimationFrame(render);
+        };
+
+        const render = () => {
+            const lerpFactor = 0.22; // Damping speed
+
+            const dx = mousePos.current.x - ringPos.current.x;
+            const dy = mousePos.current.y - ringPos.current.y;
+
+            ringPos.current.x += dx * lerpFactor;
+            ringPos.current.y += dy * lerpFactor;
+
+            if (dotRef.current) {
+                dotRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0) translate(-50%, -50%)`;
+            }
+
+            if (ringRef.current) {
+                ringRef.current.style.transform = `translate3d(${ringPos.current.x}px, ${ringPos.current.y}px, 0) translate(-50%, -50%)`;
+            }
+
+            // Pause RAF loop when cursor ring has settled close to mouse position (< 0.1px)
+            if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+                ringPos.current.x = mousePos.current.x;
+                ringPos.current.y = mousePos.current.y;
+                isRafRunning.current = false;
+                return;
+            }
+
+            rafId.current = requestAnimationFrame(render);
+        };
+
         const handleMouseMove = (e: MouseEvent) => {
             mousePos.current = { x: e.clientX, y: e.clientY };
             if (!isVisible) setIsVisible(true);
+            startRafIfNeeded();
         };
 
         const handleMouseDown = () => setIsClicked(true);
@@ -56,26 +92,6 @@ export function CustomCursor() {
         document.body.addEventListener("mouseleave", handleMouseLeave);
         document.body.addEventListener("mouseenter", handleMouseEnter);
 
-        // RAF Loop for fluid 60-120fps ring lag tracking
-        const render = () => {
-            const lerpFactor = 0.22; // Damping speed
-
-            ringPos.current.x += (mousePos.current.x - ringPos.current.x) * lerpFactor;
-            ringPos.current.y += (mousePos.current.y - ringPos.current.y) * lerpFactor;
-
-            if (dotRef.current) {
-                dotRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0) translate(-50%, -50%)`;
-            }
-
-            if (ringRef.current) {
-                ringRef.current.style.transform = `translate3d(${ringPos.current.x}px, ${ringPos.current.y}px, 0) translate(-50%, -50%)`;
-            }
-
-            rafId.current = requestAnimationFrame(render);
-        };
-
-        rafId.current = requestAnimationFrame(render);
-
         return () => {
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mousedown", handleMouseDown);
@@ -84,8 +100,9 @@ export function CustomCursor() {
             document.body.removeEventListener("mouseleave", handleMouseLeave);
             document.body.removeEventListener("mouseenter", handleMouseEnter);
             if (rafId.current) cancelAnimationFrame(rafId.current);
+            isRafRunning.current = false;
         };
-    }, [mounted, isVisible]);
+    }, [mounted]);
 
     // Ensure initial hydration pass matches server (null) 100%
     if (!mounted) return null;

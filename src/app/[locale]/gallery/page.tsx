@@ -52,8 +52,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Top Right) */}
-            <div className="absolute top-20 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_top_right,rgba(164,214,94,0.15),transparent_70%)] pointer-events-none z-0" />
+            <div
+                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 0%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+            />
             {/* Global Synchronized Header: BUILT TO BE SEEN. */}
             <PageHeader
                 badge={locale === "ar" ? "معرض الأعمال" : "THE GALLERY"}
@@ -421,11 +423,11 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                         </ScrollReveal>
                     )}
 
-                    {/* Stitch Bottom Button: • LOAD MORE PROJECTS */}
+                    {/* Stitch Bottom Button: • LOAD MORE */}
                     <div className="mt-16 text-center">
                         <button className="ftx-btn-tech inline-flex items-center gap-2 px-8 py-4 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-obsidian hover:bg-ftx-surface border border-ftx-surface-high transition-all duration-300">
                             <span className="w-2 h-2 rounded-full bg-ftx-lime shadow-lime-glow animate-pulse" />
-                            <span>{locale === "ar" ? "تحميل المزيد من المشاريع" : "LOAD MORE PROJECTS"}</span>
+                            <span>{locale === "ar" ? "تحميل المزيد" : "LOAD MORE"}</span>
                         </button>
                     </div>
                 </div>

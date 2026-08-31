@@ -39,13 +39,13 @@ export function Footer({ locale, messages }: FooterProps) {
                                 {siteConfig.description[locale]}
                             </p>
 
-                            {/* Animated Social Media Links with FTX Squircle Custom Border Radius */}
+                            {/* Social Media Links with FTX Squircle Custom Border Radius */}
                             <div className="flex items-center gap-3 pt-2">
                                 <a
                                     href={contactConfig.social.instagram}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular animate-icon-seq-1"
+                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
                                     aria-label="Instagram"
                                 >
                                     <Instagram className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-12" />
@@ -54,7 +54,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                     href={contactConfig.social.youtube}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular animate-icon-seq-2"
+                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
                                     aria-label="YouTube"
                                 >
                                     <Youtube className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:-rotate-6" />
@@ -63,7 +63,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                     href={contactConfig.social.facebook}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular animate-icon-seq-3"
+                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
                                     aria-label="Facebook"
                                 >
                                     <Facebook className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-6" />

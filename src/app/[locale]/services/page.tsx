@@ -39,8 +39,10 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Top Right) */}
-            <div className="absolute top-20 -right-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_top_right,rgba(164,214,94,0.15),transparent_70%)] pointer-events-none z-0" />
+            <div
+                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 0%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+            />
             {/* Global Header */}
             <PageHeader
                 badge={messages.servicesSection?.badge || messages.common.ourServices || (locale === "ar" ? "خدماتنا" : "OUR SERVICES")}
@@ -74,8 +76,12 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                             className="py-10 sm:py-12 bg-black relative overflow-hidden"
                         >
                             {/* Atmospheric Lime Ambient Glow (Alternating Left / Right) */}
-                            <div className={`absolute -bottom-24 ${isEven ? "-left-24" : "-right-24"} w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0`} />
-                            <div className={`absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_${isEven ? "left" : "right"},rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0`} />
+                            <div
+                                className={`absolute bottom-0 ${isEven ? "left-0" : "right-0"} w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0`}
+                                style={{
+                                    background: `radial-gradient(ellipse 80% 70% at ${isEven ? "0%" : "100%"} 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)`,
+                                }}
+                            />
 
                             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">

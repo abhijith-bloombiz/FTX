@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Star, Quote } from "lucide-react";
+import { Quote } from "lucide-react";
 import { testimonialsData } from "@/data/testimonials";
 import { Locale } from "@/i18n/config";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -85,9 +85,11 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
 
     return (
         <section className="py-10 sm:py-16 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow */}
-            <div className="hidden sm:block absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-ftx-lime/15 blur-[130px] rounded-full pointer-events-none z-0" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_bottom_left,rgba(164,214,94,0.18),transparent_70%)] pointer-events-none z-0" />
+            {/* Atmospheric Lime Ambient Glow (Right Side) */}
+            <div
+                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+            />
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header with Title */}
@@ -95,7 +97,7 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                     <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                         <span>{messages.testimonials.badge}</span>
                     </div>
-                    <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-[0.95]">
+                    <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
                         <span>{messages.testimonials.title}</span>
                     </TextReveal>
                 </div>
@@ -110,7 +112,7 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                     onTouchEnd={handleTouchEnd}
                 >
                     <div
-                        className="flex transition-transform duration-500 ease-out"
+                        className="flex -mx-3 transition-transform duration-500 ease-out"
                         style={{
                             transform: isRTL
                                 ? `translateX(${currentIndex * (100 / itemsPerPage)}%)`
@@ -123,22 +125,16 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                                 className="px-3 shrink-0"
                                 style={{ width: `${100 / itemsPerPage}%` }}
                             >
-                                <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-6 px-6 sm:pt-5 sm:pb-7 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full min-h-[220px]">
-                                    <Quote className="absolute top-4 right-6 w-8 h-8 text-ftx-lime/10 group-hover:text-ftx-lime/20 transition-colors z-10" />
+                                <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-4 px-6 sm:pt-5 sm:pb-5 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full min-h-[160px]">
+                                    <Quote className="absolute top-3 right-3 w-7 h-7 text-ftx-lime/20 group-hover:text-ftx-lime/40 transition-colors z-10" />
 
-                                    <div className="space-y-3 relative z-10">
-                                        <div className="flex items-center gap-1 text-ftx-lime">
-                                            {[...Array(item.rating)].map((_, i) => (
-                                                <Star key={i} className="w-4 h-4 fill-ftx-lime" />
-                                            ))}
-                                        </div>
-
-                                        <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic">
+                                    <div className="relative z-10">
+                                        <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic pr-6">
                                             "{item.content[locale]}"
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-4 pt-4 mt-4 border-t border-ftx-surface-high relative z-10">
+                                    <div className="flex items-center gap-4 pt-3 mt-3 border-t border-ftx-surface-high relative z-10">
                                         <div className="relative w-10 h-10 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0">
                                             <img
                                                 src={item.avatar}
