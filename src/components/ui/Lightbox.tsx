@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { X, ChevronLeft, ChevronRight, Info, Volume2, VolumeX } from "lucide-react";
 import { GalleryItem } from "@/types/gallery";
 import { Locale } from "@/i18n/config";
 import { getVehicleLabel } from "@/data/gallery";
@@ -21,6 +21,8 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
     const [displayItem, setDisplayItem] = useState<GalleryItem | null>(item);
     const [isClosing, setIsClosing] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
@@ -49,6 +51,38 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
             return () => clearTimeout(timer);
         }
     }, [item?.id]);
+
+    // Handle unmuting video on mount/load
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.muted = isMuted;
+            videoRef.current.volume = 1.0;
+            // Attempt unmuted play
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // Browser autoplay policy blocked unmuted audio, fallback to muted autoplay
+                    if (videoRef.current) {
+                        videoRef.current.muted = true;
+                        setIsMuted(true);
+                        videoRef.current.play().catch(() => { });
+                    }
+                });
+            }
+        }
+    }, [displayItem?.id, isMuted]);
+
+    const toggleAudio = () => {
+        if (videoRef.current) {
+            const nextMutedState = !isMuted;
+            videoRef.current.muted = nextMutedState;
+            videoRef.current.volume = 1.0;
+            setIsMuted(nextMutedState);
+            if (nextMutedState === false) {
+                videoRef.current.play().catch(() => { });
+            }
+        }
+    };
 
     if (!item || !displayItem) return null;
 
@@ -95,6 +129,8 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
         return "translate-x-0 opacity-100";
     };
 
+    const isVideo = displayItem.video || displayItem.isVideo;
+
     return (
         <div
             className={`fixed inset-0 z-[99999] bg-black/50 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 pt-24 sm:pt-28 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
@@ -113,8 +149,32 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                     {getVehicleLabel(displayItem.vehicle, locale)}
                 </div>
 
-                {/* Top Right Action Controls: Info (i) + Close (X) */}
+                {/* Top Right Action Controls: Sound Toggle + Info (i) + Close (X) */}
                 <div className={`flex items-center gap-2 transition-all duration-300 ${isClosing ? "opacity-0 translate-y-[-10px]" : ""}`}>
+                    {isVideo && (
+                        <button
+                            onClick={toggleAudio}
+                            className={`px-3 py-2.5 border text-xs font-mono font-bold uppercase rounded-full backdrop-blur-md shadow-lg flex items-center gap-1.5 transition-all duration-300 ${!isMuted
+                                ? "bg-ftx-lime text-ftx-black border-ftx-lime scale-105 shadow-lime-glow"
+                                : "bg-ftx-surface/90 hover:bg-ftx-surface-high border-ftx-surface-high text-ftx-silver hover:text-ftx-lime"
+                                }`}
+                            aria-label="Toggle video audio"
+                            title={isMuted ? "Unmute Audio" : "Mute Audio"}
+                        >
+                            {!isMuted ? (
+                                <>
+                                    <Volume2 className="w-4 h-4" />
+                                    <span className="text-[10px] hidden sm:inline">{locale === "ar" ? "الصوت مفعل" : "AUDIO ON"}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <VolumeX className="w-4 h-4 text-rose-400" />
+                                    <span className="text-[10px] hidden sm:inline text-rose-400">{locale === "ar" ? "الصوت مكتوم" : "MUTED"}</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+
                     <button
                         onClick={() => setShowDetails(!showDetails)}
                         className={`p-2.5 border text-xs font-mono font-bold uppercase rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 ${showDetails
@@ -137,17 +197,17 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                 </div>
             </div>
 
-            {/* Max Viewport Full Image Area with Embedded Navigation Controls */}
+            {/* Max Viewport Full Image/Video Area with Embedded Navigation Controls */}
             <div className="relative w-full max-w-6xl flex-1 my-2 flex items-center justify-center overflow-hidden">
                 <div className="relative w-full h-full max-h-[70vh] flex items-center justify-center">
-                    {displayItem.video || displayItem.isVideo ? (
+                    {isVideo ? (
                         <video
+                            ref={videoRef}
                             key={displayItem.id}
                             src={displayItem.video}
                             poster={displayItem.image}
                             autoPlay
                             loop
-                            muted
                             playsInline
                             controls
                             className={`max-w-full max-h-[70vh] w-auto h-auto object-contain ftx-squircle-xl shadow-2xl border border-ftx-surface-high/50 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing

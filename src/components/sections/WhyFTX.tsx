@@ -138,7 +138,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 pinSpacing: true,
                 anticipatePin: 1,
                 start: "top top+=70px",
-                end: "+=1400px",
+                end: "+=2800px",
                 scrub: 0.1,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
