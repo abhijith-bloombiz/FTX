@@ -47,11 +47,11 @@ export function PackageCard({ packageData, locale, ctaText }: PackageCardProps) 
                 {/* Features List */}
                 <ul className="space-y-3 mb-8">
                     {features[locale].map((feat, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-xs text-ftx-silver font-body">
-                            <div className="p-0.5 rounded bg-ftx-lime/20 text-ftx-lime shrink-0 mt-0.5">
-                                <Check className="w-3.5 h-3.5" />
+                        <li key={idx} className="flex items-start gap-3 text-xs text-ftx-silver font-body leading-5">
+                            <div className="w-5 h-5 rounded bg-ftx-lime/20 text-ftx-lime shrink-0 flex items-center justify-center mt-0.5">
+                                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                             </div>
-                            <span>{feat}</span>
+                            <span className="pt-0.5">{feat}</span>
                         </li>
                     ))}
                 </ul>

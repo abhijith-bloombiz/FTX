@@ -145,7 +145,10 @@ export function Navbar({ locale, messages }: NavbarProps) {
                         </Link>
 
                         {/* Desktop Navigation Links with Styled SVG Typography */}
-                        <nav className="relative hidden md:flex items-center gap-7 pb-0.5 pt-1">
+                        <nav
+                            onMouseLeave={resetUnderline}
+                            className="relative hidden md:flex items-center gap-7 pb-0.5 pt-1"
+                        >
                             {navItems.map((item, idx) => {
                                 const itemHref = `/${locale}${item.href}`;
                                 const isActive =
@@ -169,6 +172,13 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                                         ? "h-[27.5px] lg:h-[29px]"
                                                         : "h-7 lg:h-[28px]";
 
+                                const underlineBottomClass =
+                                    item.key === "home" || item.key === "about"
+                                        ? "bottom-0"
+                                        : item.key === "packages" || item.key === "contact"
+                                            ? "bottom-[5px]"
+                                            : "bottom-1 sm:bottom-[3px]";
+
                                 const marginClass = "";
 
                                 return (
@@ -178,8 +188,9 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                             navItemRefs.current[idx] = el;
                                         }}
                                         href={itemHref}
+                                        onMouseEnter={() => updateUnderlinePosition(idx)}
                                         onClick={() => updateUnderlinePosition(idx)}
-                                        className={`group relative flex items-center py-1 px-1 ${marginClass} transition-all duration-300`}
+                                        className={`group relative flex items-center py-1.5 px-1 ${marginClass} transition-all duration-300`}
                                         style={{
                                             opacity: revealed ? 1 : 0,
                                             transform: revealed ? "translate3d(0, 0, 0)" : "translate3d(0, -15px, 0)",
@@ -215,19 +226,15 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                                 {messages?.nav?.[item.key] || item.key}
                                             </span>
                                         )}
+
+                                        {/* Smooth Expanding Underline Effect on Hover */}
+                                        <span
+                                            className={`absolute ${underlineBottomClass} left-0 right-0 h-[2px] bg-ftx-lime rounded-full shadow-[0_0_10px_#a4d65e] transition-transform duration-300 ease-out origin-center pointer-events-none ${isActive ? "scale-x-100 opacity-100" : "scale-x-0 group-hover:scale-x-100 opacity-90"
+                                                }`}
+                                        />
                                     </Link>
                                 );
                             })}
-
-                            {/* Gliding Underline indicator with tight gap */}
-                            <span
-                                className="absolute bottom-0 h-0.5 bg-ftx-lime shadow-lime-glow transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
-                                style={{
-                                    left: `${underlineStyle.left}px`,
-                                    width: `${underlineStyle.width}px`,
-                                    opacity: underlineStyle.opacity,
-                                }}
-                            />
                         </nav>
 
                         {/* Right Controls (Language + Quote CTA) - 350ms */}

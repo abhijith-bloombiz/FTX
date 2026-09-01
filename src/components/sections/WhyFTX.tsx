@@ -118,7 +118,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         });
     }, [pillars.length]);
 
-    // GSAP ScrollTrigger Mobile Section Pinning using official gsap.matchMedia
+    // GSAP ScrollTrigger Mobile Section Pinning using official gsap.matchMedia & GSAP Context
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -129,39 +129,61 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
         if (motionQuery.matches) return;
 
-        const mm = gsap.matchMedia();
+        const ctx = gsap.context(() => {
+            const mm = gsap.matchMedia();
 
-        mm.add("(max-width: 639px)", () => {
-            ScrollTrigger.create({
-                trigger: section,
-                pin: section,
-                pinSpacing: true,
-                anticipatePin: 1,
-                start: "top top+=70px",
-                end: "+=2800px",
-                scrub: 0.1,
-                invalidateOnRefresh: true,
-                onUpdate: (self) => {
-                    updateMobileCards(self.progress);
-                },
+            mm.add("(max-width: 639px)", () => {
+                ScrollTrigger.create({
+                    id: "why-ftx-mobile-pin",
+                    trigger: section,
+                    pin: section,
+                    pinSpacing: true,
+                    anticipatePin: 1,
+                    start: "top top+=70px",
+                    end: "+=2800px",
+                    scrub: 0.1,
+                    invalidateOnRefresh: true,
+                    onUpdate: (self) => {
+                        updateMobileCards(self.progress);
+                    },
+                });
+
+                // Guarantee first card is active initially
+                updateMobileCards(0);
+
+                // Force refresh ScrollTrigger calculations after layout mount
+                setTimeout(() => {
+                    ScrollTrigger.refresh();
+                }, 150);
             });
-
-            // Guarantee first card is active initially
-            updateMobileCards(0);
-
-            // Force refresh ScrollTrigger calculations after layout mount
-            setTimeout(() => {
-                ScrollTrigger.refresh();
-            }, 150);
-        });
+        }, section);
 
         return () => {
-            mm.revert();
+            ctx.revert();
             ScrollTrigger.getAll().forEach((st) => {
-                if (st.trigger === section || st.vars.pin === section) {
-                    st.kill();
+                if (st.trigger === section || (st as any).vars?.pin === section || (st as any).vars?.id === "why-ftx-mobile-pin") {
+                    try {
+                        (st as any).revert?.(true);
+                    } catch (e) { }
+                    st.kill(true);
                 }
             });
+
+            if (section) {
+                section.style.position = "";
+                section.style.top = "";
+                section.style.left = "";
+                section.style.width = "";
+                section.style.height = "";
+                section.style.transform = "";
+                section.style.inset = "";
+
+                const parent = section.parentElement;
+                if (parent && parent.classList.contains("pin-spacer")) {
+                    parent.replaceWith(section);
+                }
+            }
+
             ScrollTrigger.refresh();
         };
     }, [updateMobileCards]);

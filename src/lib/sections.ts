@@ -79,6 +79,34 @@ export const DEFAULT_SECTIONS = [
         content: {
             en: "Address: AL QUOZ INDUSTRIAL AREA 3, DUBAI.\nFacility: Climate-Controlled Supercar Enclosure & VIP Waiting Lounge.\nGet in touch with our studio team for custom quote requests.",
             ar: "العنوان: منطقة القوز الصناعية 3، دبي.\nالمرفق: منطقة مخصصة للسيارات الفائقة ومكيفة بالكامل مع صالة كبار الشخصيات.\nتواصل مع فريق الاستوديو للحصول على عرض سعر مخصص."
+        },
+        metadata: {
+            mapsUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3612.4337222165036!2d55.2289!3d25.1208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDA3JzE0LjkiTiA1NcKwMTMnNDQuMCJF!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae",
+            phone: "+971 50 123 4567",
+            email: "info@ftxdetailing.com",
+            addressEn: "Automotive Precision District, Bay 14, Dubai, United Arab Emirates",
+            addressAr: "منطقة تميز السيارات، المجمع 14، دبي، الإمارات العربية المتحدة",
+            workingHoursEn: "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)",
+            workingHoursAr: "الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)",
+        }
+    },
+    {
+        page: "contact",
+        sectionKey: "info",
+        title: { en: "GET IN TOUCH.", ar: "معلومات التواصل وموقع الاستوديو" },
+        subtitle: { en: "STUDIO LOCATION & QUOTATION", ar: "تواصل معنا" },
+        content: {
+            en: "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.",
+            ar: "تواصل مع استوديو FTX في القوز دبي لحجز موعد استشارة حماية وتلميع سيارتك."
+        },
+        metadata: {
+            mapsUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3612.4337222165036!2d55.2289!3d25.1208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDA3JzE0LjkiTiA1NcKwMTMnNDQuMCJF!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae",
+            phone: "+971 50 123 4567",
+            email: "info@ftxdetailing.com",
+            addressEn: "Automotive Precision District, Bay 14, Dubai, United Arab Emirates",
+            addressAr: "منطقة تميز السيارات، المجمع 14، دبي، الإمارات العربية المتحدة",
+            workingHoursEn: "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)",
+            workingHoursAr: "الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)",
         }
     },
     {

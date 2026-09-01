@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Phone, Mail, MapPin, Clock, MessageSquare, ExternalLink } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, MessageSquare } from "lucide-react";
 import { contactConfig } from "@/config/contact";
 import { ContactForm } from "@/components/ui/ContactForm";
 import { GoogleMapEmbed } from "@/components/ui/GoogleMapEmbed";
@@ -21,7 +21,7 @@ interface ContactPageProps {
 export async function generateMetadata({ params: { locale } }: ContactPageProps) {
     const isAr = locale === "ar";
     return {
-        title: isAr ? "اتصل بنا | FTX دبي - حماية وحفظ السيارات الفاخرة" : "Contact Us | FTX Studio Dubai - Bespoke Automotive Protection",
+        title: "First Torque X",
         description: isAr
             ? "تواصل مع استوديو FTX في القوز دبي لحجز موعد استشارة حماية وتلميع سيارتك."
             : "Book a consultation or visit the FTX studio in Al Quoz, Dubai. Specialist Paint Protection Film, Ceramic Coating & Detailing.",
@@ -39,7 +39,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
     const messages = await getMessages(locale);
     const contactSection = await getCmsPageSection("contact", "info");
 
-    const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "معلومات التواصل وموقع الاستوديو" : "GET IN TOUCH.");
+    const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "معلومات التواصل وموقع الاستوديو" : "CONTACT & STUDIO LOCATION");
     const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.";
     const headerDescription = contactSection?.content?.[locale];
 
@@ -67,8 +67,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
             {/* Global Header */}
             <PageHeader
                 badge={contactSection?.subtitle?.[locale] || messages.contact.formTitle || "STUDIO LOCATION & QUOTATION"}
-                titleLine1={headerTitle}
-                titleLine2=""
+                title={headerTitle}
                 subtitle={headerDescription || headerSubtitle}
             />
 
@@ -91,15 +90,6 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                         <div>
                                             <div className="font-mono font-bold text-white uppercase">{messages.contact?.location || "Studio Location"}</div>
                                             <div className="text-ftx-silver mt-1 leading-relaxed">{address}</div>
-                                            <a
-                                                href={mapsUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 text-ftx-lime font-mono text-[10px] mt-1.5 hover:underline"
-                                            >
-                                                <span>{messages.contact?.openMaps || "Open in Google Maps"}</span>
-                                                <ExternalLink className="w-3 h-3" />
-                                            </a>
                                         </div>
                                     </div>
 
@@ -141,7 +131,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                                 {/* Direct WhatsApp CTA */}
                                 <div className="pt-6 border-t border-ftx-surface-high">
                                     <a
-                                        href={getWhatsAppUrl({ locale })}
+                                        href={getWhatsAppUrl({ locale, phoneNumber: phone })}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="ftx-btn-tech ftx-btn-specular w-full inline-flex items-center justify-center gap-2 py-4 px-6 text-xs font-mono font-bold text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright transition-colors shadow-lime-glow"

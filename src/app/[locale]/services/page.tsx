@@ -17,7 +17,7 @@ interface ServicesPageProps {
 export async function generateMetadata({ params: { locale } }: ServicesPageProps) {
     const isAr = locale === "ar";
     return {
-        title: isAr ? "خدماتنا | FTX دبي - PPF وسيراميك وتصحيح الطلاء" : "Our Services | FTX Dubai - PPF, Ceramic Coating & Paint Correction",
+        title: "First Torque X",
         description: isAr
             ? "استكشف خدمات FTX المتخصصة في أفلام حماية الطلاء PPF، وطلاء السيراميك 9H، والتلميع الساطع، والعناية الكاملة بالسيارات الفاخرة."
             : "Explore FTX's suite of luxury automotive protection services in Dubai: Paint Protection Film (PPF), 9H Ceramic Coating, Paint Correction & Detailing.",

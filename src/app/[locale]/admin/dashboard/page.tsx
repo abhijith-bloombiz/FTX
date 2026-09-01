@@ -26,11 +26,15 @@ import {
     ChevronDown,
     Video,
     User as UserIcon,
+    Menu,
+    X,
 } from "lucide-react";
 import { servicesData } from "@/data/services";
 import { packagesData } from "@/data/packages";
 import { galleryData } from "@/data/gallery";
 import { testimonialsData } from "@/data/testimonials";
+import { generateVideoThumbnail } from "@/lib/videoThumbnail";
+import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -44,8 +48,9 @@ export default function AdminDashboardPage() {
     const [selectedHomeSubSection, setSelectedHomeSubSection] = useState<string>("intro");
 
     const [aboutDropdownOpen, setAboutDropdownOpen] = useState<boolean>(true);
-    const [selectedAboutSubSection, setSelectedAboutSubSection] = useState<string>("hero");
+    const [selectedAboutSubSection, setSelectedAboutSubSection] = useState<string>("philosophy");
 
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -62,6 +67,23 @@ export default function AdminDashboardPage() {
     const [editModalItem, setEditModalItem] = useState<any | null>(null);
     const [editModalType, setEditModalType] = useState<"service" | "package" | "gallery" | "testimonial" | null>(null);
     const [isCreateNew, setIsCreateNew] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        confirmText: string;
+        type: "danger" | "warning";
+        onConfirm: () => void;
+    } | null>(null);
+
+    useEffect(() => {
+        if (message) {
+            const timer = setTimeout(() => {
+                setMessage(null);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [message]);
 
     useEffect(() => {
         checkAuthAndFetch();
@@ -136,6 +158,20 @@ export default function AdminDashboardPage() {
         router.push(`/${locale}/admin/login`);
     };
 
+    const triggerLogoutConfirmation = () => {
+        setConfirmModal({
+            isOpen: true,
+            title: "CONFIRM LOGOUT",
+            description: "Are you sure you want to log out of the FTX Content Management System?",
+            confirmText: "YES, LOGOUT NOW",
+            type: "warning",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                await handleLogout();
+            },
+        });
+    };
+
     const handleSaveSection = async (section: any) => {
         setSaving(true);
         setMessage(null);
@@ -157,19 +193,29 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const handleDeleteItem = async (type: string, id: string) => {
-        if (!confirm("Are you sure you want to delete this item?")) return;
-        setSaving(true);
-        try {
-            const res = await fetch(`/api/admin/${type}?id=${id}`, { method: "DELETE" });
-            if (!res.ok) throw new Error(`Failed to delete ${type}`);
-            setMessage({ type: "success", text: `Deleted item successfully!` });
-            fetchAllData();
-        } catch (err: any) {
-            setMessage({ type: "error", text: err.message });
-        } finally {
-            setSaving(false);
-        }
+    const handleDeleteItem = (type: string, id: string) => {
+        const itemTypeLabel = type.endsWith("s") ? type.slice(0, -1) : type;
+        setConfirmModal({
+            isOpen: true,
+            title: "CONFIRM DELETION",
+            description: `Are you sure you want to permanently delete this ${itemTypeLabel}? This action cannot be undone.`,
+            confirmText: "YES, DELETE",
+            type: "danger",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                setSaving(true);
+                try {
+                    const res = await fetch(`/api/admin/${type}?id=${id}`, { method: "DELETE" });
+                    if (!res.ok) throw new Error(`Failed to delete ${type}`);
+                    setMessage({ type: "success", text: `Deleted item successfully!` });
+                    fetchAllData();
+                } catch (err: any) {
+                    setMessage({ type: "error", text: err.message });
+                } finally {
+                    setSaving(false);
+                }
+            },
+        });
     };
 
     const handleSaveModalItem = async (e: React.FormEvent) => {
@@ -217,13 +263,36 @@ export default function AdminDashboardPage() {
 
 
     return (
-        <div className="admin-portal min-h-screen bg-ftx-obsidian text-white flex flex-col pt-0 font-body">
+        <div className="admin-portal h-screen overflow-hidden bg-ftx-obsidian text-white flex flex-col pt-0 font-body relative">
+            {/* Floating Toast Notification */}
+            {message && (
+                <div
+                    className={`fixed top-20 right-6 z-50 px-4 py-3 rounded-xl border shadow-2xl flex items-center gap-3 text-xs font-mono transition-all duration-300 animate-in slide-in-from-right-full fade-in ${message.type === "success"
+                        ? "bg-[#0c120c]/95 border-ftx-lime/50 text-ftx-lime shadow-ftx-lime/10 backdrop-blur-md"
+                        : "bg-[#160c0c]/95 border-rose-500/50 text-rose-400 shadow-rose-500/10 backdrop-blur-md"
+                        }`}
+                >
+                    {message.type === "success" ? (
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-ftx-lime" />
+                    ) : (
+                        <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    )}
+                    <span className="font-semibold whitespace-nowrap">{message.text}</span>
+                    <button
+                        onClick={() => setMessage(null)}
+                        className="ml-2 text-ftx-silver-muted hover:text-white transition-colors shrink-0"
+                    >
+                        <XCircle className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
+
             {/* Top Bar Header */}
-            <header className="bg-ftx-surface border-b border-ftx-surface-high px-6 py-4 flex items-center justify-between z-30 sticky top-0 backdrop-blur-md">
-                <div className="flex items-center">
-                    {/* Logo Section sized to align divider exactly at 256px sidebar border */}
-                    <div className="w-48 sm:w-56 md:w-[232px] shrink-0 flex items-center">
-                        <div className="relative w-36 h-9 sm:w-40 sm:h-10">
+            <header className="bg-ftx-surface border-b border-ftx-surface-high px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-30 shrink-0 backdrop-blur-md">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    {/* Logo Section */}
+                    <div className="shrink-0 flex items-center">
+                        <div className="relative w-44 h-11 sm:w-60 sm:h-15">
                             <Image
                                 src="/brand/ftx-3d-logo.webp"
                                 alt="FTX – First Torque X"
@@ -234,12 +303,12 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
 
-                    {/* Vertical Divider aligned with Sidebar Right Border */}
-                    <div className="h-8 w-[1px] bg-ftx-surface-high shrink-0 hidden md:block mr-6" />
+                    {/* Vertical Divider */}
+                    <div className="h-10 w-[1px] bg-ftx-surface-high shrink-0 hidden md:block mr-6" />
 
                     {/* CMS Title Block */}
-                    <div className="flex flex-col justify-center">
-                        <h1 className="text-sm sm:text-base font-heading font-bold uppercase tracking-wider text-white leading-snug">
+                    <div className="hidden sm:flex flex-col justify-center">
+                        <h1 className="text-xs sm:text-base font-heading font-bold uppercase tracking-wider text-white leading-snug">
                             FTX CONTENT MANAGEMENT SYSTEM
                         </h1>
                         <p className="text-[10px] font-mono text-ftx-silver-muted uppercase tracking-wider">
@@ -248,7 +317,7 @@ export default function AdminDashboardPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <button
                         onClick={async () => {
                             setLoading(true);
@@ -258,26 +327,39 @@ export default function AdminDashboardPage() {
                                 setLoading(false);
                             }
                         }}
-                        className="p-2.5 text-ftx-silver hover:text-ftx-lime bg-ftx-obsidian border border-ftx-surface-high rounded-lg transition-colors"
+                        className="p-2 sm:p-2.5 text-ftx-silver hover:text-ftx-lime bg-ftx-obsidian border border-ftx-surface-high rounded-lg transition-colors"
                         title="Refresh Content"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-ftx-lime" : ""}`} />
                     </button>
 
                     <button
-                        onClick={handleLogout}
-                        className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5"
+                        onClick={triggerLogoutConfirmation}
+                        className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5"
                     >
-                        <LogOut className="w-4 h-4" />
-                        <span>LOGOUT</span>
+                        <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">LOGOUT</span>
+                    </button>
+
+                    {/* Mobile Sidebar Toggle Hamburger Button (Moved to Right) */}
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="p-2 text-ftx-silver hover:text-ftx-lime bg-ftx-obsidian border border-ftx-surface-high rounded-lg md:hidden shrink-0"
+                        aria-label="Toggle Navigation Menu"
+                    >
+                        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                     </button>
                 </div>
             </header>
 
             {/* Main Content Dashboard Area */}
-            <div className="flex-1 flex flex-col md:flex-row">
-                {/* Left Navigation Sidebar */}
-                <aside className="w-full md:w-64 bg-ftx-surface/50 border-r border-ftx-surface-high p-4 space-y-1 shrink-0">
+            <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden relative">
+                {/* Left Navigation Sidebar (Desktop + Mobile Collapsible Drawer) */}
+                <aside
+                    data-lenis-prevent
+                    className={`w-full md:w-64 bg-ftx-surface/95 md:bg-ftx-surface/50 border-r border-ftx-surface-high p-4 space-y-1 shrink-0 overflow-y-auto ${mobileMenuOpen ? "block absolute inset-x-0 top-0 z-40 max-h-[75vh] shadow-2xl border-b" : "hidden md:block h-full"
+                        }`}
+                >
                     <div className="text-[10px] font-mono text-ftx-silver-muted uppercase tracking-widest px-3 py-2">
                         PAGES & SECTIONS
                     </div>
@@ -290,6 +372,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => {
                                     setActiveTab("home");
                                     setHomeDropdownOpen(!homeDropdownOpen);
+                                    setMobileMenuOpen(false);
                                 }}
                                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === "home"
                                     ? "bg-ftx-lime text-ftx-black shadow-lime-glow scale-[1.02]"
@@ -310,9 +393,6 @@ export default function AdminDashboardPage() {
                                         { id: "intro", label: "Intro Section" },
                                         { id: "services", label: "Services Section" },
                                         { id: "why_ftx", label: "Why FTX Section" },
-                                        { id: "gallery", label: "Gallery Section" },
-                                        { id: "testimonials", label: "Testimonials Section" },
-                                        { id: "contact", label: "Contact Section" },
                                     ].map((sub) => {
                                         const isSubActive = activeTab === "home" && selectedHomeSubSection === sub.id;
                                         return (
@@ -321,6 +401,7 @@ export default function AdminDashboardPage() {
                                                 onClick={() => {
                                                     setActiveTab("home");
                                                     setSelectedHomeSubSection(sub.id);
+                                                    setMobileMenuOpen(false);
                                                 }}
                                                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-[11px] font-mono transition-all text-left ${isSubActive
                                                     ? "bg-ftx-lime/20 text-ftx-lime font-bold border-l-2 border-ftx-lime"
@@ -342,6 +423,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => {
                                     setActiveTab("about");
                                     setAboutDropdownOpen(!aboutDropdownOpen);
+                                    setMobileMenuOpen(false);
                                 }}
                                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === "about"
                                     ? "bg-ftx-lime text-ftx-black shadow-lime-glow scale-[1.02]"
@@ -359,7 +441,6 @@ export default function AdminDashboardPage() {
                             {aboutDropdownOpen && (
                                 <div className="pl-3.5 pt-1 pb-1 space-y-1 border-l border-ftx-surface-high/60 ml-4">
                                     {[
-                                        { id: "hero", label: "Hero Section" },
                                         { id: "philosophy", label: "Philosophy & Story" },
                                         { id: "infrastructure", label: "Infrastructure Section" },
                                         { id: "metrics", label: "Performance Metrics" },
@@ -371,6 +452,7 @@ export default function AdminDashboardPage() {
                                                 onClick={() => {
                                                     setActiveTab("about");
                                                     setSelectedAboutSubSection(sub.id);
+                                                    setMobileMenuOpen(false);
                                                 }}
                                                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-[11px] font-mono transition-all text-left ${isSubActive
                                                     ? "bg-ftx-lime/20 text-ftx-lime font-bold border-l-2 border-ftx-lime"
@@ -400,7 +482,10 @@ export default function AdminDashboardPage() {
                                 return (
                                     <button
                                         key={tab.id}
-                                        onClick={() => setActiveTab(tab.id as any)}
+                                        onClick={() => {
+                                            setActiveTab(tab.id as any);
+                                            setMobileMenuOpen(false);
+                                        }}
                                         className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${isActive
                                             ? "bg-ftx-lime text-ftx-black shadow-lime-glow scale-[1.02]"
                                             : "text-ftx-silver hover:text-white hover:bg-ftx-surface"
@@ -423,7 +508,7 @@ export default function AdminDashboardPage() {
                 </aside>
 
                 {/* Right Panel Main Workspace */}
-                <main className="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto max-w-7xl">
+                <main data-lenis-prevent className="flex-1 min-h-0 h-full p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto w-full max-w-7xl overflow-x-hidden">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl p-12">
                             <div className="p-4 rounded-full bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime shadow-lime-glow">
@@ -440,26 +525,6 @@ export default function AdminDashboardPage() {
                         </div>
                     ) : (
                         <>
-                            {message && (
-                                <div
-                                    className={`p-4 rounded-xl border flex items-center justify-between text-xs font-mono ${message.type === "success"
-                                        ? "bg-ftx-lime/10 border-ftx-lime/40 text-ftx-lime"
-                                        : "bg-rose-500/10 border-rose-500/40 text-rose-400"
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {message.type === "success" ? (
-                                            <CheckCircle2 className="w-5 h-5 shrink-0" />
-                                        ) : (
-                                            <AlertCircle className="w-5 h-5 shrink-0" />
-                                        )}
-                                        <span>{message.text}</span>
-                                    </div>
-                                    <button onClick={() => setMessage(null)} className="hover:opacity-75">
-                                        <XCircle className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
 
                             {/* TAB 1: HOME PAGE SECTIONS */}
                             {activeTab === "home" && (
@@ -467,11 +532,8 @@ export default function AdminDashboardPage() {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">
-                                                HOME PAGE SECTIONS {selectedHomeSubSection !== "all" && `— ${selectedHomeSubSection.toUpperCase().replace("_", " ")}`}
+                                                HOME PAGE {selectedHomeSubSection !== "all" && `— ${selectedHomeSubSection.toUpperCase().replace("_", " ")}`}
                                             </h2>
-                                            <p className="text-xs text-ftx-silver-muted font-mono">
-                                                Edit Intro, Services, Why FTX, Gallery, Testimonials, & Contact sections
-                                            </p>
                                         </div>
                                     </div>
 
@@ -479,7 +541,7 @@ export default function AdminDashboardPage() {
                                         {sections
                                             .filter((s) => {
                                                 if (s.page !== "home") return false;
-                                                const allowed = ["intro", "services", "why_ftx", "gallery", "testimonials", "contact"];
+                                                const allowed = ["intro", "services", "why_ftx"];
                                                 if (!allowed.includes(s.sectionKey)) return false;
                                                 if (selectedHomeSubSection !== "all" && s.sectionKey !== selectedHomeSubSection) return false;
                                                 return true;
@@ -491,7 +553,7 @@ export default function AdminDashboardPage() {
                                                     {/* If viewing Services Section under Home Page, render real Service Items management below header */}
                                                     {sec.sectionKey === "services" && (
                                                         <div className="bg-ftx-surface/80 border border-ftx-surface-high p-6 ftx-squircle-lg space-y-6">
-                                                            <div className="flex items-center justify-between border-b border-ftx-surface-high pb-4">
+                                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ftx-surface-high pb-4">
                                                                 <div>
                                                                     <h3 className="text-lg font-heading font-bold uppercase text-ftx-lime flex items-center gap-2">
                                                                         <Wrench className="w-5 h-5" />
@@ -519,10 +581,10 @@ export default function AdminDashboardPage() {
                                                                             process: [],
                                                                         });
                                                                     }}
-                                                                    className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center gap-2 hover:bg-ftx-lime-bright transition-all"
+                                                                    className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
                                                                 >
-                                                                    <Plus className="w-4 h-4" />
-                                                                    <span>ADD NEW SERVICE</span>
+                                                                    <Plus className="w-4 h-4 shrink-0" />
+                                                                    <span>ADD SERVICE</span>
                                                                 </button>
                                                             </div>
 
@@ -598,11 +660,8 @@ export default function AdminDashboardPage() {
                                 <div className="space-y-6">
                                     <div>
                                         <h2 className="text-xl font-heading font-bold uppercase">
-                                            ABOUT PAGE SECTIONS — {selectedAboutSubSection.toUpperCase().replace("_", " ")}
+                                            ABOUT PAGE {selectedAboutSubSection !== "all" && `— ${selectedAboutSubSection.toUpperCase().replace("_", " ")}`}
                                         </h2>
-                                        <p className="text-xs text-ftx-silver-muted font-mono">
-                                            Edit Hero, Philosophy, Infrastructure, & Performance Metrics content for the About Page
-                                        </p>
                                     </div>
                                     <div className="grid grid-cols-1 gap-6">
                                         {sections
@@ -617,7 +676,7 @@ export default function AdminDashboardPage() {
                             {/* TAB 3: SERVICES CMS */}
                             {activeTab === "services" && (
                                 <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">SERVICES MANAGEMENT</h2>
                                             <p className="text-xs text-ftx-silver-muted font-mono">
@@ -642,10 +701,10 @@ export default function AdminDashboardPage() {
                                                     process: [],
                                                 });
                                             }}
-                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center gap-2 hover:bg-ftx-lime-bright transition-all"
+                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
                                         >
-                                            <Plus className="w-4 h-4" />
-                                            <span>ADD NEW SERVICE</span>
+                                            <Plus className="w-4 h-4 shrink-0" />
+                                            <span>ADD SERVICE</span>
                                         </button>
                                     </div>
 
@@ -698,7 +757,7 @@ export default function AdminDashboardPage() {
                             {/* TAB 4: GALLERY MANAGEMENT */}
                             {activeTab === "gallery" && (
                                 <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">GALLERY SHOWCASE MANAGEMENT</h2>
                                             <p className="text-xs text-ftx-silver-muted font-mono">
@@ -721,73 +780,100 @@ export default function AdminDashboardPage() {
                                                     tags: ["PPF", "Supercar"],
                                                 });
                                             }}
-                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center gap-2 hover:bg-ftx-lime-bright transition-all"
+                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
                                         >
-                                            <Plus className="w-4 h-4" />
-                                            <span>ADD MEDIA ITEM</span>
+                                            <Plus className="w-4 h-4 shrink-0" />
+                                            <span>ADD MEDIA</span>
                                         </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {gallery.map((item, idx) => (
-                                            <div
-                                                key={item._id || item.id || item.itemId || `gallery-card-${idx}`}
-                                                className="bg-ftx-surface border border-ftx-surface-high rounded-xl overflow-hidden flex flex-col justify-between"
-                                            >
-                                                <div className="relative aspect-video bg-ftx-obsidian">
-                                                    <img src={item.image} alt={item.title?.en} className="w-full h-full object-cover" />
-                                                    <div className="absolute top-3 left-3 px-2 py-1 bg-ftx-obsidian/90 text-ftx-lime border border-ftx-lime/30 text-[10px] font-mono font-bold uppercase rounded flex items-center gap-1">
-                                                        {item.isVideo ? (
-                                                            <>
-                                                                <Video className="w-3 h-3 text-ftx-lime inline" />
-                                                                <span>VIDEO ({item.category?.toUpperCase()})</span>
-                                                            </>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        {[...gallery]
+                                            .sort((a, b) => {
+                                                const isABeforeAfter = a.category === "before-after" || a.isBeforeAfter;
+                                                const isBBeforeAfter = b.category === "before-after" || b.isBeforeAfter;
+                                                if (isABeforeAfter && !isBBeforeAfter) return -1;
+                                                if (!isABeforeAfter && isBBeforeAfter) return 1;
+                                                return 0;
+                                            })
+                                            .map((item, idx) => (
+                                                <div
+                                                    key={item._id || item.id || item.itemId || `gallery-card-${idx}`}
+                                                    className="bg-ftx-surface border border-ftx-surface-high rounded-xl overflow-hidden flex flex-col justify-between"
+                                                >
+                                                    <div className="relative aspect-video bg-ftx-obsidian overflow-hidden">
+                                                        {(item.category === "before-after" || item.isBeforeAfter) && (item.beforeImage || item.afterImage) ? (
+                                                            <div className="w-full h-full relative">
+                                                                <BeforeAfterSlider
+                                                                    beforeImage={item.beforeImage || item.image || "/images/gallery/before.png"}
+                                                                    afterImage={item.afterImage || item.image || "/images/gallery/after.png"}
+                                                                    className="w-full h-full min-h-0 aspect-video rounded-none border-0"
+                                                                />
+                                                                <div className="absolute top-3 right-3 px-2 py-1 bg-ftx-lime text-ftx-black text-[9px] font-mono font-bold rounded uppercase z-20 pointer-events-none">
+                                                                    SLIDER
+                                                                </div>
+                                                            </div>
                                                         ) : (
-                                                            <span>{item.category?.toUpperCase()}</span>
+                                                            <>
+                                                                <img
+                                                                    src={item.image || "/images/gallery/ppf-studio-hero.jpg"}
+                                                                    alt={typeof item.title === "string" ? item.title : item.title?.en}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                                <div className="absolute top-3 left-3 px-2 py-1 bg-ftx-obsidian/90 text-ftx-lime border border-ftx-lime/30 text-[10px] font-mono font-bold uppercase rounded flex items-center gap-1">
+                                                                    {item.isVideo ? (
+                                                                        <>
+                                                                            <Video className="w-3 h-3 text-ftx-lime inline" />
+                                                                            <span>VIDEO ({item.category?.toUpperCase()})</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span>{item.category?.toUpperCase()}</span>
+                                                                    )}
+                                                                </div>
+                                                                {item.category === "before-after" && (
+                                                                    <div className="absolute top-3 right-3 px-2 py-1 bg-ftx-lime text-ftx-black text-[9px] font-mono font-bold uppercase">
+                                                                        SLIDER
+                                                                    </div>
+                                                                )}
+                                                            </>
                                                         )}
                                                     </div>
-                                                    {item.category === "before-after" && (
-                                                        <div className="absolute top-3 right-3 px-2 py-1 bg-ftx-lime text-ftx-black text-[9px] font-mono font-bold rounded uppercase">
-                                                            SLIDER
-                                                        </div>
-                                                    )}
-                                                </div>
 
-                                                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                                                    <div>
-                                                        <div className="text-[10px] font-mono text-ftx-silver uppercase tracking-wider">
-                                                            {typeof item.vehicle === "object" ? item.vehicle?.en : item.vehicle}
+                                                    <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                                                        <div>
+                                                            <div className="text-[10px] font-mono text-ftx-silver uppercase tracking-wider">
+                                                                {typeof item.vehicle === "object" ? item.vehicle?.en : item.vehicle}
+                                                            </div>
+                                                            <h4 className="text-sm font-heading font-bold text-white uppercase line-clamp-1">
+                                                                {item.title?.en}
+                                                            </h4>
+                                                            <p className="text-xs text-ftx-silver-muted font-body line-clamp-2 mt-1">
+                                                                {typeof item.description === "object" ? item.description?.en : item.description}
+                                                            </p>
                                                         </div>
-                                                        <h4 className="text-sm font-heading font-bold text-white uppercase line-clamp-1">
-                                                            {item.title?.en}
-                                                        </h4>
-                                                        <p className="text-xs text-ftx-silver-muted font-body line-clamp-2 mt-1">
-                                                            {typeof item.description === "object" ? item.description?.en : item.description}
-                                                        </p>
-                                                    </div>
 
-                                                    <div className="flex items-center gap-2 pt-3 border-t border-ftx-surface-high">
-                                                        <button
-                                                            onClick={() => {
-                                                                setIsCreateNew(false);
-                                                                setEditModalType("gallery");
-                                                                setEditModalItem(item);
-                                                            }}
-                                                            className="flex-1 py-2 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-ftx-lime text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                                                        >
-                                                            <Edit3 className="w-3.5 h-3.5" />
-                                                            <span>EDIT</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteItem("gallery", item._id)}
-                                                            className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold uppercase rounded-lg transition-colors"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </button>
+                                                        <div className="flex items-center gap-2 pt-3 border-t border-ftx-surface-high">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setIsCreateNew(false);
+                                                                    setEditModalType("gallery");
+                                                                    setEditModalItem(item);
+                                                                }}
+                                                                className="flex-1 py-2 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-ftx-lime text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                                                            >
+                                                                <Edit3 className="w-3.5 h-3.5" />
+                                                                <span>EDIT</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteItem("gallery", item._id)}
+                                                                className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold uppercase rounded-lg transition-colors"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                     </div>
                                 </div>
                             )}
@@ -795,7 +881,7 @@ export default function AdminDashboardPage() {
                             {/* TAB 5: PACKAGES MANAGEMENT */}
                             {activeTab === "packages" && (
                                 <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">PACKAGES & PRICING MANAGEMENT</h2>
                                             <p className="text-xs text-ftx-silver-muted font-mono">
@@ -817,10 +903,10 @@ export default function AdminDashboardPage() {
                                                     features: { en: ["Feature 1"], ar: ["ميزة 1"] },
                                                 });
                                             }}
-                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center gap-2 hover:bg-ftx-lime-bright transition-all"
+                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
                                         >
-                                            <Plus className="w-4 h-4" />
-                                            <span>ADD NEW PACKAGE</span>
+                                            <Plus className="w-4 h-4 shrink-0" />
+                                            <span>ADD PACKAGE</span>
                                         </button>
                                     </div>
 
@@ -876,7 +962,7 @@ export default function AdminDashboardPage() {
                             {/* TAB 6: TESTIMONIALS MANAGEMENT */}
                             {activeTab === "testimonials" && (
                                 <div className="space-y-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase text-white">TESTIMONIALS MANAGEMENT</h2>
                                             <p className="text-xs text-ftx-silver-muted font-mono">Full CRUD & Bilingual Content Control for Client Reviews</p>
@@ -896,10 +982,10 @@ export default function AdminDashboardPage() {
                                                     content: { en: "The precision and quality of FTX detailing is unmatched in Dubai.", ar: "الدقة والجودة في العناية بالسيارات لدى FTX لا مثيل لها في دبي." },
                                                 });
                                             }}
-                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center gap-2 hover:bg-ftx-lime-bright transition-all shrink-0"
+                                            className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
                                         >
-                                            <Plus className="w-4 h-4" />
-                                            <span>ADD NEW TESTIMONIAL</span>
+                                            <Plus className="w-4 h-4 shrink-0" />
+                                            <span>ADD TESTIMONIAL</span>
                                         </button>
                                     </div>
 
@@ -1017,10 +1103,10 @@ export default function AdminDashboardPage() {
                                                     <button
                                                         onClick={() => handleSaveSection(contactSec)}
                                                         disabled={saving}
-                                                        className="px-5 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center gap-2 hover:bg-ftx-lime-bright transition-all shrink-0 disabled:opacity-50"
+                                                        className="px-4 py-2 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-1.5 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto disabled:opacity-50"
                                                     >
-                                                        <Save className="w-4 h-4" />
-                                                        <span>{saving ? "SAVING..." : "SAVE CONTACT CMS"}</span>
+                                                        <Save className="w-3.5 h-3.5 shrink-0" />
+                                                        <span>{saving ? "SAVING..." : "SAVE"}</span>
                                                     </button>
                                                 </div>
 
@@ -1288,8 +1374,25 @@ export default function AdminDashboardPage() {
 
                                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-ftx-silver-muted">
                                                             <div>VEHICLE: <span className="text-white">{inq.vehicleModel || "N/A"}</span></div>
-                                                            <div>SERVICE: <span className="text-white">{inq.serviceCategory || "N/A"}</span></div>
-                                                            <div>DATE: <span className="text-white">{inq.preferredDate || "N/A"}</span></div>
+                                                            <div>
+                                                                SERVICE:{" "}
+                                                                <span className="text-white">
+                                                                    {inq.serviceCategory
+                                                                        ? inq.serviceCategory
+                                                                        : (inq as any).service
+                                                                            ? String((inq as any).service)
+                                                                            : "N/A"}
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                DATE:{" "}
+                                                                <span className="text-white">
+                                                                    {inq.preferredDate ||
+                                                                        (inq.createdAt
+                                                                            ? new Date(inq.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                                                                            : "N/A")}
+                                                                </span>
+                                                            </div>
                                                         </div>
 
                                                         <div className="p-3 bg-ftx-obsidian border border-ftx-surface-high/60 rounded-lg text-xs text-ftx-silver font-body">
@@ -1308,1083 +1411,1692 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* CREATE / EDIT MODAL FOR SERVICES, PACKAGES, GALLERY, TESTIMONIALS */}
-            {editModalItem && (
-                <div
-                    className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
-                    data-lenis-prevent
-                >
-                    <div className="bg-ftx-surface border border-ftx-surface-high w-full max-w-2xl p-6 sm:p-8 ftx-squircle-xl space-y-5 my-auto shadow-2xl flex flex-col max-h-[85vh]">
-                        <div className="flex items-center justify-between border-b border-ftx-surface-high pb-4 shrink-0">
-                            <h3 className="text-lg font-heading font-bold uppercase text-white">
-                                {isCreateNew ? "CREATE NEW" : "EDIT"} {editModalType?.toUpperCase()}
-                            </h3>
-                            <button
-                                onClick={() => {
-                                    setEditModalItem(null);
-                                    setEditModalType(null);
-                                }}
-                                className="text-ftx-silver hover:text-white"
-                            >
-                                <XCircle className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form
-                            onSubmit={handleSaveModalItem}
-                            className="space-y-4 overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-ftx-surface-high"
-                            data-lenis-prevent
-                        >
-                            {/* Generic Title EN / AR */}
-                            {editModalItem.title && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">TITLE (EN)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.title.en || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    title: { ...editModalItem.title, en: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">TITLE (AR)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.title.ar || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    title: { ...editModalItem.title, ar: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Name EN / AR for Packages & Testimonials */}
-                            {editModalItem.name && typeof editModalItem.name === "object" && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">NAME (EN)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.name.en || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    name: { ...editModalItem.name, en: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">NAME (AR)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.name.ar || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    name: { ...editModalItem.name, ar: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* String Name for Testimonial */}
-                            {typeof editModalItem.name === "string" && (
-                                <div className="space-y-1">
-                                    <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT NAME</label>
-                                    <input
-                                        type="text"
-                                        value={editModalItem.name || ""}
-                                        onChange={(e) => setEditModalItem({ ...editModalItem, name: e.target.value })}
-                                        className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        required
-                                    />
-                                </div>
-                            )}
-
-                            {/* Price EN / AR for Packages */}
-                            {editModalItem.price && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">PRICE (EN)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.price.en || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    price: { ...editModalItem.price, en: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">PRICE (AR)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.price.ar || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    price: { ...editModalItem.price, ar: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Service Specific Fields: Index Number & Slug ID */}
-                            {editModalType === "service" && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">INDEX NUMBER (E.G. 01, 02)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.number || ""}
-                                            onChange={(e) => setEditModalItem({ ...editModalItem, number: e.target.value })}
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            placeholder="01"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">SERVICE ID / SLUG (E.G. ppf, ceramic)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.serviceId || ""}
-                                            onChange={(e) => setEditModalItem({ ...editModalItem, serviceId: e.target.value })}
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            placeholder="ppf"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Service Badge EN / AR */}
-                            {editModalItem.badge && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">BADGE TEXT (EN)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.badge.en || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    badge: { ...editModalItem.badge, en: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">BADGE TEXT (AR)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.badge.ar || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    badge: { ...editModalItem.badge, ar: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Service Subtitle EN / AR */}
-                            {editModalItem.subtitle && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">SUBTITLE / HIGHLIGHT (EN)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.subtitle.en || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    subtitle: { ...editModalItem.subtitle, en: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">SUBTITLE / HIGHLIGHT (AR)</label>
-                                        <input
-                                            type="text"
-                                            value={editModalItem.subtitle.ar || ""}
-                                            onChange={(e) =>
-                                                setEditModalItem({
-                                                    ...editModalItem,
-                                                    subtitle: { ...editModalItem.subtitle, ar: e.target.value },
-                                                })
-                                            }
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Image / Video URLs */}
-                            {editModalItem.image !== undefined && (
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">IMAGE URL & PREVIEW</label>
-                                        <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
-                                            <span>+ UPLOAD IMAGE FILE</span>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={async (e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (!file) return;
-                                                    const formData = new FormData();
-                                                    formData.append("file", file);
-                                                    try {
-                                                        const res = await fetch("/api/admin/upload", {
-                                                            method: "POST",
-                                                            body: formData,
-                                                        });
-                                                        const data = await res.json();
-                                                        if (data.url) {
-                                                            setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
-                                                        }
-                                                    } catch (err) {
-                                                        console.error("Upload error", err);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
-                                    </div>
-
-                                    {/* LIVE IMAGE PREVIEW BOX */}
-                                    <div className="relative w-full h-44 bg-ftx-obsidian border border-ftx-surface-high rounded-xl overflow-hidden flex items-center justify-center group">
-                                        {editModalItem.image ? (
-                                            <>
-                                                <img
-                                                    src={editModalItem.image}
-                                                    alt="Image Preview"
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        (e.target as HTMLElement).style.display = "none";
-                                                    }}
-                                                />
-                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                                    <span className="text-[10px] font-mono font-bold text-white bg-ftx-obsidian/90 border border-ftx-lime/40 px-2.5 py-1 rounded-md uppercase">
-                                                        IMAGE PREVIEW
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setEditModalItem({ ...editModalItem, image: "" })}
-                                                        className="text-[10px] font-mono font-bold text-rose-400 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/30 px-2.5 py-1 rounded-md uppercase transition-colors"
-                                                    >
-                                                        REMOVE
-                                                    </button>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center gap-2 text-ftx-silver-muted p-4 text-center">
-                                                <ImageIcon className="w-6 h-6 text-ftx-silver-muted/60" />
-                                                <span className="text-[11px] font-mono">No Image Selected</span>
-                                                <span className="text-[10px] font-mono text-ftx-silver-muted/60">
-                                                    Click "+ UPLOAD IMAGE FILE" above or paste an image URL below
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <input
-                                        type="text"
-                                        value={editModalItem.image || ""}
-                                        onChange={(e) => setEditModalItem({ ...editModalItem, image: e.target.value })}
-                                        className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        placeholder="/images/services/ppf-main.png"
-                                    />
-                                </div>
-                            )}
-
-                            {editModalType === "gallery" && (
-                                <div className="space-y-4 pt-2 border-t border-ftx-surface-high">
-                                    {/* CATEGORY SELECTOR */}
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">GALLERY CATEGORY</label>
-                                        <select
-                                            value={editModalItem.category || "ppf"}
-                                            onChange={(e) => setEditModalItem({ ...editModalItem, category: e.target.value })}
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                        >
-                                            <option value="ppf">Paint Protection Film (PPF)</option>
-                                            <option value="ceramic">Ceramic Coating</option>
-                                            <option value="detailing">Detailing & Restoration</option>
-                                            <option value="before-after">Before & After Slider</option>
-                                        </select>
-                                    </div>
-
-                                    {/* VEHICLE MODEL / NAME (EN & AR) */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">VEHICLE MODEL / LABEL (EN)</label>
-                                            <input
-                                                type="text"
-                                                value={typeof editModalItem.vehicle === "object" ? editModalItem.vehicle?.en || "" : editModalItem.vehicle || ""}
-                                                onChange={(e) => {
-                                                    const curVehicle = typeof editModalItem.vehicle === "object" ? editModalItem.vehicle : { en: "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, vehicle: { ...curVehicle, en: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="Porsche 911 GT3 RS"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">VEHICLE MODEL / LABEL (AR)</label>
-                                            <input
-                                                type="text"
-                                                value={typeof editModalItem.vehicle === "object" ? editModalItem.vehicle?.ar || "" : editModalItem.vehicle || ""}
-                                                onChange={(e) => {
-                                                    const curVehicle = typeof editModalItem.vehicle === "object" ? editModalItem.vehicle : { en: "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, vehicle: { ...curVehicle, ar: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="بورشه 911 GT3 RS"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* VIDEO SETTINGS */}
-                                    <div className="p-3 bg-ftx-obsidian/60 border border-ftx-surface-high rounded-xl space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="checkbox"
-                                                id="isVideo"
-                                                checked={editModalItem.isVideo || false}
-                                                onChange={(e) => setEditModalItem({ ...editModalItem, isVideo: e.target.checked })}
-                                                className="w-4 h-4 accent-ftx-lime"
-                                            />
-                                            <label htmlFor="isVideo" className="text-xs font-mono text-white font-bold">
-                                                IS VIDEO MEDIA CARD
-                                            </label>
-                                        </div>
-
-                                        {editModalItem.isVideo && (
-                                            <div className="space-y-1">
-                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">VIDEO FILE URL (.mp4)</label>
-                                                <input
-                                                    type="text"
-                                                    value={editModalItem.video || ""}
-                                                    onChange={(e) => setEditModalItem({ ...editModalItem, video: e.target.value })}
-                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                    placeholder="/video/gallery/6159208-hd_1920_1080_30fps.mp4"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* BEFORE & AFTER IMAGES (IF CATEGORY IS BEFORE-AFTER) */}
-                                    {editModalItem.category === "before-after" && (
-                                        <div className="p-3 bg-ftx-obsidian/60 border border-ftx-surface-high rounded-xl space-y-4">
-                                            <span className="text-[11px] font-mono font-bold text-ftx-lime uppercase block">
-                                                BEFORE & AFTER SLIDER IMAGES
-                                            </span>
-
-                                            {/* Before Image */}
-                                            <div className="space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-mono text-ftx-silver uppercase">BEFORE IMAGE URL</label>
-                                                    <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
-                                                        <span>+ UPLOAD BEFORE IMAGE</span>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="hidden"
-                                                            onChange={async (e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (!file) return;
-                                                                const formData = new FormData();
-                                                                formData.append("file", file);
-                                                                try {
-                                                                    const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                    const data = await res.json();
-                                                                    if (data.url) setEditModalItem((prev: any) => ({ ...prev, beforeImage: data.url }));
-                                                                } catch (err) { console.error(err); }
-                                                            }}
-                                                        />
-                                                    </label>
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    value={editModalItem.beforeImage || ""}
-                                                    onChange={(e) => setEditModalItem({ ...editModalItem, beforeImage: e.target.value })}
-                                                    className="w-full p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                    placeholder="/images/gallery/before.png"
-                                                />
-                                            </div>
-
-                                            {/* After Image */}
-                                            <div className="space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-mono text-ftx-silver uppercase">AFTER IMAGE URL</label>
-                                                    <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
-                                                        <span>+ UPLOAD AFTER IMAGE</span>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="hidden"
-                                                            onChange={async (e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (!file) return;
-                                                                const formData = new FormData();
-                                                                formData.append("file", file);
-                                                                try {
-                                                                    const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                    const data = await res.json();
-                                                                    if (data.url) setEditModalItem((prev: any) => ({ ...prev, afterImage: data.url }));
-                                                                } catch (err) { console.error(err); }
-                                                            }}
-                                                        />
-                                                    </label>
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    value={editModalItem.afterImage || ""}
-                                                    onChange={(e) => setEditModalItem({ ...editModalItem, afterImage: e.target.value })}
-                                                    className="w-full p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                    placeholder="/images/gallery/after.png"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* DESCRIPTION (EN & AR) */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">DESCRIPTION (EN)</label>
-                                            <textarea
-                                                value={typeof editModalItem.description === "object" ? editModalItem.description?.en || "" : editModalItem.description || ""}
-                                                onChange={(e) => {
-                                                    const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, description: { ...curDesc, en: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
-                                                rows={3}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">DESCRIPTION (AR)</label>
-                                            <textarea
-                                                value={typeof editModalItem.description === "object" ? editModalItem.description?.ar || "" : editModalItem.description || ""}
-                                                onChange={(e) => {
-                                                    const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, description: { ...curDesc, ar: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
-                                                rows={3}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* TAGS (COMMA SEPARATED) */}
-                                    <div className="space-y-1">
-                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">TAGS (COMMA SEPARATED)</label>
-                                        <input
-                                            type="text"
-                                            value={Array.isArray(editModalItem.tags) ? editModalItem.tags.join(", ") : editModalItem.tags || ""}
-                                            onChange={(e) => {
-                                                const raw = e.target.value;
-                                                const arr = raw.split(",").map((t) => t.trim());
-                                                setEditModalItem({ ...editModalItem, tags: arr });
-                                            }}
-                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            placeholder="PPF, Stealth, Porsche, Video"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TESTIMONIAL SPECIFIC EDIT MODAL FORM */}
-                            {editModalType === "testimonial" && (
-                                <div className="space-y-4 pt-2 border-t border-ftx-surface-high">
-                                    {/* Client Name & Vehicle Model */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT NAME</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.name || ""}
-                                                onChange={(e) => setEditModalItem({ ...editModalItem, name: e.target.value })}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="e.g. Sheikh Rashid Al Maktoum"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">VEHICLE MODEL / BRAND</label>
-                                            <input
-                                                type="text"
-                                                value={typeof editModalItem.vehicle === "object" ? editModalItem.vehicle?.en || "" : editModalItem.vehicle || ""}
-                                                onChange={(e) => setEditModalItem({ ...editModalItem, vehicle: e.target.value })}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="e.g. Porsche 911 GT3 RS"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Role (EN & AR) */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT ROLE / TITLE (EN)</label>
-                                            <input
-                                                type="text"
-                                                value={typeof editModalItem.role === "object" ? editModalItem.role?.en || "" : editModalItem.role || ""}
-                                                onChange={(e) => {
-                                                    const curRole = typeof editModalItem.role === "object" ? editModalItem.role : { en: editModalItem.role || "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, role: { ...curRole, en: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="e.g. Supercar Collector"
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT ROLE / TITLE (AR)</label>
-                                            <input
-                                                type="text"
-                                                dir="rtl"
-                                                value={typeof editModalItem.role === "object" ? editModalItem.role?.ar || "" : ""}
-                                                onChange={(e) => {
-                                                    const curRole = typeof editModalItem.role === "object" ? editModalItem.role : { en: editModalItem.role || "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, role: { ...curRole, ar: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
-                                                placeholder="مثال: جامع سيارات فاخرة"
-                                            />
-                                        </div>
-                                    </div>
-
-
-                                    {/* Avatar URL & Upload Preview */}
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT AVATAR IMAGE</label>
-                                            <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
-                                                <span>+ UPLOAD AVATAR FILE</span>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={async (e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (!file) return;
-                                                        const formData = new FormData();
-                                                        formData.append("file", file);
-                                                        try {
-                                                            const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                            const data = await res.json();
-                                                            if (data.url) {
-                                                                setEditModalItem((prev: any) => ({ ...prev, avatar: data.url }));
-                                                            }
-                                                        } catch (err) {
-                                                            console.error("Upload avatar error", err);
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-xl">
-                                            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-ftx-lime/50 bg-black shrink-0 flex items-center justify-center">
-                                                {editModalItem.avatar ? (
-                                                    <img src={editModalItem.avatar} alt="Avatar" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLElement).style.display = "none"; }} />
-                                                ) : (
-                                                    <UserIcon className="w-6 h-6 text-ftx-silver-muted" />
-                                                )}
-                                            </div>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.avatar || ""}
-                                                onChange={(e) => setEditModalItem({ ...editModalItem, avatar: e.target.value })}
-                                                className="flex-1 p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="/images/testimonials/avatar-1.jpg"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Content / Quotes (EN & AR) */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">TESTIMONIAL QUOTE (EN)</label>
-                                            <textarea
-                                                value={typeof editModalItem.content === "object" ? editModalItem.content?.en || "" : editModalItem.content || ""}
-                                                onChange={(e) => {
-                                                    const curContent = typeof editModalItem.content === "object" ? editModalItem.content : { en: editModalItem.content || "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, content: { ...curContent, en: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
-                                                rows={4}
-                                                placeholder="Write client testimonial quote in English..."
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">TESTIMONIAL QUOTE (AR)</label>
-                                            <textarea
-                                                dir="rtl"
-                                                value={typeof editModalItem.content === "object" ? editModalItem.content?.ar || "" : ""}
-                                                onChange={(e) => {
-                                                    const curContent = typeof editModalItem.content === "object" ? editModalItem.content : { en: editModalItem.content || "", ar: "" };
-                                                    setEditModalItem({ ...editModalItem, content: { ...curContent, ar: e.target.value } });
-                                                }}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px] text-right"
-                                                rows={4}
-                                                placeholder="اكتب تقييم العميل باللغة العربية..."
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* SERVICE SPECIFIC ADVANCED EDITORS (BENEFITS, HIGHLIGHTS, PROCESS, DETAIL IMAGES) */}
-                            {editModalType === "service" && (
-                                <div className="space-y-6 pt-4 border-t border-ftx-surface-high">
-                                    {/* 1. KEY BENEFITS LIST */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
-                                                KEY BENEFITS (EN & AR)
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const curEn = editModalItem.benefits?.en || [];
-                                                    const curAr = editModalItem.benefits?.ar || [];
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        benefits: {
-                                                            en: [...curEn, ""],
-                                                            ar: [...curAr, ""],
-                                                        },
-                                                    });
-                                                }}
-                                                className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
-                                            >
-                                                + ADD BENEFIT ITEM
-                                            </button>
-                                        </div>
-
-                                        {(!editModalItem.benefits?.en || editModalItem.benefits.en.length === 0) ? (
-                                            <p className="text-xs text-ftx-silver-muted font-mono italic">No benefit bullet points added yet.</p>
-                                        ) : (
-                                            (editModalItem.benefits.en || []).map((bEn: string, bIdx: number) => (
-                                                <div key={`benefit-${bIdx}`} className="p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-[10px] font-mono text-ftx-silver uppercase">BENEFIT #{bIdx + 1}</span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newEn = [...(editModalItem.benefits?.en || [])];
-                                                                const newAr = [...(editModalItem.benefits?.ar || [])];
-                                                                newEn.splice(bIdx, 1);
-                                                                newAr.splice(bIdx, 1);
-                                                                setEditModalItem({
-                                                                    ...editModalItem,
-                                                                    benefits: { en: newEn, ar: newAr },
-                                                                });
-                                                            }}
-                                                            className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
-                                                        >
-                                                            REMOVE
-                                                        </button>
-                                                    </div>
-                                                    <input
-                                                        type="text"
-                                                        value={bEn}
-                                                        onChange={(e) => {
-                                                            const newEn = [...(editModalItem.benefits?.en || [])];
-                                                            newEn[bIdx] = e.target.value;
-                                                            setEditModalItem({
-                                                                ...editModalItem,
-                                                                benefits: { ...editModalItem.benefits, en: newEn },
-                                                            });
-                                                        }}
-                                                        placeholder="English benefit description..."
-                                                        className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        dir="rtl"
-                                                        value={editModalItem.benefits?.ar?.[bIdx] || ""}
-                                                        onChange={(e) => {
-                                                            const newAr = [...(editModalItem.benefits?.ar || [])];
-                                                            newAr[bIdx] = e.target.value;
-                                                            setEditModalItem({
-                                                                ...editModalItem,
-                                                                benefits: { ...editModalItem.benefits, ar: newAr },
-                                                            });
-                                                        }}
-                                                        placeholder="وصف الميزة باللغة العربية..."
-                                                        className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                    />
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-
-                                    {/* 2. FEATURE HIGHLIGHT CARDS */}
-                                    <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
-                                                FEATURE HIGHLIGHT CARDS
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const cur = editModalItem.highlights || [];
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        highlights: [
-                                                            ...cur,
-                                                            {
-                                                                icon: "shield",
-                                                                title: { en: "Feature Title", ar: "عنوان الميزة" },
-                                                                description: { en: "Feature details...", ar: "تفاصيل الميزة..." },
-                                                            },
-                                                        ],
-                                                    });
-                                                }}
-                                                className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
-                                            >
-                                                + ADD HIGHLIGHT CARD
-                                            </button>
-                                        </div>
-
-                                        {(!editModalItem.highlights || editModalItem.highlights.length === 0) ? (
-                                            <p className="text-xs text-ftx-silver-muted font-mono italic">No highlight cards configured.</p>
-                                        ) : (
-                                            editModalItem.highlights.map((hl: any, hIdx: number) => (
-                                                <div key={`hl-${hIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-[10px] font-mono text-ftx-silver uppercase">CARD #{hIdx + 1}</span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newHl = [...(editModalItem.highlights || [])];
-                                                                newHl.splice(hIdx, 1);
-                                                                setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                            }}
-                                                            className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
-                                                        >
-                                                            REMOVE
-                                                        </button>
-                                                    </div>
-
-                                                    <div className="space-y-1">
-                                                        <label className="text-[9px] font-mono text-ftx-silver uppercase">ICON TYPE</label>
-                                                        <select
-                                                            value={hl.icon || "shield"}
-                                                            onChange={(e) => {
-                                                                const newHl = [...(editModalItem.highlights || [])];
-                                                                newHl[hIdx] = { ...newHl[hIdx], icon: e.target.value };
-                                                                setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                            }}
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
-                                                        >
-                                                            <option value="shield">Shield (Impact / Protection)</option>
-                                                            <option value="refresh">Refresh (Self-Healing / Renew)</option>
-                                                            <option value="droplet">Droplet (Hydrophobic / Water)</option>
-                                                            <option value="sparkles">Sparkles (Gloss / Polish)</option>
-                                                            <option value="wand">Wand (Paint Correction)</option>
-                                                            <option value="car">Car (Interior / Vehicle)</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                        <input
-                                                            type="text"
-                                                            value={hl.title?.en || ""}
-                                                            onChange={(e) => {
-                                                                const newHl = [...(editModalItem.highlights || [])];
-                                                                newHl[hIdx] = { ...newHl[hIdx], title: { ...newHl[hIdx].title, en: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                            }}
-                                                            placeholder="Highlight Title (EN)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            dir="rtl"
-                                                            value={hl.title?.ar || ""}
-                                                            onChange={(e) => {
-                                                                const newHl = [...(editModalItem.highlights || [])];
-                                                                newHl[hIdx] = { ...newHl[hIdx], title: { ...newHl[hIdx].title, ar: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                            }}
-                                                            placeholder="عنوان الميزة (عربي)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                        <textarea
-                                                            rows={2}
-                                                            value={hl.description?.en || ""}
-                                                            onChange={(e) => {
-                                                                const newHl = [...(editModalItem.highlights || [])];
-                                                                newHl[hIdx] = { ...newHl[hIdx], description: { ...newHl[hIdx].description, en: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                            }}
-                                                            placeholder="Description (EN)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
-                                                        />
-                                                        <textarea
-                                                            rows={2}
-                                                            dir="rtl"
-                                                            value={hl.description?.ar || ""}
-                                                            onChange={(e) => {
-                                                                const newHl = [...(editModalItem.highlights || [])];
-                                                                newHl[hIdx] = { ...newHl[hIdx], description: { ...newHl[hIdx].description, ar: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                            }}
-                                                            placeholder="الوصف التفصيلي (عربي)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-
-                                    {/* 3. PROCESS STEPS */}
-                                    <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
-                                                PROCESS STEPS
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const cur = editModalItem.process || [];
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        process: [
-                                                            ...cur,
-                                                            {
-                                                                number: `0${cur.length + 1}`,
-                                                                title: { en: "Step Title", ar: "عنوان المرحلة" },
-                                                                description: { en: "Step description...", ar: "تفاصيل المرحلة..." },
-                                                            },
-                                                        ],
-                                                    });
-                                                }}
-                                                className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
-                                            >
-                                                + ADD PROCESS STEP
-                                            </button>
-                                        </div>
-
-                                        {(!editModalItem.process || editModalItem.process.length === 0) ? (
-                                            <p className="text-xs text-ftx-silver-muted font-mono italic">No process steps added.</p>
-                                        ) : (
-                                            editModalItem.process.map((step: any, pIdx: number) => (
-                                                <div key={`step-${pIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[10px] font-mono text-ftx-silver uppercase">STEP #{pIdx + 1}</span>
-                                                            <input
-                                                                type="text"
-                                                                value={step.number || `0${pIdx + 1}`}
-                                                                onChange={(e) => {
-                                                                    const newP = [...(editModalItem.process || [])];
-                                                                    newP[pIdx] = { ...newP[pIdx], number: e.target.value };
-                                                                    setEditModalItem({ ...editModalItem, process: newP });
-                                                                }}
-                                                                className="w-12 p-1 bg-ftx-surface border border-ftx-surface-high text-ftx-lime text-center text-xs font-mono rounded"
-                                                            />
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newP = [...(editModalItem.process || [])];
-                                                                newP.splice(pIdx, 1);
-                                                                setEditModalItem({ ...editModalItem, process: newP });
-                                                            }}
-                                                            className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
-                                                        >
-                                                            REMOVE
-                                                        </button>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                        <input
-                                                            type="text"
-                                                            value={step.title?.en || ""}
-                                                            onChange={(e) => {
-                                                                const newP = [...(editModalItem.process || [])];
-                                                                newP[pIdx] = { ...newP[pIdx], title: { ...newP[pIdx].title, en: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, process: newP });
-                                                            }}
-                                                            placeholder="Step Title (EN)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            dir="rtl"
-                                                            value={step.title?.ar || ""}
-                                                            onChange={(e) => {
-                                                                const newP = [...(editModalItem.process || [])];
-                                                                newP[pIdx] = { ...newP[pIdx], title: { ...newP[pIdx].title, ar: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, process: newP });
-                                                            }}
-                                                            placeholder="عنوان المرحلة (عربي)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                        <textarea
-                                                            rows={2}
-                                                            value={step.description?.en || ""}
-                                                            onChange={(e) => {
-                                                                const newP = [...(editModalItem.process || [])];
-                                                                newP[pIdx] = { ...newP[pIdx], description: { ...newP[pIdx].description, en: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, process: newP });
-                                                            }}
-                                                            placeholder="Step Description (EN)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
-                                                        />
-                                                        <textarea
-                                                            rows={2}
-                                                            dir="rtl"
-                                                            value={step.description?.ar || ""}
-                                                            onChange={(e) => {
-                                                                const newP = [...(editModalItem.process || [])];
-                                                                newP[pIdx] = { ...newP[pIdx], description: { ...newP[pIdx].description, ar: e.target.value } };
-                                                                setEditModalItem({ ...editModalItem, process: newP });
-                                                            }}
-                                                            placeholder="تفاصيل المرحلة (عربي)..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-
-                                    {/* 4. DETAIL IMAGES GALLERY */}
-                                    <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
-                                                GALLERY SHOWCASE IMAGES
-                                            </label>
-                                            <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
-                                                <span>+ UPLOAD SHOWCASE IMAGE</span>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={async (e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (!file) return;
-                                                        const formData = new FormData();
-                                                        formData.append("file", file);
-                                                        try {
-                                                            const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                            const data = await res.json();
-                                                            if (data.url) {
-                                                                const cur = editModalItem.detailImages || [];
-                                                                setEditModalItem({ ...editModalItem, detailImages: [...cur, data.url] });
-                                                            }
-                                                        } catch (err) {
-                                                            console.error("Upload error", err);
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
-                                        </div>
-
-                                        {(!editModalItem.detailImages || editModalItem.detailImages.length === 0) ? (
-                                            <p className="text-xs text-ftx-silver-muted font-mono italic">No additional showcase images uploaded.</p>
-                                        ) : (
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                                {editModalItem.detailImages.map((imgUrl: string, imgIdx: number) => (
-                                                    <div key={`detail-img-${imgIdx}`} className="relative aspect-video bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden group">
-                                                        <img src={imgUrl} alt={`Showcase ${imgIdx + 1}`} className="w-full h-full object-cover" />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newImgs = [...(editModalItem.detailImages || [])];
-                                                                newImgs.splice(imgIdx, 1);
-                                                                setEditModalItem({ ...editModalItem, detailImages: newImgs });
-                                                            }}
-                                                            className="absolute top-1 right-1 p-1 bg-rose-600/90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        >
-                                                            <XCircle className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-ftx-surface-high">
+            {
+                editModalItem && (
+                    <div
+                        className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+                        data-lenis-prevent
+                    >
+                        <div className="bg-ftx-surface border border-ftx-surface-high w-full max-w-2xl p-4 sm:p-8 ftx-squircle-xl space-y-4 sm:space-y-5 my-auto shadow-2xl flex flex-col max-h-[92vh]">
+                            <div className="flex items-center justify-between border-b border-ftx-surface-high pb-4 shrink-0">
+                                <h3 className="text-lg font-heading font-bold uppercase text-white">
+                                    {isCreateNew ? "CREATE NEW" : "EDIT"} {editModalType?.toUpperCase()}
+                                </h3>
                                 <button
-                                    type="button"
                                     onClick={() => {
                                         setEditModalItem(null);
                                         setEditModalType(null);
                                     }}
-                                    className="px-4 py-2.5 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver text-xs font-mono font-bold uppercase rounded-lg"
+                                    className="text-ftx-silver hover:text-white"
+                                >
+                                    <XCircle className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <form
+                                onSubmit={handleSaveModalItem}
+                                className="space-y-4 overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-ftx-surface-high"
+                                data-lenis-prevent
+                            >
+                                {/* Generic Title EN / AR (Hidden in Before & After mode) */}
+                                {editModalItem.title && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">TITLE (EN)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.title.en || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        title: { ...editModalItem.title, en: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">TITLE (AR)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.title.ar || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        title: { ...editModalItem.title, ar: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Name EN / AR for Packages & Testimonials */}
+                                {editModalItem.name && typeof editModalItem.name === "object" && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">NAME (EN)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.name.en || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        name: { ...editModalItem.name, en: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">NAME (AR)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.name.ar || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        name: { ...editModalItem.name, ar: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* String Name for Items */}
+                                {typeof editModalItem.name === "string" && editModalType !== "testimonial" && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-mono text-ftx-silver uppercase">NAME</label>
+                                        <input
+                                            type="text"
+                                            value={editModalItem.name || ""}
+                                            onChange={(e) => setEditModalItem({ ...editModalItem, name: e.target.value })}
+                                            className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Price EN / AR for Packages */}
+                                {editModalItem.price && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">PRICE (EN)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.price.en || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        price: { ...editModalItem.price, en: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">PRICE (AR)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.price.ar || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        price: { ...editModalItem.price, ar: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Service Specific Fields: Index Number & Slug ID */}
+                                {editModalType === "service" && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">INDEX NUMBER (E.G. 01, 02)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.number || ""}
+                                                onChange={(e) => setEditModalItem({ ...editModalItem, number: e.target.value })}
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                placeholder="01"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">SERVICE ID / SLUG (E.G. ppf, ceramic)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.serviceId || ""}
+                                                onChange={(e) => setEditModalItem({ ...editModalItem, serviceId: e.target.value })}
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                placeholder="ppf"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Service Badge EN / AR */}
+                                {editModalItem.badge && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">BADGE TEXT (EN)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.badge.en || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        badge: { ...editModalItem.badge, en: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">BADGE TEXT (AR)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.badge.ar || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        badge: { ...editModalItem.badge, ar: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Service Subtitle EN / AR */}
+                                {editModalItem.subtitle && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">SUBTITLE / HIGHLIGHT (EN)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.subtitle.en || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        subtitle: { ...editModalItem.subtitle, en: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">SUBTITLE / HIGHLIGHT (AR)</label>
+                                            <input
+                                                type="text"
+                                                value={editModalItem.subtitle.ar || ""}
+                                                onChange={(e) =>
+                                                    setEditModalItem({
+                                                        ...editModalItem,
+                                                        subtitle: { ...editModalItem.subtitle, ar: e.target.value },
+                                                    })
+                                                }
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Image / Video / Before-After Container */}
+                                {editModalType === "gallery" ? (
+                                    <div className="space-y-3 p-4 bg-ftx-obsidian border border-ftx-surface-high rounded-xl">
+                                        {/* CATEGORY SELECTOR */}
+                                        <div className="space-y-1 pb-2 border-b border-ftx-surface-high/60">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase font-bold tracking-wider">
+                                                GALLERY CATEGORY
+                                            </label>
+                                            <select
+                                                value={editModalItem.category || (services[0]?.serviceId || services[0]?.id || "ppf")}
+                                                onChange={(e) => {
+                                                    const cat = e.target.value;
+                                                    const isBA = cat === "before-after";
+                                                    setEditModalItem((prev: any) => ({
+                                                        ...prev,
+                                                        category: cat,
+                                                        isBeforeAfter: isBA,
+                                                        isVideo: isBA ? false : prev.isVideo,
+                                                        beforeImage: isBA ? (prev.beforeImage || prev.image || "/images/gallery/before-restoration.jpg") : prev.beforeImage,
+                                                        afterImage: isBA ? (prev.afterImage || prev.image || "/images/gallery/after-ppf-finish.jpg") : prev.afterImage,
+                                                    }));
+                                                }}
+                                                className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none cursor-pointer"
+                                            >
+                                                {services.map((srv: any) => {
+                                                    const sId = srv.serviceId || srv.id;
+                                                    const sTitle = typeof srv.title === "object" ? (srv.title.en || srv.title.ar) : (srv.title || (typeof srv.name === "object" ? srv.name.en : srv.name)) || sId;
+                                                    return (
+                                                        <option key={`gal-cat-${sId}`} value={sId}>
+                                                            {sTitle}
+                                                        </option>
+                                                    );
+                                                })}
+                                                <option value="before-after">Before & After Slider</option>
+                                            </select>
+                                        </div>
+
+                                        {/* MEDIA TYPE TOGGLE (IMAGE / VIDEO / BEFORE & AFTER) */}
+                                        <div className="flex items-center justify-between border-b border-ftx-surface-high pb-3 flex-wrap gap-2">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase font-bold tracking-wider">
+                                                MEDIA TYPE & PREVIEW
+                                            </label>
+                                            <div className="flex items-center bg-ftx-surface p-1 rounded-lg border border-ftx-surface-high gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditModalItem((prev: any) => ({
+                                                        ...prev,
+                                                        isVideo: false,
+                                                        isBeforeAfter: false,
+                                                        category: prev.category === "before-after" ? "ppf" : prev.category
+                                                    }))}
+                                                    className={`px-3 py-1 text-xs font-mono font-bold rounded-md transition-all ${!editModalItem.isVideo && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after"
+                                                        ? "bg-ftx-lime text-ftx-black shadow-lime-glow"
+                                                        : "text-ftx-silver hover:text-white"
+                                                        }`}
+                                                >
+                                                    IMAGE
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditModalItem((prev: any) => ({
+                                                        ...prev,
+                                                        isVideo: true,
+                                                        isBeforeAfter: false,
+                                                        category: prev.category === "before-after" ? "ppf" : prev.category
+                                                    }))}
+                                                    className={`px-3 py-1 text-xs font-mono font-bold rounded-md transition-all ${editModalItem.isVideo && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after"
+                                                        ? "bg-ftx-lime text-ftx-black shadow-lime-glow"
+                                                        : "text-ftx-silver hover:text-white"
+                                                        }`}
+                                                >
+                                                    VIDEO
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditModalItem((prev: any) => ({
+                                                        ...prev,
+                                                        isVideo: false,
+                                                        isBeforeAfter: true,
+                                                        category: "before-after"
+                                                    }))}
+                                                    className={`px-3 py-1 text-xs font-mono font-bold rounded-md transition-all ${editModalItem.isBeforeAfter || editModalItem.category === "before-after"
+                                                        ? "bg-ftx-lime text-ftx-black shadow-lime-glow"
+                                                        : "text-ftx-silver hover:text-white"
+                                                        }`}
+                                                >
+                                                    BEFORE & AFTER
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* 1. IF BEFORE & AFTER IS SELECTED */}
+                                        {editModalItem.isBeforeAfter || editModalItem.category === "before-after" ? (
+                                            <div className="space-y-4 pt-1">
+                                                {/* LIVE INTERACTIVE BEFORE & AFTER SLIDER PREVIEW */}
+                                                {(editModalItem.beforeImage || editModalItem.afterImage) && (
+                                                    <div className="space-y-2 p-3 bg-ftx-surface-high/30 rounded-xl border border-ftx-lime/30">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[10px] font-mono text-ftx-lime uppercase font-bold tracking-wider">
+                                                                LIVE BEFORE & AFTER SLIDER PREVIEW
+                                                            </span>
+                                                            <span className="text-[9px] font-mono text-ftx-silver-muted uppercase">
+                                                                DRAG SLIDER TO TEST
+                                                            </span>
+                                                        </div>
+                                                        <div className="relative w-full overflow-hidden rounded-lg">
+                                                            <BeforeAfterSlider
+                                                                beforeImage={editModalItem.beforeImage || "/images/gallery/before.png"}
+                                                                afterImage={editModalItem.afterImage || "/images/gallery/after.png"}
+                                                                className="min-h-[220px] sm:min-h-[280px] max-h-[320px] aspect-[16/9]"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {/* BEFORE IMAGE UPLOADER */}
+                                                <div className="space-y-2 p-3 bg-ftx-surface-high/30 rounded-xl border border-ftx-surface-high/60">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[10px] font-mono text-amber-400 uppercase font-bold">1. BEFORE IMAGE (ORIGINAL / CONDITION)</span>
+                                                        <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold">
+                                                            <span>+ UPLOAD BEFORE IMAGE</span>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={async (e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (!file) return;
+                                                                    const formData = new FormData();
+                                                                    formData.append("file", file);
+                                                                    try {
+                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                        const data = await res.json();
+                                                                        if (data.url) {
+                                                                            setEditModalItem((prev: any) => ({
+                                                                                ...prev,
+                                                                                beforeImage: data.url,
+                                                                                image: prev.image || data.url
+                                                                            }));
+                                                                        }
+                                                                    } catch (err) { console.error("Before image upload error", err); }
+                                                                }}
+                                                            />
+                                                        </label>
+                                                    </div>
+
+                                                    <div className="relative w-full h-32 bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden flex items-center justify-center group">
+                                                        {(editModalItem.beforeImage || "/images/gallery/before.png") ? (
+                                                            <>
+                                                                <img
+                                                                    src={editModalItem.beforeImage || "/images/gallery/before.png"}
+                                                                    alt="Before Preview"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                                                />
+                                                                <div className="absolute top-2 left-2 px-2 py-0.5 bg-amber-500/90 text-black text-[9px] font-mono font-bold rounded uppercase">
+                                                                    BEFORE IMAGE
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className="flex flex-col items-center justify-center gap-1 text-ftx-silver-muted p-2 text-center">
+                                                                <ImageIcon className="w-5 h-5 text-ftx-silver-muted/60" />
+                                                                <span className="text-[10px] font-mono">No Before Image Uploaded</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <input
+                                                        type="text"
+                                                        value={editModalItem.beforeImage || ""}
+                                                        onChange={(e) => setEditModalItem({ ...editModalItem, beforeImage: e.target.value })}
+                                                        className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                        placeholder="/images/gallery/before.png"
+                                                    />
+                                                </div>
+
+                                                {/* AFTER IMAGE UPLOADER */}
+                                                <div className="space-y-2 p-3 bg-ftx-surface-high/30 rounded-xl border border-ftx-surface-high/60">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[10px] font-mono text-ftx-lime uppercase font-bold">2. AFTER IMAGE (PROTECTED / FINISH)</span>
+                                                        <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold">
+                                                            <span>+ UPLOAD AFTER IMAGE</span>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={async (e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (!file) return;
+                                                                    const formData = new FormData();
+                                                                    formData.append("file", file);
+                                                                    try {
+                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                        const data = await res.json();
+                                                                        if (data.url) {
+                                                                            setEditModalItem((prev: any) => ({
+                                                                                ...prev,
+                                                                                afterImage: data.url,
+                                                                                image: data.url
+                                                                            }));
+                                                                        }
+                                                                    } catch (err) { console.error("After image upload error", err); }
+                                                                }}
+                                                            />
+                                                        </label>
+                                                    </div>
+
+                                                    <div className="relative w-full h-32 bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden flex items-center justify-center group">
+                                                        {(editModalItem.afterImage || "/images/gallery/after.png") ? (
+                                                            <>
+                                                                <img
+                                                                    src={editModalItem.afterImage || "/images/gallery/after.png"}
+                                                                    alt="After Preview"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                                                />
+                                                                <div className="absolute top-2 left-2 px-2 py-0.5 bg-ftx-lime/90 text-black text-[9px] font-mono font-bold rounded uppercase">
+                                                                    AFTER IMAGE
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className="flex flex-col items-center justify-center gap-1 text-ftx-silver-muted p-2 text-center">
+                                                                <ImageIcon className="w-5 h-5 text-ftx-silver-muted/60" />
+                                                                <span className="text-[10px] font-mono">No After Image Uploaded</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <input
+                                                        type="text"
+                                                        value={editModalItem.afterImage || ""}
+                                                        onChange={(e) => setEditModalItem({
+                                                            ...editModalItem,
+                                                            afterImage: e.target.value,
+                                                            image: e.target.value || editModalItem.image
+                                                        })}
+                                                        className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                        placeholder="/images/gallery/after-ppf-finish.jpg"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : !editModalItem.isVideo ? (
+                                            /* 2. IF IMAGE IS SELECTED */
+                                            <div className="space-y-3 pt-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-mono text-ftx-silver-muted uppercase">IMAGE FILE (.JPG, .PNG, .WEBP)</span>
+                                                    <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold">
+                                                        <span>+ UPLOAD IMAGE FILE</span>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (!file) return;
+                                                                const formData = new FormData();
+                                                                formData.append("file", file);
+                                                                try {
+                                                                    const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                    const data = await res.json();
+                                                                    if (data.url) setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
+                                                                } catch (err) { console.error("Upload error", err); }
+                                                            }}
+                                                        />
+                                                    </label>
+                                                </div>
+
+                                                <div className="relative w-full h-44 bg-ftx-obsidian border border-ftx-surface-high rounded-xl overflow-hidden flex items-center justify-center group">
+                                                    {editModalItem.image ? (
+                                                        <>
+                                                            <img
+                                                                src={editModalItem.image}
+                                                                alt="Image Preview"
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                                <span className="text-[10px] font-mono font-bold text-white bg-ftx-obsidian/90 border border-ftx-lime/40 px-2.5 py-1 rounded-md uppercase">
+                                                                    IMAGE PREVIEW
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setEditModalItem({ ...editModalItem, image: "" })}
+                                                                    className="text-[10px] font-mono font-bold text-rose-400 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/30 px-2.5 py-1 rounded-md uppercase transition-colors"
+                                                                >
+                                                                    REMOVE
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="flex flex-col items-center justify-center gap-2 text-ftx-silver-muted p-4 text-center">
+                                                            <ImageIcon className="w-6 h-6 text-ftx-silver-muted/60" />
+                                                            <span className="text-[11px] font-mono">No Image Selected</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <input
+                                                    type="text"
+                                                    value={editModalItem.image || ""}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, image: e.target.value })}
+                                                    className="w-full p-3 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="/images/gallery/gt3rs-ppf.jpg or https://..."
+                                                />
+                                            </div>
+                                        ) : (
+                                            /* 3. IF VIDEO IS SELECTED */
+                                            <div className="space-y-4 pt-1">
+                                                {/* 1. COVER THUMBNAIL IMAGE (FOR CARD GRID DISPLAY) */}
+                                                <div className="space-y-2 p-3 bg-ftx-surface-high/30 rounded-xl border border-ftx-surface-high/60">
+                                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                        <span className="text-[10px] font-mono text-ftx-lime uppercase font-bold">1. COVER THUMBNAIL IMAGE (.JPG, .PNG, .WEBP)</span>
+                                                        <div className="flex items-center gap-2">
+                                                            {editModalItem.video && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            const thumbUrl = await generateVideoThumbnail(editModalItem.video);
+                                                                            if (thumbUrl) setEditModalItem((prev: any) => ({ ...prev, image: thumbUrl }));
+                                                                        } catch (err) { console.error("Snapshot error", err); }
+                                                                    }}
+                                                                    className="text-[9px] font-mono text-ftx-lime bg-ftx-lime/10 hover:bg-ftx-lime/20 border border-ftx-lime/30 px-2 py-0.5 rounded font-bold uppercase transition-colors"
+                                                                >
+                                                                    ✨ AUTO-EXTRACT FROM VIDEO
+                                                                </button>
+                                                            )}
+                                                            <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold">
+                                                                <span>+ UPLOAD IMAGE</span>
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/*"
+                                                                    className="hidden"
+                                                                    onChange={async (e) => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (!file) return;
+                                                                        const formData = new FormData();
+                                                                        formData.append("file", file);
+                                                                        try {
+                                                                            const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                            const data = await res.json();
+                                                                            if (data.url) setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
+                                                                        } catch (err) { console.error("Thumbnail upload error", err); }
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="relative w-full h-32 bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden flex items-center justify-center group">
+                                                        {editModalItem.image && !editModalItem.image.endsWith(".mp4") && !editModalItem.image.endsWith(".webm") ? (
+                                                            <>
+                                                                <img
+                                                                    src={editModalItem.image}
+                                                                    alt="Thumbnail Preview"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                                                />
+                                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                                    <span className="text-[9px] font-mono font-bold text-white bg-ftx-obsidian/90 border border-ftx-lime/40 px-2 py-0.5 rounded uppercase">
+                                                                        THUMBNAIL IMAGE PREVIEW
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className="flex flex-col items-center justify-center gap-1 text-ftx-silver-muted p-2 text-center">
+                                                                <ImageIcon className="w-5 h-5 text-ftx-silver-muted/60" />
+                                                                <span className="text-[10px] font-mono">No Thumbnail Image Selected</span>
+                                                                <span className="text-[9px] font-mono text-ftx-silver-muted/50">Auto-extracted when video is uploaded</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <input
+                                                        type="text"
+                                                        value={editModalItem.image || ""}
+                                                        onChange={(e) => setEditModalItem({ ...editModalItem, image: e.target.value })}
+                                                        className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                        placeholder="/images/gallery/gt3rs-ppf.jpg or https://..."
+                                                    />
+                                                </div>
+
+                                                {/* 2. VIDEO FILE (.MP4) */}
+                                                <div className="space-y-2 p-3 bg-ftx-surface-high/30 rounded-xl border border-ftx-surface-high/60">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[10px] font-mono text-ftx-lime uppercase font-bold">2. VIDEO FILE (.MP4, .WEBM)</span>
+                                                        <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold">
+                                                            <span>+ UPLOAD VIDEO FILE (.MP4)</span>
+                                                            <input
+                                                                type="file"
+                                                                accept="video/*,.mp4,.webm"
+                                                                className="hidden"
+                                                                onChange={async (e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (!file) return;
+                                                                    const formData = new FormData();
+                                                                    formData.append("file", file);
+                                                                    try {
+                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                        const data = await res.json();
+                                                                        if (data.url) {
+                                                                            // Automatically extract thumbnail from the uploaded video file
+                                                                            const autoThumb = await generateVideoThumbnail(file);
+                                                                            setEditModalItem((prev: any) => ({
+                                                                                ...prev,
+                                                                                video: data.url,
+                                                                                isVideo: true,
+                                                                                image: autoThumb || prev.image || "/images/gallery/ppf-studio-hero.jpg",
+                                                                            }));
+                                                                        }
+                                                                    } catch (err) { console.error("Video upload error", err); }
+                                                                }}
+                                                            />
+                                                        </label>
+                                                    </div>
+
+                                                    <div className="relative w-full h-36 bg-black border border-ftx-surface-high rounded-lg overflow-hidden flex items-center justify-center">
+                                                        {editModalItem.video ? (
+                                                            <video
+                                                                src={editModalItem.video}
+                                                                controls
+                                                                muted
+                                                                playsInline
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex flex-col items-center justify-center gap-1 text-ftx-silver-muted p-2 text-center">
+                                                                <span className="text-[10px] font-mono">No Video Selected</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <input
+                                                        type="text"
+                                                        value={editModalItem.video || ""}
+                                                        onChange={(e) => setEditModalItem({ ...editModalItem, video: e.target.value })}
+                                                        className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                        placeholder="/video/gallery/gt3rs.mp4 or https://..."
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    editModalItem.image !== undefined && (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">IMAGE URL & PREVIEW</label>
+                                                <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
+                                                    <span>+ UPLOAD IMAGE FILE</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            const formData = new FormData();
+                                                            formData.append("file", file);
+                                                            try {
+                                                                const res = await fetch("/api/admin/upload", {
+                                                                    method: "POST",
+                                                                    body: formData,
+                                                                });
+                                                                const data = await res.json();
+                                                                if (data.url) {
+                                                                    setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
+                                                                }
+                                                            } catch (err) {
+                                                                console.error("Upload error", err);
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            {/* LIVE IMAGE PREVIEW BOX */}
+                                            <div className="relative w-full h-44 bg-ftx-obsidian border border-ftx-surface-high rounded-xl overflow-hidden flex items-center justify-center group">
+                                                {editModalItem.image ? (
+                                                    <>
+                                                        <img
+                                                            src={editModalItem.image}
+                                                            alt="Image Preview"
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLElement).style.display = "none";
+                                                            }}
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                            <span className="text-[10px] font-mono font-bold text-white bg-ftx-obsidian/90 border border-ftx-lime/40 px-2.5 py-1 rounded-md uppercase">
+                                                                IMAGE PREVIEW
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditModalItem({ ...editModalItem, image: "" })}
+                                                                className="text-[10px] font-mono font-bold text-rose-400 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/30 px-2.5 py-1 rounded-md uppercase transition-colors"
+                                                            >
+                                                                REMOVE
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center gap-2 text-ftx-silver-muted p-4 text-center">
+                                                        <ImageIcon className="w-6 h-6 text-ftx-silver-muted/60" />
+                                                        <span className="text-[11px] font-mono">No Image Selected</span>
+                                                        <span className="text-[10px] font-mono text-ftx-silver-muted/60">
+                                                            Click "+ UPLOAD IMAGE FILE" above or paste an image URL below
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <input
+                                                type="text"
+                                                value={editModalItem.image || ""}
+                                                onChange={(e) => setEditModalItem({ ...editModalItem, image: e.target.value })}
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                placeholder="/images/services/ppf-main.png"
+                                            />
+                                        </div>
+                                    )
+                                )}
+
+                                {editModalType === "gallery" && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
+                                    <div className="space-y-4 pt-2 border-t border-ftx-surface-high">
+                                        {/* VEHICLE MODEL / NAME (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">VEHICLE MODEL / LABEL (EN)</label>
+                                                <input
+                                                    type="text"
+                                                    value={typeof editModalItem.vehicle === "object" ? editModalItem.vehicle?.en || "" : editModalItem.vehicle || ""}
+                                                    onChange={(e) => {
+                                                        const curVehicle = typeof editModalItem.vehicle === "object" ? editModalItem.vehicle : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, vehicle: { ...curVehicle, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="Porsche 911 GT3 RS"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">VEHICLE MODEL / LABEL (AR)</label>
+                                                <input
+                                                    type="text"
+                                                    value={typeof editModalItem.vehicle === "object" ? editModalItem.vehicle?.ar || "" : editModalItem.vehicle || ""}
+                                                    onChange={(e) => {
+                                                        const curVehicle = typeof editModalItem.vehicle === "object" ? editModalItem.vehicle : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, vehicle: { ...curVehicle, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="بورشه 911 GT3 RS"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+
+
+                                        {/* BEFORE & AFTER IMAGES (IF CATEGORY IS BEFORE-AFTER) */}
+                                        {editModalItem.category === "before-after" && (
+                                            <div className="p-3 bg-ftx-obsidian/60 border border-ftx-surface-high rounded-xl space-y-4">
+                                                <span className="text-[11px] font-mono font-bold text-ftx-lime uppercase block">
+                                                    BEFORE & AFTER SLIDER IMAGES
+                                                </span>
+
+                                                {/* Before Image */}
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-[10px] font-mono text-ftx-silver uppercase">BEFORE IMAGE URL</label>
+                                                        <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
+                                                            <span>+ UPLOAD BEFORE IMAGE</span>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={async (e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (!file) return;
+                                                                    const formData = new FormData();
+                                                                    formData.append("file", file);
+                                                                    try {
+                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                        const data = await res.json();
+                                                                        if (data.url) setEditModalItem((prev: any) => ({ ...prev, beforeImage: data.url }));
+                                                                    } catch (err) { console.error(err); }
+                                                                }}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        value={editModalItem.beforeImage || ""}
+                                                        onChange={(e) => setEditModalItem({ ...editModalItem, beforeImage: e.target.value })}
+                                                        className="w-full p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                        placeholder="/images/gallery/before.png"
+                                                    />
+                                                </div>
+
+                                                {/* After Image */}
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-[10px] font-mono text-ftx-silver uppercase">AFTER IMAGE URL</label>
+                                                        <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
+                                                            <span>+ UPLOAD AFTER IMAGE</span>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={async (e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (!file) return;
+                                                                    const formData = new FormData();
+                                                                    formData.append("file", file);
+                                                                    try {
+                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                        const data = await res.json();
+                                                                        if (data.url) setEditModalItem((prev: any) => ({ ...prev, afterImage: data.url }));
+                                                                    } catch (err) { console.error(err); }
+                                                                }}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        value={editModalItem.afterImage || ""}
+                                                        onChange={(e) => setEditModalItem({ ...editModalItem, afterImage: e.target.value })}
+                                                        className="w-full p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                        placeholder="/images/gallery/after.png"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* DESCRIPTION (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">DESCRIPTION (EN)</label>
+                                                <textarea
+                                                    value={typeof editModalItem.description === "object" ? editModalItem.description?.en || "" : editModalItem.description || ""}
+                                                    onChange={(e) => {
+                                                        const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, description: { ...curDesc, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
+                                                    rows={3}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">DESCRIPTION (AR)</label>
+                                                <textarea
+                                                    value={typeof editModalItem.description === "object" ? editModalItem.description?.ar || "" : editModalItem.description || ""}
+                                                    onChange={(e) => {
+                                                        const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, description: { ...curDesc, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
+                                                    rows={3}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* TAGS (COMMA SEPARATED) */}
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">TAGS (COMMA SEPARATED)</label>
+                                            <input
+                                                type="text"
+                                                value={Array.isArray(editModalItem.tags) ? editModalItem.tags.join(", ") : editModalItem.tags || ""}
+                                                onChange={(e) => {
+                                                    const raw = e.target.value;
+                                                    const arr = raw.split(",").map((t) => t.trim());
+                                                    setEditModalItem({ ...editModalItem, tags: arr });
+                                                }}
+                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                placeholder="PPF, Stealth, Porsche, Video"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* TESTIMONIAL SPECIFIC EDIT MODAL FORM */}
+                                {editModalType === "testimonial" && (
+                                    <div className="space-y-4 pt-2 border-t border-ftx-surface-high">
+                                        {/* Client Name & Vehicle Model */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT NAME</label>
+                                                <input
+                                                    type="text"
+                                                    value={editModalItem.name || ""}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, name: e.target.value })}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="e.g. Sheikh Rashid Al Maktoum"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">VEHICLE MODEL / BRAND</label>
+                                                <input
+                                                    type="text"
+                                                    value={typeof editModalItem.vehicle === "object" ? editModalItem.vehicle?.en || "" : editModalItem.vehicle || ""}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, vehicle: e.target.value })}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="e.g. Porsche 911 GT3 RS"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Role (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT ROLE / TITLE (EN)</label>
+                                                <input
+                                                    type="text"
+                                                    value={typeof editModalItem.role === "object" ? editModalItem.role?.en || "" : editModalItem.role || ""}
+                                                    onChange={(e) => {
+                                                        const curRole = typeof editModalItem.role === "object" ? editModalItem.role : { en: editModalItem.role || "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, role: { ...curRole, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="e.g. Supercar Collector"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT ROLE / TITLE (AR)</label>
+                                                <input
+                                                    type="text"
+                                                    dir="rtl"
+                                                    value={typeof editModalItem.role === "object" ? editModalItem.role?.ar || "" : ""}
+                                                    onChange={(e) => {
+                                                        const curRole = typeof editModalItem.role === "object" ? editModalItem.role : { en: editModalItem.role || "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, role: { ...curRole, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                                    placeholder="مثال: جامع سيارات فاخرة"
+                                                />
+                                            </div>
+                                        </div>
+
+
+                                        {/* Avatar URL & Upload Preview */}
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">CLIENT AVATAR IMAGE</label>
+                                                <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
+                                                    <span>+ UPLOAD AVATAR FILE</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            const formData = new FormData();
+                                                            formData.append("file", file);
+                                                            try {
+                                                                const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                const data = await res.json();
+                                                                if (data.url) {
+                                                                    setEditModalItem((prev: any) => ({ ...prev, avatar: data.url }));
+                                                                }
+                                                            } catch (err) {
+                                                                console.error("Upload avatar error", err);
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-xl">
+                                                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-ftx-lime/50 bg-black shrink-0 flex items-center justify-center">
+                                                    {editModalItem.avatar ? (
+                                                        <img src={editModalItem.avatar} alt="Avatar" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLElement).style.display = "none"; }} />
+                                                    ) : (
+                                                        <UserIcon className="w-6 h-6 text-ftx-silver-muted" />
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={editModalItem.avatar || ""}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, avatar: e.target.value })}
+                                                    className="flex-1 p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="/images/testimonials/avatar-1.jpg"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Content / Quotes (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">TESTIMONIAL QUOTE (EN)</label>
+                                                <textarea
+                                                    value={typeof editModalItem.content === "object" ? editModalItem.content?.en || "" : editModalItem.content || ""}
+                                                    onChange={(e) => {
+                                                        const curContent = typeof editModalItem.content === "object" ? editModalItem.content : { en: editModalItem.content || "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, content: { ...curContent, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
+                                                    rows={4}
+                                                    placeholder="Write client testimonial quote in English..."
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">TESTIMONIAL QUOTE (AR)</label>
+                                                <textarea
+                                                    dir="rtl"
+                                                    value={typeof editModalItem.content === "object" ? editModalItem.content?.ar || "" : ""}
+                                                    onChange={(e) => {
+                                                        const curContent = typeof editModalItem.content === "object" ? editModalItem.content : { en: editModalItem.content || "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, content: { ...curContent, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px] text-right"
+                                                    rows={4}
+                                                    placeholder="اكتب تقييم العميل باللغة العربية..."
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* PACKAGE SPECIFIC EDIT MODAL FORM */}
+                                {editModalType === "package" && (
+                                    <div className="space-y-6 pt-4 border-t border-ftx-surface-high">
+                                        {/* Category & Popular Toggle */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">PACKAGE CATEGORY</label>
+                                                <select
+                                                    value={editModalItem.category || (services[0]?.serviceId || services[0]?.id || "ppf")}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, category: e.target.value })}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                >
+                                                    {services.map((srv: any) => {
+                                                        const sId = srv.serviceId || srv.id;
+                                                        const sTitle = typeof srv.title === "object" ? (srv.title.en || srv.title.ar) : (srv.title || (typeof srv.name === "object" ? srv.name.en : srv.name)) || sId;
+                                                        return (
+                                                            <option key={`pkg-cat-${sId}`} value={sId}>
+                                                                {sTitle}
+                                                            </option>
+                                                        );
+                                                    })}
+                                                </select>
+                                            </div>
+                                            <div className="flex items-center gap-3 pt-6">
+                                                <label className="flex items-center gap-2 text-xs font-mono text-ftx-silver cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editModalItem.popular || false}
+                                                        onChange={(e) => setEditModalItem({ ...editModalItem, popular: e.target.checked })}
+                                                        className="w-4 h-4 rounded bg-ftx-obsidian border-ftx-surface-high text-ftx-lime focus:ring-ftx-lime"
+                                                    />
+                                                    <span>FEATURED / POPULAR PACKAGE</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {/* Description (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">PACKAGE DESCRIPTION (EN)</label>
+                                                <textarea
+                                                    value={typeof editModalItem.description === "object" ? editModalItem.description?.en || "" : editModalItem.description || ""}
+                                                    onChange={(e) => {
+                                                        const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: editModalItem.description || "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, description: { ...curDesc, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[80px]"
+                                                    rows={3}
+                                                    placeholder="Brief description of package in English..."
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">PACKAGE DESCRIPTION (AR)</label>
+                                                <textarea
+                                                    dir="rtl"
+                                                    value={typeof editModalItem.description === "object" ? editModalItem.description?.ar || "" : ""}
+                                                    onChange={(e) => {
+                                                        const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: editModalItem.description || "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, description: { ...curDesc, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[80px] text-right"
+                                                    rows={3}
+                                                    placeholder="وصف الباقة باللغة العربية..."
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* PACKAGE FEATURES / INCLUSIONS LIST (EN & AR) */}
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
+                                                    PACKAGE FEATURES & INCLUSIONS (EN & AR)
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const enFeat = Array.isArray(editModalItem.features?.en) ? [...editModalItem.features.en] : [];
+                                                        const arFeat = Array.isArray(editModalItem.features?.ar) ? [...editModalItem.features.ar] : [];
+                                                        enFeat.push("");
+                                                        arFeat.push("");
+                                                        setEditModalItem({
+                                                            ...editModalItem,
+                                                            features: { en: enFeat, ar: arFeat },
+                                                        });
+                                                    }}
+                                                    className="text-ftx-lime text-[10px] font-mono hover:underline cursor-pointer flex items-center gap-1 font-bold"
+                                                >
+                                                    <Plus className="w-3 h-3" />
+                                                    <span>ADD FEATURE ITEM</span>
+                                                </button>
+                                            </div>
+
+                                            {(!editModalItem.features?.en || editModalItem.features.en.length === 0) ? (
+                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No package features added yet. Click "+ ADD FEATURE ITEM" above.</p>
+                                            ) : (
+                                                <div className="space-y-2.5">
+                                                    {editModalItem.features.en.map((fEn: string, fIdx: number) => {
+                                                        const fAr = editModalItem.features?.ar?.[fIdx] || "";
+                                                        return (
+                                                            <div key={`feat-${fIdx}`} className="p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-xl space-y-2">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-[10px] font-mono text-ftx-silver uppercase">FEATURE #{fIdx + 1}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const enFeat = [...editModalItem.features.en];
+                                                                            const arFeat = [...(editModalItem.features?.ar || [])];
+                                                                            enFeat.splice(fIdx, 1);
+                                                                            if (arFeat[fIdx] !== undefined) arFeat.splice(fIdx, 1);
+                                                                            setEditModalItem({
+                                                                                ...editModalItem,
+                                                                                features: { en: enFeat, ar: arFeat },
+                                                                            });
+                                                                        }}
+                                                                        className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
+                                                                    >
+                                                                        REMOVE
+                                                                    </button>
+                                                                </div>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={fEn}
+                                                                        onChange={(e) => {
+                                                                            const enFeat = [...editModalItem.features.en];
+                                                                            enFeat[fIdx] = e.target.value;
+                                                                            setEditModalItem({
+                                                                                ...editModalItem,
+                                                                                features: { ...editModalItem.features, en: enFeat },
+                                                                            });
+                                                                        }}
+                                                                        placeholder="Feature in English (e.g. 5-Year Warranty)..."
+                                                                        className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                                    />
+                                                                    <input
+                                                                        type="text"
+                                                                        dir="rtl"
+                                                                        value={fAr}
+                                                                        onChange={(e) => {
+                                                                            const arFeat = [...(editModalItem.features?.ar || [])];
+                                                                            arFeat[fIdx] = e.target.value;
+                                                                            setEditModalItem({
+                                                                                ...editModalItem,
+                                                                                features: { ...editModalItem.features, ar: arFeat },
+                                                                            });
+                                                                        }}
+                                                                        placeholder="الميزة باللغة العربية..."
+                                                                        className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* SERVICE SPECIFIC ADVANCED EDITORS (BENEFITS, HIGHLIGHTS, PROCESS, DETAIL IMAGES) */}
+                                {editModalType === "service" && (
+                                    <div className="space-y-6 pt-4 border-t border-ftx-surface-high">
+                                        {/* 1. KEY BENEFITS LIST */}
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
+                                                    KEY BENEFITS (EN & AR)
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const curEn = editModalItem.benefits?.en || [];
+                                                        const curAr = editModalItem.benefits?.ar || [];
+                                                        setEditModalItem({
+                                                            ...editModalItem,
+                                                            benefits: {
+                                                                en: [...curEn, ""],
+                                                                ar: [...curAr, ""],
+                                                            },
+                                                        });
+                                                    }}
+                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
+                                                >
+                                                    + ADD BENEFIT ITEM
+                                                </button>
+                                            </div>
+
+                                            {(!editModalItem.benefits?.en || editModalItem.benefits.en.length === 0) ? (
+                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No benefit bullet points added yet.</p>
+                                            ) : (
+                                                (editModalItem.benefits.en || []).map((bEn: string, bIdx: number) => (
+                                                    <div key={`benefit-${bIdx}`} className="p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[10px] font-mono text-ftx-silver uppercase">BENEFIT #{bIdx + 1}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newEn = [...(editModalItem.benefits?.en || [])];
+                                                                    const newAr = [...(editModalItem.benefits?.ar || [])];
+                                                                    newEn.splice(bIdx, 1);
+                                                                    newAr.splice(bIdx, 1);
+                                                                    setEditModalItem({
+                                                                        ...editModalItem,
+                                                                        benefits: { en: newEn, ar: newAr },
+                                                                    });
+                                                                }}
+                                                                className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
+                                                            >
+                                                                REMOVE
+                                                            </button>
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            value={bEn}
+                                                            onChange={(e) => {
+                                                                const newEn = [...(editModalItem.benefits?.en || [])];
+                                                                newEn[bIdx] = e.target.value;
+                                                                setEditModalItem({
+                                                                    ...editModalItem,
+                                                                    benefits: { ...editModalItem.benefits, en: newEn },
+                                                                });
+                                                            }}
+                                                            placeholder="English benefit description..."
+                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            dir="rtl"
+                                                            value={editModalItem.benefits?.ar?.[bIdx] || ""}
+                                                            onChange={(e) => {
+                                                                const newAr = [...(editModalItem.benefits?.ar || [])];
+                                                                newAr[bIdx] = e.target.value;
+                                                                setEditModalItem({
+                                                                    ...editModalItem,
+                                                                    benefits: { ...editModalItem.benefits, ar: newAr },
+                                                                });
+                                                            }}
+                                                            placeholder="وصف الميزة باللغة العربية..."
+                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                        />
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        {/* 2. FEATURE HIGHLIGHT CARDS */}
+                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
+                                                    FEATURE HIGHLIGHT CARDS
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const cur = editModalItem.highlights || [];
+                                                        setEditModalItem({
+                                                            ...editModalItem,
+                                                            highlights: [
+                                                                ...cur,
+                                                                {
+                                                                    icon: "shield",
+                                                                    title: { en: "Feature Title", ar: "عنوان الميزة" },
+                                                                    description: { en: "Feature details...", ar: "تفاصيل الميزة..." },
+                                                                },
+                                                            ],
+                                                        });
+                                                    }}
+                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
+                                                >
+                                                    + ADD HIGHLIGHT CARD
+                                                </button>
+                                            </div>
+
+                                            {(!editModalItem.highlights || editModalItem.highlights.length === 0) ? (
+                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No highlight cards configured.</p>
+                                            ) : (
+                                                editModalItem.highlights.map((hl: any, hIdx: number) => (
+                                                    <div key={`hl-${hIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[10px] font-mono text-ftx-silver uppercase">CARD #{hIdx + 1}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    newHl.splice(hIdx, 1);
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
+                                                            >
+                                                                REMOVE
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="space-y-1">
+                                                            <label className="text-[9px] font-mono text-ftx-silver uppercase">ICON TYPE</label>
+                                                            <select
+                                                                value={hl.icon || "shield"}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    newHl[hIdx] = { ...newHl[hIdx], icon: e.target.value };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
+                                                            >
+                                                                <option value="shield">Shield (Impact / Protection)</option>
+                                                                <option value="refresh">Refresh (Self-Healing / Renew)</option>
+                                                                <option value="droplet">Droplet (Hydrophobic / Water)</option>
+                                                                <option value="sparkles">Sparkles (Gloss / Polish)</option>
+                                                                <option value="wand">Wand (Paint Correction)</option>
+                                                                <option value="car">Car (Interior / Vehicle)</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={hl.title?.en || ""}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    newHl[hIdx] = { ...newHl[hIdx], title: { ...newHl[hIdx].title, en: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                placeholder="Highlight Title (EN)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                dir="rtl"
+                                                                value={hl.title?.ar || ""}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    newHl[hIdx] = { ...newHl[hIdx], title: { ...newHl[hIdx].title, ar: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                placeholder="عنوان الميزة (عربي)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                            <textarea
+                                                                rows={2}
+                                                                value={hl.description?.en || ""}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    newHl[hIdx] = { ...newHl[hIdx], description: { ...newHl[hIdx].description, en: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                placeholder="Description (EN)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
+                                                            />
+                                                            <textarea
+                                                                rows={2}
+                                                                dir="rtl"
+                                                                value={hl.description?.ar || ""}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    newHl[hIdx] = { ...newHl[hIdx], description: { ...newHl[hIdx].description, ar: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                placeholder="الوصف التفصيلي (عربي)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        {/* 3. PROCESS STEPS */}
+                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
+                                                    PROCESS STEPS
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const cur = editModalItem.process || [];
+                                                        setEditModalItem({
+                                                            ...editModalItem,
+                                                            process: [
+                                                                ...cur,
+                                                                {
+                                                                    number: `0${cur.length + 1}`,
+                                                                    title: { en: "Step Title", ar: "عنوان المرحلة" },
+                                                                    description: { en: "Step description...", ar: "تفاصيل المرحلة..." },
+                                                                },
+                                                            ],
+                                                        });
+                                                    }}
+                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
+                                                >
+                                                    + ADD PROCESS STEP
+                                                </button>
+                                            </div>
+
+                                            {(!editModalItem.process || editModalItem.process.length === 0) ? (
+                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No process steps added.</p>
+                                            ) : (
+                                                editModalItem.process.map((step: any, pIdx: number) => (
+                                                    <div key={`step-${pIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-mono text-ftx-silver uppercase">STEP #{pIdx + 1}</span>
+                                                                <input
+                                                                    type="text"
+                                                                    value={step.number || `0${pIdx + 1}`}
+                                                                    onChange={(e) => {
+                                                                        const newP = [...(editModalItem.process || [])];
+                                                                        newP[pIdx] = { ...newP[pIdx], number: e.target.value };
+                                                                        setEditModalItem({ ...editModalItem, process: newP });
+                                                                    }}
+                                                                    className="w-12 p-1 bg-ftx-surface border border-ftx-surface-high text-ftx-lime text-center text-xs font-mono rounded"
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newP = [...(editModalItem.process || [])];
+                                                                    newP.splice(pIdx, 1);
+                                                                    setEditModalItem({ ...editModalItem, process: newP });
+                                                                }}
+                                                                className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
+                                                            >
+                                                                REMOVE
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={step.title?.en || ""}
+                                                                onChange={(e) => {
+                                                                    const newP = [...(editModalItem.process || [])];
+                                                                    newP[pIdx] = { ...newP[pIdx], title: { ...newP[pIdx].title, en: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, process: newP });
+                                                                }}
+                                                                placeholder="Step Title (EN)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                dir="rtl"
+                                                                value={step.title?.ar || ""}
+                                                                onChange={(e) => {
+                                                                    const newP = [...(editModalItem.process || [])];
+                                                                    newP[pIdx] = { ...newP[pIdx], title: { ...newP[pIdx].title, ar: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, process: newP });
+                                                                }}
+                                                                placeholder="عنوان المرحلة (عربي)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                            <textarea
+                                                                rows={2}
+                                                                value={step.description?.en || ""}
+                                                                onChange={(e) => {
+                                                                    const newP = [...(editModalItem.process || [])];
+                                                                    newP[pIdx] = { ...newP[pIdx], description: { ...newP[pIdx].description, en: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, process: newP });
+                                                                }}
+                                                                placeholder="Step Description (EN)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
+                                                            />
+                                                            <textarea
+                                                                rows={2}
+                                                                dir="rtl"
+                                                                value={step.description?.ar || ""}
+                                                                onChange={(e) => {
+                                                                    const newP = [...(editModalItem.process || [])];
+                                                                    newP[pIdx] = { ...newP[pIdx], description: { ...newP[pIdx].description, ar: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, process: newP });
+                                                                }}
+                                                                placeholder="تفاصيل المرحلة (عربي)..."
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        {/* 4. DETAIL IMAGES GALLERY */}
+                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
+                                                    GALLERY SHOWCASE IMAGES
+                                                </label>
+                                                <label className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer">
+                                                    <span>+ UPLOAD SHOWCASE IMAGE</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            const formData = new FormData();
+                                                            formData.append("file", file);
+                                                            try {
+                                                                const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                                                                const data = await res.json();
+                                                                if (data.url) {
+                                                                    const cur = editModalItem.detailImages || [];
+                                                                    setEditModalItem({ ...editModalItem, detailImages: [...cur, data.url] });
+                                                                }
+                                                            } catch (err) {
+                                                                console.error("Upload error", err);
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            {(!editModalItem.detailImages || editModalItem.detailImages.length === 0) ? (
+                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No additional showcase images uploaded.</p>
+                                            ) : (
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                                    {editModalItem.detailImages.map((imgUrl: string, imgIdx: number) => (
+                                                        <div key={`detail-img-${imgIdx}`} className="relative aspect-video bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden group">
+                                                            <img src={imgUrl} alt={`Showcase ${imgIdx + 1}`} className="w-full h-full object-cover" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newImgs = [...(editModalItem.detailImages || [])];
+                                                                    newImgs.splice(imgIdx, 1);
+                                                                    setEditModalItem({ ...editModalItem, detailImages: newImgs });
+                                                                }}
+                                                                className="absolute top-1 right-1 p-1 bg-rose-600/90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <XCircle className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-ftx-surface-high">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setEditModalItem(null);
+                                            setEditModalType(null);
+                                        }}
+                                        className="w-full sm:w-auto px-4 py-2.5 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver text-xs font-mono font-bold uppercase rounded-lg text-center"
+                                    >
+                                        CANCEL
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        disabled={saving}
+                                        className="w-full sm:w-auto px-6 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow hover:bg-ftx-lime-bright transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                        <span>SAVE CHANGES</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Custom FTX Tech Confirmation Modal */}
+            {
+                confirmModal?.isOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-ftx-dropdown">
+                        <div className="bg-ftx-surface border border-ftx-surface-high p-6 sm:p-8 ftx-squircle-xl max-w-md w-full space-y-6 shadow-2xl relative">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className={`p-3 rounded-xl ${confirmModal.type === "danger"
+                                        ? "bg-rose-500/10 border border-rose-500/30 text-rose-400"
+                                        : "bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime"
+                                        }`}
+                                >
+                                    <AlertCircle className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-heading font-bold uppercase tracking-wider text-white">
+                                        {confirmModal.title}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <p className="text-xs sm:text-sm font-body text-ftx-silver leading-relaxed">
+                                {confirmModal.description}
+                            </p>
+
+                            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-ftx-surface-high">
+                                <button
+                                    onClick={() => setConfirmModal(null)}
+                                    className="w-full sm:w-auto px-4 py-2.5 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-white text-xs font-mono font-bold uppercase rounded-lg transition-colors text-center"
                                 >
                                     CANCEL
                                 </button>
-
                                 <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="px-6 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow hover:bg-ftx-lime-bright transition-all flex items-center gap-2"
+                                    onClick={confirmModal.onConfirm}
+                                    className={`w-full sm:w-auto px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded-lg transition-all shadow-md text-center ${confirmModal.type === "danger"
+                                        ? "bg-rose-500 hover:bg-rose-600 text-white"
+                                        : "bg-ftx-lime hover:bg-ftx-lime-bright text-ftx-black shadow-lime-glow"
+                                        }`}
                                 >
-                                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                    <span>SAVE CHANGES</span>
+                                    {confirmModal.confirmText}
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 
@@ -2395,6 +3107,15 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
     const isMetrics = section.sectionKey === "metrics";
     const isServices = section.sectionKey === "services";
     const isWhyFtx = section.sectionKey === "why_ftx";
+    const isContact = section.page === "contact" || section.sectionKey === "info";
+
+    const [mapsUrl, setMapsUrl] = useState(section.metadata?.mapsUrl || "");
+    const [phone, setPhone] = useState(section.metadata?.phone || "");
+    const [email, setEmail] = useState(section.metadata?.email || "");
+    const [addressEn, setAddressEn] = useState(section.metadata?.addressEn || section.metadata?.address?.en || "");
+    const [addressAr, setAddressAr] = useState(section.metadata?.addressAr || section.metadata?.address?.ar || "");
+    const [workingHoursEn, setWorkingHoursEn] = useState(section.metadata?.workingHoursEn || section.metadata?.workingHours?.en || "");
+    const [workingHoursAr, setWorkingHoursAr] = useState(section.metadata?.workingHoursAr || section.metadata?.workingHours?.ar || "");
 
     const [titleEn, setTitleEn] = useState(section.title?.en || "");
     const [titleAr, setTitleAr] = useState(section.title?.ar || "");
@@ -2504,7 +3225,15 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
         setMetric3Suffix(section.metadata?.metric3Suffix || "%");
         setMetric3LabelEn(section.metadata?.metric3Label?.en || "SATISFACTION FOCUS");
         setMetric3LabelAr(section.metadata?.metric3Label?.ar || "تركيز على رضا العملاء");
-    }, [section]);
+
+        setMapsUrl(section.metadata?.mapsUrl || "");
+        setPhone(section.metadata?.phone || "");
+        setEmail(section.metadata?.email || "");
+        setAddressEn(section.metadata?.addressEn || section.metadata?.address?.en || "");
+        setAddressAr(section.metadata?.addressAr || section.metadata?.address?.ar || "");
+        setWorkingHoursEn(section.metadata?.workingHoursEn || section.metadata?.workingHours?.en || "");
+        setWorkingHoursAr(section.metadata?.workingHoursAr || section.metadata?.workingHours?.ar || "");
+    }, [section?._id, section?.sectionKey, section?.page]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, cardKey?: "card1Image" | "card2Image" | "card3Image" | "card4Image") => {
         const file = e.target.files?.[0];
@@ -2578,6 +3307,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                     : {}),
                 ...(badgeTitleEn || badgeTitleAr ? { badgeTitle: { en: badgeTitleEn, ar: badgeTitleAr } } : {}),
                 ...(badgeSubEn || badgeSubAr ? { badgeSub: { en: badgeSubEn, ar: badgeSubAr } } : {}),
+                ...(isContact ? { mapsUrl, phone, email, addressEn, addressAr, workingHoursEn, workingHoursAr } : {}),
             },
         });
     };
@@ -2585,26 +3315,26 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
     return (
         <div className="bg-ftx-surface border border-ftx-surface-high p-6 ftx-squircle-lg space-y-6">
             {/* Card Header */}
-            <div className="flex items-center justify-between border-b border-ftx-surface-high pb-4">
-                <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-ftx-obsidian text-ftx-lime border border-ftx-lime/30 text-xs font-mono font-bold uppercase rounded-md">
+            <div className="flex items-center justify-between gap-3 border-b border-ftx-surface-high pb-4">
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="px-3 py-1 bg-ftx-obsidian text-ftx-lime border border-ftx-lime/30 text-xs font-mono font-bold uppercase rounded-md truncate">
                         {section.page.toUpperCase()} / {section.sectionKey.toUpperCase()}
                     </span>
                 </div>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-5 py-2.5 bg-ftx-lime hover:bg-ftx-lime-bright text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow transition-all flex items-center gap-2"
+                    className="px-4 sm:px-5 py-2 sm:py-2.5 bg-ftx-lime hover:bg-ftx-lime-bright text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow transition-all flex items-center justify-center gap-2 shrink-0"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    <span>SAVE SECTION</span>
+                    <span>SAVE</span>
                 </button>
             </div>
 
             {/* Section Media & Image Upload Bar (Only shown for Intro section or when image metadata exists) */}
             {(isIntroOrPhilosophy || imageUrl) && (
                 <div className="bg-ftx-obsidian border border-ftx-surface-high p-4 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-xs font-mono font-bold text-ftx-lime uppercase">SECTION MEDIA & IMAGE</span>
                         <span className="text-[10px] font-mono text-ftx-silver-muted">PNG, JPG, WEBP SUPPORTED</span>
                     </div>
@@ -2619,20 +3349,137 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                             )}
                         </div>
 
-                        <div className="flex-1 space-y-2 w-full">
-                            <div className="flex items-center gap-2">
+                        <div className="flex-1 space-y-2 w-full min-w-0">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                 <input
                                     type="text"
                                     value={imageUrl}
                                     onChange={(e) => setImageUrl(e.target.value)}
                                     placeholder="/images/about/craftsmanship.jpg or https://..."
-                                    className="flex-1 p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                    className="flex-1 min-w-0 p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                                 />
-                                <label className="px-4 py-2.5 bg-ftx-surface-high hover:bg-ftx-surface text-white text-xs font-mono font-bold uppercase rounded-lg cursor-pointer transition-colors shrink-0 flex items-center gap-2 border border-ftx-silver/20">
+                                <label className="px-4 py-2.5 bg-ftx-surface-high hover:bg-ftx-surface text-white text-xs font-mono font-bold uppercase rounded-lg cursor-pointer transition-colors shrink-0 flex items-center justify-center gap-2 border border-ftx-silver/20">
                                     {uploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5 text-ftx-lime" />}
                                     <span>{uploadingImage ? "UPLOADING..." : "UPLOAD FILE"}</span>
                                     <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                                 </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Contact & Google Maps Details Block */}
+            {isContact && (
+                <div className="bg-ftx-obsidian border border-ftx-surface-high p-4 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between border-b border-ftx-surface-high pb-2">
+                        <span className="text-xs font-mono font-bold text-ftx-lime uppercase">
+                            GOOGLE MAPS EMBED & STUDIO CONTACT INFO
+                        </span>
+                        <span className="text-[10px] font-mono text-ftx-silver-muted font-bold">CONTACT METADATA EDITING</span>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-mono text-ftx-lime font-bold uppercase block">
+                                    GOOGLE MAPS EMBED IFRAME URL
+                                </label>
+                                {mapsUrl && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setMapsUrl("")}
+                                        className="text-[10px] font-mono text-rose-400 hover:text-rose-300 hover:underline uppercase font-bold"
+                                    >
+                                        CLEAR LINK
+                                    </button>
+                                )}
+                            </div>
+                            <input
+                                type="text"
+                                value={mapsUrl}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val.includes("<iframe") || val.includes("src=")) {
+                                        const match = val.match(/src=["']([^"']+)["']/);
+                                        if (match && match[1]) {
+                                            setMapsUrl(match[1]);
+                                            return;
+                                        }
+                                    }
+                                    setMapsUrl(val);
+                                }}
+                                onFocus={(e) => e.target.select()}
+                                placeholder="https://www.google.com/maps/embed?pb=..."
+                                className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                            />
+                            <span className="text-[10px] font-mono text-ftx-silver-muted block">
+                                Tip: You can paste the whole &lt;iframe ...&gt; tag OR just the URL. Click "CLEAR LINK" above to empty the field anytime.
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-mono text-ftx-silver uppercase block">PHONE NUMBER</span>
+                                <input
+                                    type="text"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="+971 50 123 4567"
+                                    className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-mono text-ftx-silver uppercase block">EMAIL ADDRESS</span>
+                                <input
+                                    type="text"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="info@ftxdetailing.com"
+                                    className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-mono text-ftx-silver uppercase block">STUDIO ADDRESS (EN)</span>
+                                <textarea
+                                    rows={2}
+                                    value={addressEn}
+                                    onChange={(e) => setAddressEn(e.target.value)}
+                                    className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                />
+                            </div>
+                            <div className="space-y-1" dir="rtl">
+                                <span className="text-[10px] font-mono text-ftx-silver uppercase block text-right">عنوان الاستوديو (عربي)</span>
+                                <textarea
+                                    rows={2}
+                                    value={addressAr}
+                                    onChange={(e) => setAddressAr(e.target.value)}
+                                    className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-mono text-ftx-silver uppercase block">OPERATING HOURS (EN)</span>
+                                <input
+                                    type="text"
+                                    value={workingHoursEn}
+                                    onChange={(e) => setWorkingHoursEn(e.target.value)}
+                                    className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                />
+                            </div>
+                            <div className="space-y-1" dir="rtl">
+                                <span className="text-[10px] font-mono text-ftx-silver uppercase block text-right">أوقات العمل (عربي)</span>
+                                <input
+                                    type="text"
+                                    value={workingHoursAr}
+                                    onChange={(e) => setWorkingHoursAr(e.target.value)}
+                                    className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                />
                             </div>
                         </div>
                     </div>

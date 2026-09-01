@@ -10,6 +10,7 @@ interface BeforeAfterSliderProps {
     beforeLabel?: string;
     afterLabel?: string;
     alt?: string;
+    className?: string;
 }
 
 export function BeforeAfterSlider({
@@ -18,6 +19,7 @@ export function BeforeAfterSlider({
     beforeLabel = "BEFORE",
     afterLabel = "AFTER",
     alt = "FTX Automotive Transformation",
+    className = "",
 }: BeforeAfterSliderProps) {
     const [sliderPos, setSliderPos] = useState(50);
     const [isDragging, setIsDragging] = useState(false);
@@ -57,7 +59,7 @@ export function BeforeAfterSlider({
         if (isDragging) {
             window.addEventListener("mousemove", handleMouseMove);
             window.addEventListener("mouseup", handleMouseUp);
-            window.addEventListener("touchmove", handleTouchMove);
+            window.addEventListener("touchmove", handleTouchMove, { passive: true });
             window.addEventListener("touchend", handleMouseUp);
         }
         return () => {
@@ -88,11 +90,10 @@ export function BeforeAfterSlider({
                 handleMove(e.clientX);
             }}
             onTouchStart={(e) => {
-                e.preventDefault();
                 setIsDragging(true);
                 handleMove(e.touches[0].clientX);
             }}
-            className="relative w-full aspect-[16/8.5] min-h-[340px] sm:min-h-[460px] max-h-[520px] ftx-squircle-xl border border-ftx-surface-high cursor-ew-resize select-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime"
+            className={`relative w-full aspect-[16/8.5] cursor-ew-resize select-none touch-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime ftx-squircle-xl border border-ftx-surface-high ${className || "min-h-[340px] sm:min-h-[460px] max-h-[520px]"}`}
             aria-label="Before and after transformation slider. Use left and right arrow keys to adjust."
         >
             {/* After Image (Background) */}

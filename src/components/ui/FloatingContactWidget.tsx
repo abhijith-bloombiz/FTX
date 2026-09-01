@@ -14,13 +14,24 @@ export function FloatingContactWidget({ locale }: FloatingContactWidgetProps) {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [phone, setPhone] = useState(contactConfig.phone);
     const rtl = isRtl(locale);
 
     useEffect(() => {
         setIsVisible(true);
+        fetch("/api/admin/sections?page=contact")
+            .then((res) => res.json())
+            .then((data) => {
+                const info = data?.sections?.find((s: any) => s.sectionKey === "info");
+                if (info?.metadata?.phone) {
+                    setPhone(info.metadata.phone);
+                }
+            })
+            .catch(() => { });
     }, []);
 
-    const whatsappUrl = `https://wa.me/${contactConfig.whatsappNumber}?text=${encodeURIComponent(
+    const cleanNumber = phone.replace(/\D/g, "");
+    const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(
         locale === "ar"
             ? "مرحباً، أود الاستفسار عن خدمات FTX لحماية وتلميع السيارات."
             : "Hello, I would like to inquire about FTX automotive protection & detailing services."
@@ -46,7 +57,7 @@ export function FloatingContactWidget({ locale }: FloatingContactWidgetProps) {
             >
                 {/* 1. Phone Button (Red Circle) */}
                 <a
-                    href={`tel:${contactConfig.phoneRaw}`}
+                    href={`tel:${cleanNumber}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Call FTX"

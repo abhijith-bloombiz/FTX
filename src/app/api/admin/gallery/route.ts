@@ -14,13 +14,27 @@ export async function GET() {
         if (!gallery || gallery.length === 0) {
             gallery = galleryData.map((g) => ({ ...g, itemId: g.id })) as any;
         }
-        return NextResponse.json({ gallery, connected: true });
+        return NextResponse.json(
+            { gallery, connected: true },
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+                },
+            }
+        );
     } catch (error) {
-        return NextResponse.json({
-            gallery: galleryData.map((g) => ({ ...g, itemId: g.id })),
-            connected: false,
-            fallback: true,
-        });
+        return NextResponse.json(
+            {
+                gallery: galleryData.map((g) => ({ ...g, itemId: g.id })),
+                connected: false,
+                fallback: true,
+            },
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+                },
+            }
+        );
     }
 }
 

@@ -1,10 +1,10 @@
 export type MediaTypeFilter = "all" | "image" | "video";
-export type GalleryCategory = "all" | "ppf" | "ceramic" | "detailing" | "before-after";
+export type GalleryCategory = string;
 
 export interface GalleryItem {
     id: string;
     title: Record<"en" | "ar", string>;
-    category: "ppf" | "ceramic" | "detailing" | "before-after" | "video";
+    category: string;
     vehicle: string | Record<"en" | "ar", string>;
     image: string;
     video?: string;

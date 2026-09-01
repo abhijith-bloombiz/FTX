@@ -7,6 +7,7 @@ import { WhyFTX } from "@/components/sections/WhyFTX";
 import { FeaturedWork } from "@/components/sections/FeaturedWork";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { ContactForm } from "@/components/ui/ContactForm";
+import { TextReveal } from "@/components/motion/TextReveal";
 import { ScrollScrubFloor } from "@/components/motion/ScrollScrubFloor";
 
 import { connectToDatabase } from "@/lib/db";
@@ -112,7 +113,7 @@ interface HomePageProps {
 export async function generateMetadata({ params: { locale } }: HomePageProps) {
     const isAr = locale === "ar";
     return {
-        title: isAr ? "FTX – فيرست تورك اكس | استوديو حماية العناية الفائقة بالسيارات دبي" : "FTX – First Torque X | Luxury Automotive Protection & Detailing Studio Dubai",
+        title: "First Torque X",
         description: isAr
             ? "استوديو دبي الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء، والعناية الفائقة بالسيارات."
             : "Dubai's premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
@@ -159,6 +160,16 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                 />
 
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    {/* Header with Title */}
+                    <div className="mb-8 sm:mb-10 text-left max-w-3xl space-y-3">
+                        <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
+                            <span>{messages.contact?.heroSub || "EXPERIENCE UNYIELDING PRECISION"}</span>
+                        </div>
+                        <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
+                            <span>{messages.contact?.heroTitle || "SCHEDULE YOUR CONSULTATION"}</span>
+                        </TextReveal>
+                    </div>
+
                     <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
                         <ContactForm locale={locale} messages={messages} />
                     </Suspense>

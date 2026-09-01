@@ -1,5 +1,5 @@
 export const siteConfig = {
-    name: "FTX – First Torque X",
+    name: "First Torque X",
     shortName: "FTX",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://ftxdetailing.com",
     ogImage: "https://ftxdetailing.com/og-image.jpg",

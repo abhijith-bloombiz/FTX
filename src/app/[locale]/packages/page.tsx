@@ -12,42 +12,52 @@ interface PackagesPageProps {
     params: { locale: Locale };
 }
 
+let cachedPackagesItems: any[] | null = null;
+let cachedServicesItems: any[] | null = null;
+
 export default function PackagesPage({ params: { locale } }: PackagesPageProps) {
-    const [allPackages, setAllPackages] = useState<any[]>(packagesData);
-    const [loading, setLoading] = useState(true);
-    const [activeCategory, setActiveCategory] = useState<"ppf" | "ceramic" | "detailing">("ppf");
+    const [allPackages, setAllPackages] = useState<any[]>(cachedPackagesItems || packagesData);
+    const [allServices, setAllServices] = useState<any[]>(cachedServicesItems || []);
+    const [loading, setLoading] = useState(!cachedPackagesItems && packagesData.length === 0);
+    const [activeCategory, setActiveCategory] = useState<string>("ppf");
     const [isOpen, setIsOpen] = useState(false);
     const [isDesktopOpen, setIsDesktopOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const desktopDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setLoading(true);
-        fetch("/api/admin/packages")
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.packages && data.packages.length > 0) {
-                    setAllPackages(data.packages);
+        Promise.all([
+            fetch("/api/admin/packages").then((res) => res.json()).catch(() => ({})),
+            fetch("/api/admin/services").then((res) => res.json()).catch(() => ({})),
+        ])
+            .then(([pkgData, srvData]) => {
+                if (pkgData.packages && pkgData.packages.length > 0) {
+                    cachedPackagesItems = pkgData.packages;
+                    setAllPackages(pkgData.packages);
+                }
+                if (srvData.services && srvData.services.length > 0) {
+                    cachedServicesItems = srvData.services;
+                    setAllServices(srvData.services);
                 }
             })
-            .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
 
-    const categories = [
-        {
-            id: "ppf",
-            label: locale === "ar" ? "أفلام حماية الطلاء (PPF)" : "Paint Protection Film (PPF)"
-        },
-        {
-            id: "ceramic",
-            label: locale === "ar" ? "طلاء السيراميك" : "Ceramic Coating"
-        },
-        {
-            id: "detailing",
-            label: locale === "ar" ? "التلميع والعناية" : "Detailing"
-        },
-    ] as const;
+    const defaultCategories = [
+        { id: "ppf", label: locale === "ar" ? "أفلام حماية الطلاء (PPF)" : "Paint Protection Film (PPF)" },
+        { id: "ceramic", label: locale === "ar" ? "طلاء السيراميك" : "Ceramic Coating" },
+        { id: "detailing", label: locale === "ar" ? "التلميع والعناية" : "Detailing" },
+    ];
+
+    const categories = allServices.length > 0
+        ? allServices.map((srv: any) => {
+            const id = srv.serviceId || srv.id;
+            const label = typeof srv.title === "object"
+                ? (srv.title[locale] || srv.title.en || srv.title.ar)
+                : (srv.title || (typeof srv.name === "object" ? srv.name[locale] || srv.name.en : srv.name)) || id;
+            return { id, label };
+        })
+        : defaultCategories;
 
     const filteredPackages = allPackages.filter((pkg) => pkg.category === activeCategory);
 
@@ -189,20 +199,32 @@ export default function PackagesPage({ params: { locale } }: PackagesPageProps) 
                     </div>
                 </div>
 
-                {/* Packages Cards Grid */}
+                {/* Packages Cards Skeleton Grid */}
                 {loading ? (
-                    <div className="py-20 flex flex-col items-center justify-center space-y-4 bg-ftx-surface/20 border border-ftx-surface-high/40 ftx-squircle-xl">
-                        <div className="p-3 rounded-full bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime shadow-lime-glow">
-                            <Loader2 className="w-8 h-8 animate-spin" />
-                        </div>
-                        <p className="text-xs font-mono text-ftx-silver uppercase tracking-widest animate-pulse">
-                            {locale === "ar" ? "جاري تحميل الباقات من قاعدة البيانات..." : "LOADING PACKAGES FROM DATABASE..."}
-                        </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2 animate-pulse">
+                        {[1, 2, 3].map((i) => (
+                            <div key={`pkg-skeleton-${i}`} className="bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl p-8 space-y-6 min-h-[480px] flex flex-col justify-between">
+                                <div className="space-y-4">
+                                    <div className="h-5 bg-ftx-surface-high/60 rounded w-1/3" />
+                                    <div className="h-9 bg-ftx-surface-high/50 rounded w-3/4" />
+                                    <div className="h-4 bg-ftx-surface-high/30 rounded w-full" />
+                                    <div className="space-y-3 pt-4">
+                                        {[1, 2, 3, 4].map((f) => (
+                                            <div key={`f-${f}`} className="h-4 bg-ftx-surface-high/30 rounded w-5/6" />
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-4 pt-6 border-t border-ftx-surface-high/40">
+                                    <div className="h-8 bg-ftx-surface-high/60 rounded w-1/2" />
+                                    <div className="h-12 bg-ftx-surface-high/70 rounded-xl w-full" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
                         {filteredPackages.map((pkg, idx) => (
-                            <ScrollReveal key={pkg.id} type="scale" delay={idx * 120} className="h-full">
+                            <ScrollReveal key={pkg.id || pkg._id || `package-${idx}`} type="scale" delay={idx * 120} className="h-full">
                                 <PackageCard
                                     packageData={pkg}
                                     locale={locale}

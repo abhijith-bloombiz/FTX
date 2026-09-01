@@ -20,7 +20,7 @@ const ContactInquirySchema = new Schema<IContactInquiry>(
         vehicleModel: { type: String, default: "" },
         serviceCategory: { type: String, default: "" },
         preferredDate: { type: String, default: "" },
-        message: { type: String, required: true },
+        message: { type: String, default: "" },
         status: { type: String, enum: ["new", "contacted", "closed"], default: "new" },
     },
     { timestamps: true }

@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
 
     const homeSections = await getSectionsForPage("home");
     const aboutSections = await getSectionsForPage("about");
-    const sections = [...homeSections, ...aboutSections];
+    const contactSections = await getSectionsForPage("contact");
+    const sections = [...homeSections, ...aboutSections, ...contactSections];
 
     return NextResponse.json({ sections, connected: true });
 }

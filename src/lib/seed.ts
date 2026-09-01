@@ -12,9 +12,13 @@ import { packagesData } from "@/data/packages";
 import { galleryData } from "@/data/gallery";
 import { testimonialsData } from "@/data/testimonials";
 
+let isSeeded = false;
+
 export async function seedDatabase() {
+    if (isSeeded) return;
     try {
         await connectToDatabase();
+        isSeeded = true;
 
         // 1. Seed Admin User: abhijith.bloombiz@gmail.com
         const adminEmail = (process.env.ADMIN_EMAIL || "abhijith.bloombiz@gmail.com").toLowerCase();
@@ -168,8 +172,8 @@ export async function seedDatabase() {
                     ar: "آراء وانطباعات العملاء",
                 },
                 subtitle: {
-                    en: "TRUSTED BY DUBAI'S DISCERNING DRIVERS",
-                    ar: "ثقة ملاك السيارات الفاخرة في دبي",
+                    en: "TRUSTED BY DISCERNING AUTOMOTIVE ENTHUSIASTS",
+                    ar: "ثقة ملاك وعشاق السيارات الفاخرة",
                 },
                 content: {
                     en: "Read genuine feedback from supercar collectors and automotive enthusiasts.",
@@ -312,9 +316,16 @@ export async function seedDatabase() {
             await PageSection.findOneAndUpdate(
                 { page: ps.page, sectionKey: ps.sectionKey },
                 { $setOnInsert: ps },
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: 'after' }
             );
         }
+
+        // Force update testimonials subtitle if it contains old wording
+        await PageSection.updateOne(
+            { page: "home", sectionKey: "testimonials", "subtitle.en": /DUBAI'S DISCERNING/i },
+            { $set: { "subtitle.en": "TRUSTED BY DISCERNING AUTOMOTIVE ENTHUSIASTS", "subtitle.ar": "ثقة ملاك وعشاق السيارات الفاخرة" } }
+        );
+
         console.log("Seeded Page Sections successfully!");
     } catch (error) {
         console.error("Database Seeding Error:", error);

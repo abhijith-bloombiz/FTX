@@ -2,10 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-    title: {
-        default: "FTX – First Torque X | Luxury Automotive Protection & Detailing Studio Dubai",
-        template: "%s | FTX Dubai",
-    },
+    title: "First Torque X",
     description: "Dubai's premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
     keywords: [
         "Paint Protection Film Dubai",
@@ -26,16 +23,16 @@ export const metadata: Metadata = {
         },
     },
     openGraph: {
-        title: "FTX – First Torque X | Luxury Automotive Protection Studio Dubai",
+        title: "First Torque X",
         description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing in Dubai.",
         url: "https://ftx.ae",
-        siteName: "FTX – First Torque X",
+        siteName: "First Torque X",
         images: [
             {
                 url: "/brand/ftx-3d-logo.webp",
                 width: 1200,
                 height: 630,
-                alt: "FTX Automotive Protection Studio Dubai",
+                alt: "First Torque X Automotive Protection Studio Dubai",
             },
         ],
         locale: "en_US",
@@ -43,7 +40,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "FTX – Luxury Automotive Protection Studio Dubai",
+        title: "First Torque X",
         description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing in Dubai.",
         images: ["/brand/ftx-3d-logo.webp"],
     },

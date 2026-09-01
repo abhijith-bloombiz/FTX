@@ -14,13 +14,27 @@ export async function GET() {
         if (!packages || packages.length === 0) {
             packages = packagesData.map((p) => ({ ...p, packageId: p.id })) as any;
         }
-        return NextResponse.json({ packages, connected: true });
+        return NextResponse.json(
+            { packages, connected: true },
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+                },
+            }
+        );
     } catch (error) {
-        return NextResponse.json({
-            packages: packagesData.map((p) => ({ ...p, packageId: p.id })),
-            connected: false,
-            fallback: true,
-        });
+        return NextResponse.json(
+            {
+                packages: packagesData.map((p) => ({ ...p, packageId: p.id })),
+                connected: false,
+                fallback: true,
+            },
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+                },
+            }
+        );
     }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
@@ -16,11 +16,37 @@ interface FeaturedWorkProps {
     messages: any;
 }
 
+let cachedFeaturedGallery: any[] | null = null;
+
 export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
+    const [allGalleryItems, setAllGalleryItems] = useState<any[]>(cachedFeaturedGallery || galleryData);
     const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
 
-    const featuredItems = galleryData.filter((g) => !g.isVideo).slice(0, 3);
-    const beforeAfterItem = galleryData.find((g) => g.category === "before-after");
+    useEffect(() => {
+        fetch("/api/admin/gallery")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.gallery && data.gallery.length > 0) {
+                    cachedFeaturedGallery = data.gallery;
+                    setAllGalleryItems(data.gallery);
+                }
+            })
+            .catch(() => { });
+    }, []);
+
+    const isBeforeAfterItem = (g: any) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage);
+    const featuredItems = allGalleryItems.filter((g) => !g.isVideo && !isBeforeAfterItem(g)).slice(0, 4);
+    if (featuredItems.length < 4) {
+        const remaining = allGalleryItems.filter((g) => !isBeforeAfterItem(g) && !featuredItems.some((f) => f.id === g.id));
+        featuredItems.push(...remaining.slice(0, 4 - featuredItems.length));
+    }
+    const beforeAfterItem = allGalleryItems.find((g) => isBeforeAfterItem(g));
+
+    const getTitle = (item: any) => {
+        if (!item?.title) return "";
+        if (typeof item.title === "string") return item.title;
+        return item.title[locale] || item.title.en || "";
+    };
 
     return (
         <section id="ourwork" className="py-10 sm:py-12 bg-black relative overflow-hidden">
@@ -79,81 +105,111 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     </ScrollReveal>
                 )}
 
-                {/* Modern Asymmetric Cards Layout: 2 Left Cards (Stacked) + 1 Right Card (Tall Hero) - Mobile & Desktop */}
+                {/* 4-Grid Asymmetric Layout: Row 1 (40% / 60%), Row 2 (60% / 40%) */}
                 <div className="grid grid-cols-12 gap-3 sm:gap-6 items-stretch">
-                    {/* Left Column: 2 Stacked Cards */}
-                    <div className="col-span-6 sm:col-span-7 flex flex-col gap-3 sm:gap-6 justify-between">
-                        {/* Card 1 (Top Left) */}
-                        <ScrollReveal type="horizontal" direction="left" delay={0} duration={850} className="w-full">
+                    {/* Row 1, Card 1: 40% Width (5 Columns) */}
+                    {featuredItems[0] && (
+                        <ScrollReveal type="horizontal" direction="left" delay={0} duration={850} className="col-span-6 sm:col-span-5">
                             <div
                                 onClick={() => setActiveLightboxIndex(0)}
-                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[135px] sm:h-[230px] shadow-lg flex flex-col justify-end transition-all duration-500 hover:-translate-y-1"
+                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
                             >
-                                <Image
-                                    src={featuredItems[0].image}
-                                    alt={featuredItems[0].title[locale]}
-                                    fill
-                                    decoding="async"
-                                    loading="lazy"
-                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
-                                />
-                                <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-2 sm:p-5 z-10">
-                                    <h4 className="text-[10px] sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight">
-                                        {featuredItems[0].title[locale]}
-                                    </h4>
+                                <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
+                                    <Image
+                                        src={featuredItems[0].image || "/images/gallery/ppf-studio-hero.jpg"}
+                                        alt={getTitle(featuredItems[0])}
+                                        fill
+                                        decoding="async"
+                                        loading="lazy"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                        <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
+                                            {getTitle(featuredItems[0])}
+                                        </h4>
+                                    </div>
                                 </div>
                             </div>
                         </ScrollReveal>
+                    )}
 
-                        {/* Card 2 (Bottom Left) */}
-                        <ScrollReveal type="horizontal" direction="left" delay={120} duration={850} className="w-full">
+                    {/* Row 1, Card 2: 60% Width (7 Columns) */}
+                    {featuredItems[1] && (
+                        <ScrollReveal type="horizontal" direction="right" delay={100} duration={850} className="col-span-6 sm:col-span-7">
                             <div
                                 onClick={() => setActiveLightboxIndex(1)}
-                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[135px] sm:h-[230px] shadow-lg flex flex-col justify-end transition-all duration-500 hover:-translate-y-1"
+                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
                             >
-                                <Image
-                                    src={featuredItems[1].image}
-                                    alt={featuredItems[1].title[locale]}
-                                    fill
-                                    decoding="async"
-                                    loading="lazy"
-                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
-                                />
-                                <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-2 sm:p-5 z-10">
-                                    <h4 className="text-[10px] sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight">
-                                        {featuredItems[1].title[locale]}
-                                    </h4>
+                                <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
+                                    <Image
+                                        src={featuredItems[1].image || "/images/gallery/ppf-studio-hero.jpg"}
+                                        alt={getTitle(featuredItems[1])}
+                                        fill
+                                        decoding="async"
+                                        loading="lazy"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                        <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
+                                            {getTitle(featuredItems[1])}
+                                        </h4>
+                                    </div>
                                 </div>
                             </div>
                         </ScrollReveal>
-                    </div>
+                    )}
 
-                    {/* Right Column: 1 Tall Hero Card */}
-                    <div className="col-span-6 sm:col-span-5 flex flex-col h-full">
-                        <ScrollReveal type="horizontal" direction="right" delay={240} duration={850} className="w-full h-full">
+                    {/* Row 2, Card 3: 60% Width (7 Columns) */}
+                    {featuredItems[2] && (
+                        <ScrollReveal type="horizontal" direction="left" delay={200} duration={850} className="col-span-6 sm:col-span-7">
                             <div
                                 onClick={() => setActiveLightboxIndex(2)}
-                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden min-h-[282px] sm:min-h-full h-full shadow-lg flex flex-col justify-end transition-all duration-500 hover:-translate-y-1"
+                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
                             >
-                                <Image
-                                    src={featuredItems[2].image}
-                                    alt={featuredItems[2].title[locale]}
-                                    fill
-                                    decoding="async"
-                                    loading="lazy"
-                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
-                                />
-                                <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-2.5 sm:p-6 z-10 space-y-0.5 sm:space-y-2">
-                                    <span className="text-[8px] sm:text-[10px] font-mono text-ftx-lime uppercase tracking-widest font-bold">
-                                        {locale === "ar" ? "مشروع مميز" : "FEATURED HIGHLIGHT"}
-                                    </span>
-                                    <h4 className="text-[11px] sm:text-2xl font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight">
-                                        {featuredItems[2].title[locale]}
-                                    </h4>
+                                <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
+                                    <Image
+                                        src={featuredItems[2].image || "/images/gallery/ppf-studio-hero.jpg"}
+                                        alt={getTitle(featuredItems[2])}
+                                        fill
+                                        decoding="async"
+                                        loading="lazy"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                        <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
+                                            {getTitle(featuredItems[2])}
+                                        </h4>
+                                    </div>
                                 </div>
                             </div>
                         </ScrollReveal>
-                    </div>
+                    )}
+
+                    {/* Row 2, Card 4: 40% Width (5 Columns) */}
+                    {featuredItems[3] && (
+                        <ScrollReveal type="horizontal" direction="right" delay={300} duration={850} className="col-span-6 sm:col-span-5">
+                            <div
+                                onClick={() => setActiveLightboxIndex(3)}
+                                className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
+                            >
+                                <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
+                                    <Image
+                                        src={featuredItems[3].image || "/images/gallery/ppf-studio-hero.jpg"}
+                                        alt={getTitle(featuredItems[3])}
+                                        fill
+                                        decoding="async"
+                                        loading="lazy"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                        <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
+                                            {getTitle(featuredItems[3])}
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </ScrollReveal>
+                    )}
                 </div>
             </div>
 

@@ -49,7 +49,7 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
     let l1 = titleLine1;
     let l2 = titleLine2;
 
-    if (!l1 || !l2) {
+    if (l1 === undefined && l2 === undefined) {
         const parts = title.trim().split(" ");
         if (parts.length <= 1) {
             l1 = parts[0] || "";

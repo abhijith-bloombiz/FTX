@@ -7,6 +7,7 @@ import { ContactFormData } from "@/types/contact";
 import { validateContactForm } from "@/lib/validation/contact";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { getFormWhatsAppUrl } from "@/lib/whatsapp";
 
 interface ContactFormProps {
     locale: Locale;
@@ -86,6 +87,25 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
     const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
     const [responseMsg, setResponseMsg] = useState("");
+    const [cmsPhone, setCmsPhone] = useState<string>("");
+
+    useEffect(() => {
+        const fetchCmsPhone = async () => {
+            try {
+                const res = await fetch("/api/admin/sections");
+                if (res.ok) {
+                    const data = await res.json();
+                    const infoSec = data.sections?.find((s: any) => s.page === "contact" || s.sectionKey === "info");
+                    if (infoSec?.metadata?.phone) {
+                        setCmsPhone(infoSec.metadata.phone);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch CMS phone number:", err);
+            }
+        };
+        fetchCmsPhone();
+    }, []);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -118,11 +138,31 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
         setStatus("submitting");
         setErrors({});
 
+        // 1. Generate WhatsApp URL with pre-filled form details & CMS phone
+        const waUrl = getFormWhatsAppUrl({
+            name: formData.name,
+            phone: formData.phone,
+            email: formData.email,
+            vehicleModel: formData.vehicleModel,
+            service: formData.service,
+            package: formData.package,
+            message: formData.message,
+            locale: locale as "en" | "ar",
+            phoneNumber: cmsPhone,
+        });
+
+        // 2. Open WhatsApp in new tab immediately to bypass popup blockers
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+
         try {
+            // 3. Submit inquiry to database for Admin Dashboard tracking
             const res = await fetch("/api/contact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    ...formData,
+                    serviceCategory: formData.service || formData.package || ""
+                }),
             });
 
             const json = await res.json();

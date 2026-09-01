@@ -17,24 +17,34 @@ interface GalleryPageProps {
     params: { locale: Locale };
 }
 
+let cachedGalleryItems: any[] | null = null;
+let cachedServicesItems: any[] | null = null;
+
 export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
-    const [allGalleryItems, setAllGalleryItems] = useState<any[]>(galleryData);
-    const [loading, setLoading] = useState(true);
+    const [allGalleryItems, setAllGalleryItems] = useState<any[]>(cachedGalleryItems || galleryData);
+    const [allServices, setAllServices] = useState<any[]>(cachedServicesItems || []);
+    const [loading, setLoading] = useState(!cachedGalleryItems && galleryData.length === 0);
     const [activeMediaType, setActiveMediaType] = useState<MediaTypeFilter>("all");
     const [activeCategory, setActiveCategory] = useState<GalleryCategory>("all");
     const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
     const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
+    const [visibleCount, setVisibleCount] = useState<number>(10);
 
     useEffect(() => {
-        setLoading(true);
-        fetch("/api/admin/gallery")
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.gallery && data.gallery.length > 0) {
-                    setAllGalleryItems(data.gallery);
+        Promise.all([
+            fetch("/api/admin/gallery").then((res) => res.json()).catch(() => ({})),
+            fetch("/api/admin/services").then((res) => res.json()).catch(() => ({})),
+        ])
+            .then(([galData, srvData]) => {
+                if (galData.gallery && galData.gallery.length > 0) {
+                    cachedGalleryItems = galData.gallery;
+                    setAllGalleryItems(galData.gallery);
+                }
+                if (srvData.services && srvData.services.length > 0) {
+                    cachedServicesItems = srvData.services;
+                    setAllServices(srvData.services);
                 }
             })
-            .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
 
@@ -44,14 +54,30 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         { id: "video", label: locale === "ar" ? "الفيديوهات" : "VIDEOS" },
     ];
 
-    const categories: { id: GalleryCategory; label: string }[] = [
+    const defaultCategories: { id: GalleryCategory; label: string }[] = [
         { id: "all", label: locale === "ar" ? "جميع الأعمال" : "ALL WORK" },
         { id: "ppf", label: locale === "ar" ? "أفلام الحماية" : "PPF" },
         { id: "ceramic", label: locale === "ar" ? "طلاء السيراميك" : "CERAMIC" },
         { id: "detailing", label: locale === "ar" ? "العناية والتلميع" : "DETAILING" },
     ];
 
+    const categories: { id: GalleryCategory; label: string }[] = allServices.length > 0
+        ? [
+            { id: "all", label: locale === "ar" ? "جميع الأعمال" : "ALL WORK" },
+            ...allServices.map((srv: any) => {
+                const id = srv.serviceId || srv.id;
+                const label = typeof srv.title === "object"
+                    ? (srv.title[locale] || srv.title.en || srv.title.ar)
+                    : (srv.title || (typeof srv.name === "object" ? srv.name[locale] || srv.name.en : srv.name)) || id;
+                return { id, label };
+            }),
+        ]
+        : defaultCategories;
+
     const filteredItems = allGalleryItems.filter((item) => {
+        // Exclude before/after items from standard gallery cards (they belong in the dedicated Before & After section)
+        if (item.category === "before-after" || item.isBeforeAfter || (item.beforeImage && item.afterImage)) return false;
+
         // 1. Media Format Filter
         if (activeMediaType === "image" && (item.isVideo || item.video)) return false;
         if (activeMediaType === "video" && !item.isVideo && !item.video) return false;
@@ -62,7 +88,17 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         return true;
     });
 
-    const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after");
+    const visibleItems = filteredItems.slice(0, visibleCount);
+    const hasMore = visibleCount < filteredItems.length;
+
+    const getItemImage = (item: any) => {
+        if (item?.image && typeof item.image === "string" && !item.image.endsWith(".mp4") && !item.image.endsWith(".webm") && item.image.trim().length > 0) {
+            return item.image;
+        }
+        return "/images/gallery/ppf-studio-hero.jpg";
+    };
+
+    const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
 
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
@@ -88,23 +124,49 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                 <GalleryFilter
                     mediaTypes={mediaTypes}
                     activeMediaType={activeMediaType}
-                    onSelectMediaType={(media) => setActiveMediaType(media)}
+                    onSelectMediaType={(media) => {
+                        setActiveMediaType(media);
+                        setVisibleCount(10);
+                    }}
                     categories={categories}
                     activeCategory={activeCategory}
-                    onSelectCategory={(cat) => setActiveCategory(cat)}
+                    onSelectCategory={(cat) => {
+                        setActiveCategory(cat);
+                        setVisibleCount(10);
+                    }}
                     layoutMode={layoutMode}
                     onLayoutChange={(mode) => setLayoutMode(mode)}
                 />
 
-                {/* Interactive Stitch Asymmetric Grid Showcase */}
+                {/* Interactive Stitch Asymmetric Grid Showcase Skeleton Loader */}
                 {loading ? (
-                    <div className="py-24 flex flex-col items-center justify-center space-y-4 bg-ftx-surface/20 border border-ftx-surface-high/40 ftx-squircle-xl">
-                        <div className="p-3 rounded-full bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime shadow-lime-glow">
-                            <Loader2 className="w-8 h-8 animate-spin" />
+                    <div className="space-y-8 animate-pulse">
+                        {/* Top Row Skeleton */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                            <div className="lg:col-span-8 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl min-h-[380px] sm:min-h-[460px] p-8 sm:p-10 flex flex-col justify-end space-y-4">
+                                <div className="h-5 bg-ftx-surface-high/60 rounded w-1/4" />
+                                <div className="h-9 bg-ftx-surface-high/50 rounded w-2/3" />
+                                <div className="h-4 bg-ftx-surface-high/30 rounded w-1/2" />
+                            </div>
+                            <div className="lg:col-span-4 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl min-h-[380px] sm:min-h-[460px] p-8 sm:p-10 flex flex-col justify-end space-y-4">
+                                <div className="h-5 bg-ftx-surface-high/60 rounded w-1/3" />
+                                <div className="h-7 bg-ftx-surface-high/50 rounded w-3/4" />
+                                <div className="h-4 bg-ftx-surface-high/30 rounded w-full" />
+                            </div>
                         </div>
-                        <p className="text-xs font-mono text-ftx-silver uppercase tracking-widest animate-pulse">
-                            {locale === "ar" ? "جاري تحميل الوسائط من قاعدة البيانات..." : "LOADING GALLERY MEDIA FROM DATABASE..."}
-                        </p>
+
+                        {/* Bottom Row Skeleton */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                            <div className="lg:col-span-4 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl min-h-[320px] sm:min-h-[380px] p-8 sm:p-10 flex flex-col justify-end space-y-3">
+                                <div className="h-4 bg-ftx-surface-high/60 rounded w-1/3" />
+                                <div className="h-7 bg-ftx-surface-high/50 rounded w-3/4" />
+                            </div>
+                            <div className="lg:col-span-8 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl min-h-[320px] sm:min-h-[380px] p-8 sm:p-10 flex flex-col justify-end space-y-4">
+                                <div className="h-5 bg-ftx-surface-high/60 rounded w-1/4" />
+                                <div className="h-8 bg-ftx-surface-high/50 rounded w-1/2" />
+                                <div className="h-4 bg-ftx-surface-high/30 rounded w-2/3" />
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <div key={`${activeCategory}-${activeMediaType}-${layoutMode}`} className="animate-grid-reveal">
@@ -119,8 +181,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             <Image
-                                                src={filteredItems[0]?.image || "/images/gallery/ppf-studio-hero.jpg"}
-                                                alt={filteredItems[0]?.title[locale] || "PROJECT: STEALTH"}
+                                                src={getItemImage(visibleItems[0])}
+                                                alt={visibleItems[0]?.title?.[locale] || "PROJECT: STEALTH"}
                                                 fill
                                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 priority
@@ -128,16 +190,16 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/40 to-transparent" />
 
                                             {/* Top Badge for Static Images */}
-                                            {!(filteredItems[0]?.isVideo || filteredItems[0]?.video) && (
+                                            {!(visibleItems[0]?.isVideo || visibleItems[0]?.video) && (
                                                 <div className="absolute top-6 right-6 z-10">
                                                     <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                        {filteredItems[0] ? getVehicleLabel(filteredItems[0].vehicle, locale) : ""}
+                                                        {visibleItems[0] ? getVehicleLabel(visibleItems[0].vehicle, locale) : ""}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(filteredItems[0]?.isVideo || filteredItems[0]?.video) && (
+                                            {(visibleItems[0]?.isVideo || visibleItems[0]?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-16 h-16 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-7 h-7 fill-ftx-black ml-1" />
@@ -148,10 +210,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-2">
                                                 <h2 className="text-xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight line-clamp-2">
-                                                    {filteredItems[0]?.title[locale] || (locale === "ar" ? "مشروع: ستيلث" : "PROJECT: STEALTH")}
+                                                    {visibleItems[0]?.title?.[locale] || (locale === "ar" ? "مشروع: ستيلث" : "PROJECT: STEALTH")}
                                                 </h2>
                                                 <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-1">
-                                                    {filteredItems[0]?.description[locale] || (locale === "ar" ? "لامبورغيني أفينتادور SVJ • تغليف كامل XPEL STEALTH" : "LAMBORGHINI AVENTADOR SVJ • FULL BODY XPEL STEALTH")}
+                                                    {visibleItems[0]?.description?.[locale] || (locale === "ar" ? "لامبورغيني أفينتادور SVJ • تغليف كامل XPEL STEALTH" : "LAMBORGHINI AVENTADOR SVJ • FULL BODY XPEL STEALTH")}
                                                 </p>
                                             </div>
                                         </div>
@@ -164,24 +226,24 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             <Image
-                                                src={filteredItems[1]?.image || "/images/gallery/ceramic-beading.jpg"}
-                                                alt={filteredItems[1]?.title[locale] || "Hydrophobic Mastery"}
+                                                src={getItemImage(visibleItems[1])}
+                                                alt={visibleItems[1]?.title?.[locale] || "Hydrophobic Mastery"}
                                                 fill
                                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
                                             {/* Top Badge for Static Images */}
-                                            {!(filteredItems[1]?.isVideo || filteredItems[1]?.video) && (
+                                            {!(visibleItems[1]?.isVideo || visibleItems[1]?.video) && (
                                                 <div className="absolute top-6 right-6 z-10">
                                                     <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                        {filteredItems[1] ? getVehicleLabel(filteredItems[1].vehicle, locale) : ""}
+                                                        {visibleItems[1] ? getVehicleLabel(visibleItems[1].vehicle, locale) : ""}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(filteredItems[1]?.isVideo || filteredItems[1]?.video) && (
+                                            {(visibleItems[1]?.isVideo || visibleItems[1]?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-6 h-6 fill-ftx-black ml-1" />
@@ -192,10 +254,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-2">
                                                 <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {filteredItems[1]?.title[locale]}
+                                                    {visibleItems[1]?.title?.[locale]}
                                                 </h3>
                                                 <p className="text-xs text-ftx-silver-muted font-body leading-relaxed line-clamp-3">
-                                                    {filteredItems[1]?.description[locale]}
+                                                    {visibleItems[1]?.description?.[locale]}
                                                 </p>
                                             </div>
                                         </div>
@@ -211,8 +273,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             <Image
-                                                src={filteredItems[2]?.image || "/images/services/ppf-main.png"}
-                                                alt={filteredItems[2]?.title[locale] || "Porsche 911 GT3 RS"}
+                                                src={getItemImage(visibleItems[2])}
+                                                alt={visibleItems[2]?.title?.[locale] || "Porsche 911 GT3 RS"}
                                                 fill
                                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
@@ -221,12 +283,12 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Top Badge */}
                                             <div className="absolute top-6 right-6 z-10">
                                                 <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                    {filteredItems[2] ? getVehicleLabel(filteredItems[2].vehicle, locale) : "PORSCHE 911 GT3 RS"}
+                                                    {visibleItems[2] ? getVehicleLabel(visibleItems[2].vehicle, locale) : "PORSCHE 911 GT3 RS"}
                                                 </div>
                                             </div>
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(filteredItems[2]?.isVideo || filteredItems[2]?.video) && (
+                                            {(visibleItems[2]?.isVideo || visibleItems[2]?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-6 h-6 fill-ftx-black ml-1" />
@@ -237,10 +299,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-1">
                                                 <span className="text-[10px] font-mono font-bold text-ftx-lime uppercase tracking-widest block">
-                                                    {filteredItems[2] ? getVehicleLabel(filteredItems[2].vehicle, locale) : "PORSCHE 911 GT3 RS"}
+                                                    {visibleItems[2] ? getVehicleLabel(visibleItems[2].vehicle, locale) : "PORSCHE 911 GT3 RS"}
                                                 </span>
                                                 <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {filteredItems[2]?.title[locale]}
+                                                    {visibleItems[2]?.title?.[locale]}
                                                 </h3>
                                             </div>
                                         </div>
@@ -253,8 +315,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             <Image
-                                                src={filteredItems[3]?.image || "/images/services/detailing-main.png"}
-                                                alt={filteredItems[3]?.title[locale] || "Hypercar Gloss Matrix"}
+                                                src={getItemImage(visibleItems[3])}
+                                                alt={visibleItems[3]?.title?.[locale] || "Hypercar Gloss Matrix"}
                                                 fill
                                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
@@ -263,12 +325,12 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Top Badge */}
                                             <div className="absolute top-6 right-6 z-10">
                                                 <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                    {filteredItems[3] ? getVehicleLabel(filteredItems[3].vehicle, locale) : "HYPERCAR GLOSS MATRIX"}
+                                                    {visibleItems[3] ? getVehicleLabel(visibleItems[3].vehicle, locale) : "HYPERCAR GLOSS MATRIX"}
                                                 </div>
                                             </div>
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(filteredItems[3]?.isVideo || filteredItems[3]?.video) && (
+                                            {(visibleItems[3]?.isVideo || visibleItems[3]?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-6 h-6 fill-ftx-black ml-1" />
@@ -279,25 +341,25 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-2">
                                                 <h3 className="text-xl sm:text-3xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {filteredItems[3]?.title[locale] || (locale === "ar" ? "تصحيح الطلاء" : "PAINT CORRECTION")}
+                                                    {visibleItems[3]?.title?.[locale] || (locale === "ar" ? "تصحيح الطلاء" : "PAINT CORRECTION")}
                                                 </h3>
                                                 <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-2 max-w-2xl">
-                                                    {filteredItems[3]?.description[locale]}
+                                                    {visibleItems[3]?.description?.[locale]}
                                                 </p>
                                             </div>
                                         </div>
                                     </ScrollReveal>
                                 </div>
 
-                                {/* Additional dynamic cards if filteredItems has more than 4 items */}
-                                {filteredItems.length > 4 && (
+                                {/* Additional dynamic cards if visibleItems has more than 4 items */}
+                                {visibleItems.length > 4 && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch pt-4">
-                                        {filteredItems.slice(4).map((item, subIdx) => {
+                                        {visibleItems.slice(4).map((item, subIdx) => {
                                             const actualIndex = subIdx + 4;
                                             const isVideoItem = item.isVideo || item.video;
                                             return (
                                                 <ScrollReveal
-                                                    key={item.id}
+                                                    key={item._id || item.id || item.itemId || `gallery-grid-${subIdx}`}
                                                     type="card"
                                                     delay={(subIdx % 3) * 100}
                                                     className="h-full flex flex-col"
@@ -307,8 +369,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-all duration-300"
                                                     >
                                                         <Image
-                                                            src={item.image}
-                                                            alt={item.title[locale]}
+                                                            src={getItemImage(item)}
+                                                            alt={item.title?.[locale] || ""}
                                                             fill
                                                             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                         />
@@ -335,10 +397,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         {/* Bottom Content */}
                                                         <div className="relative z-10 space-y-2">
                                                             <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                                {item.title[locale]}
+                                                                {item.title?.[locale]}
                                                             </h3>
                                                             <p className="text-xs text-ftx-silver-muted font-mono tracking-wider uppercase line-clamp-2">
-                                                                {item.description[locale]}
+                                                                {item.description?.[locale]}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -351,9 +413,9 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                         ) : (
                             /* List Mode Grid Fallback */
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-                                {filteredItems.map((item, index) => (
+                                {visibleItems.map((item, index) => (
                                     <ScrollReveal
-                                        key={item.id}
+                                        key={item._id || item.id || item.itemId || `gallery-list-${index}`}
                                         type="horizontal"
                                         direction={index % 2 === 0 ? "left" : "right"}
                                         delay={(index % 2) * 120}
@@ -365,8 +427,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                         >
                                             <div className="relative w-full sm:w-1/2 min-h-[200px] sm:min-h-full overflow-hidden">
                                                 <Image
-                                                    src={item.image}
-                                                    alt={item.title[locale]}
+                                                    src={getItemImage(item)}
+                                                    alt={item.title?.[locale] || ""}
                                                     fill
                                                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
@@ -385,10 +447,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             <div className="p-6 sm:w-1/2 flex flex-col justify-between space-y-3 h-full">
                                                 <div>
                                                     <h3 className="text-base sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                                        {item.title[locale]}
+                                                        {item.title?.[locale]}
                                                     </h3>
                                                     <p className="text-xs text-ftx-silver-muted font-body line-clamp-3 mt-2">
-                                                        {item.description[locale]}
+                                                        {item.description?.[locale]}
                                                     </p>
                                                 </div>
                                                 <div className="text-[10px] font-mono font-bold text-ftx-lime uppercase tracking-wider flex items-center gap-1 group-hover:text-ftx-lime-bright transition-colors">
@@ -432,29 +494,34 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                         )}
 
                         {/* Stitch Bottom Button: • LOAD MORE */}
-                        <div className="mt-16 text-center">
-                            <button className="ftx-btn-tech inline-flex items-center gap-2 px-8 py-4 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-obsidian hover:bg-ftx-surface border border-ftx-surface-high transition-all duration-300">
-                                <span className="w-2 h-2 rounded-full bg-ftx-lime shadow-lime-glow animate-pulse" />
-                                <span>{locale === "ar" ? "تحميل المزيد" : "LOAD MORE"}</span>
-                            </button>
-                        </div>
+                        {hasMore && (
+                            <div className="mt-16 text-center">
+                                <button
+                                    onClick={() => setVisibleCount((prev) => prev + 10)}
+                                    className="ftx-btn-tech inline-flex items-center gap-2 px-8 py-4 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-obsidian hover:bg-ftx-surface border border-ftx-surface-high transition-all duration-300 group hover:border-ftx-lime/50 cursor-pointer"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-ftx-lime shadow-lime-glow animate-pulse group-hover:scale-125 transition-transform" />
+                                    <span>{locale === "ar" ? "تحميل المزيد" : "LOAD MORE"}</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {/* Lightbox Modal */}
                 {activeLightboxIndex !== null && (
                     <Lightbox
-                        item={filteredItems[activeLightboxIndex] || galleryData[0]}
+                        item={visibleItems[activeLightboxIndex] || visibleItems[0]}
                         locale={locale}
                         onClose={() => setActiveLightboxIndex(null)}
                         onPrev={() =>
                             setActiveLightboxIndex((prev) =>
-                                prev === 0 ? filteredItems.length - 1 : (prev as number) - 1
+                                prev === 0 ? visibleItems.length - 1 : (prev as number) - 1
                             )
                         }
                         onNext={() =>
                             setActiveLightboxIndex((prev) =>
-                                prev === filteredItems.length - 1 ? 0 : (prev as number) + 1
+                                prev === visibleItems.length - 1 ? 0 : (prev as number) + 1
                             )
                         }
                     />

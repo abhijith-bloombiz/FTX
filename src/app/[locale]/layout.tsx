@@ -39,7 +39,7 @@ export default async function LocaleLayout({
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "AutoRepair",
-        "name": "FTX – First Torque X",
+        "name": "First Torque X",
         "image": "https://ftx.ae/brand/ftx-3d-logo.webp",
         "@id": "https://ftx.ae",
         "url": "https://ftx.ae",

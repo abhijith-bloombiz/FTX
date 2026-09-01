@@ -172,10 +172,6 @@ export function Footer({ locale, messages }: FooterProps) {
                     <div>
                         © {new Date().getFullYear()} {siteConfig.name}. {messages.common.allRightsReserved}
                     </div>
-                    <div className="flex items-center gap-6">
-                        <span>AUTOMOTIVE PRECISION & PROTECTION</span>
-                        <span className="text-ftx-lime font-bold">DUBAI STUDIO</span>
-                    </div>
                 </div>
             </div>
         </footer>
