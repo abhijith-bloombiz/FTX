@@ -17,9 +17,10 @@ export async function getCmsServices() {
         await seedDatabase();
         const services = await ServiceItemModel.find().lean();
         if (services && services.length > 0) {
-            return services.map((s) => ({
+            const plainServices = JSON.parse(JSON.stringify(services));
+            return plainServices.map((s: any) => ({
                 ...s,
-                id: s.serviceId || (s._id as any).toString(),
+                id: s.serviceId || s._id,
             }));
         }
     } catch (e) {
@@ -34,9 +35,10 @@ export async function getCmsPackages() {
         await seedDatabase();
         const pkgs = await PackageItemModel.find().lean();
         if (pkgs && pkgs.length > 0) {
-            return pkgs.map((p) => ({
+            const plainPkgs = JSON.parse(JSON.stringify(pkgs));
+            return plainPkgs.map((p: any) => ({
                 ...p,
-                id: p.packageId || (p._id as any).toString(),
+                id: p.packageId || p._id,
             }));
         }
     } catch (e) {
@@ -51,9 +53,10 @@ export async function getCmsGallery() {
         await seedDatabase();
         const items = await GalleryItemModel.find().lean();
         if (items && items.length > 0) {
-            return items.map((g) => ({
+            const plainItems = JSON.parse(JSON.stringify(items));
+            return plainItems.map((g: any) => ({
                 ...g,
-                id: g.itemId || (g._id as any).toString(),
+                id: g.itemId || g._id,
             }));
         }
     } catch (e) {
@@ -68,9 +71,10 @@ export async function getCmsTestimonials() {
         await seedDatabase();
         const items = await TestimonialItemModel.find().lean();
         if (items && items.length > 0) {
-            return items.map((t) => ({
+            const plainItems = JSON.parse(JSON.stringify(items));
+            return plainItems.map((t: any) => ({
                 ...t,
-                id: t.testimonialId || (t._id as any).toString(),
+                id: t.testimonialId || t._id,
             }));
         }
     } catch (e) {
@@ -84,7 +88,7 @@ export async function getCmsPageSection(page: string, sectionKey: string) {
         await connectToDatabase();
         await seedDatabase();
         const sec = await PageSection.findOne({ page, sectionKey }).lean();
-        if (sec) return sec;
+        if (sec) return JSON.parse(JSON.stringify(sec));
     } catch (e) {
         console.error("getCmsPageSection error:", e);
     }

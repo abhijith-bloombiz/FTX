@@ -11,6 +11,24 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "No file provided" }, { status: 400 });
         }
 
+        const isVideo = file.type.startsWith("video/") || /\.(mp4|webm|mov|mkv|avi)$/i.test(file.name);
+        const maxVideoSize = 50 * 1024 * 1024; // 50 MB limit for single video
+        const maxImageSize = 10 * 1024 * 1024; // 10 MB limit for single image
+
+        if (isVideo && file.size > maxVideoSize) {
+            return NextResponse.json(
+                { error: `Video file size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 50MB limit.` },
+                { status: 400 }
+            );
+        }
+
+        if (!isVideo && file.size > maxImageSize) {
+            return NextResponse.json(
+                { error: `Image file size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 10MB limit.` },
+                { status: 400 }
+            );
+        }
+
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 

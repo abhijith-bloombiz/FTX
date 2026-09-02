@@ -186,7 +186,8 @@ export async function getSectionsForPage(page: string) {
 
     try {
         await connectToDatabase();
-        dbSections = await PageSection.find({ page }).lean();
+        const rawDbSections = await PageSection.find({ page }).lean();
+        dbSections = JSON.parse(JSON.stringify(rawDbSections));
     } catch (e) {
         dbSections = inMemoryStore.filter((s) => s.page === page);
     }

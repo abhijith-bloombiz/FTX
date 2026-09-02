@@ -11,6 +11,7 @@ import { TextReveal } from "@/components/motion/TextReveal";
 
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
 }
 
 interface WhyFTXProps {
@@ -77,18 +78,21 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             const dist = stage - idx; // >0: scrolled past/top face; <0: incoming/bottom face
             const absDist = Math.abs(dist);
 
-            // Natural 3D Cube Rotation Easing Math:
-            // Smooth non-linear curve for organic physical rotation
+            // Pure Parallel 3D Cube Y-Axis Rotation Math:
             const easedDist = Math.sign(dist) * Math.pow(absDist, 0.92);
             const rotY = easedDist * -90;
-            const rotX = Math.sin(dist * Math.PI) * 3.5; // Subtle organic pitch tilt during rotation
-            const scale = Math.max(0.78, 1 - Math.pow(Math.min(1, absDist), 1.2) * 0.12);
+            const scale = Math.max(0.78, 1 - Math.pow(Math.min(1, absDist), 1.1) * 0.13);
             const opacity = Math.min(1, Math.max(0, 1 - Math.pow(absDist, 1.4) * 0.85));
             const zIndex = Math.max(1, Math.round(30 - absDist * 10));
 
+            // Organic Depth-of-Field & Brightness Shading
+            const blur = absDist > 0.15 ? Math.min(5, (absDist - 0.15) * 6) : 0;
+            const brightness = Math.max(0.55, 1 - absDist * 0.35);
+
             cardEl.style.transformOrigin = `50% 50% -${cubeRadius}px`;
-            cardEl.style.transform = `perspective(1200px) rotateY(${rotY.toFixed(2)}deg) rotateX(${rotX.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+            cardEl.style.transform = `perspective(1200px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
             cardEl.style.opacity = opacity.toFixed(3);
+            cardEl.style.filter = blur > 0.1 ? `blur(${blur.toFixed(1)}px) brightness(${brightness.toFixed(2)})` : `brightness(${brightness.toFixed(2)})`;
             cardEl.style.zIndex = String(zIndex);
             cardEl.style.pointerEvents = absDist < 0.4 ? "auto" : "none";
         });
@@ -117,7 +121,9 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                     anticipatePin: 1,
                     start: "top top+=65px",
                     end: "+=2400px",
-                    scrub: 0.4,
+                    scrub: 0.1,
+                    fastScrollEnd: true,
+                    preventOverlaps: true,
                     invalidateOnRefresh: true,
                     onUpdate: (self) => {
                         updateMobileCards(self.progress);
@@ -245,10 +251,10 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
                 <div
                     ref={mobilePinWrapperRef}
-                    className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-4.5rem)] py-2 z-10"
+                    className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent relative flex flex-col justify-start gap-2 min-h-[calc(100vh-4.5rem)] pt-2 pb-4 z-10"
                 >
                     {/* Section Header */}
-                    <div className="text-left w-full space-y-2 mb-4">
+                    <div className="text-left w-full space-y-1.5 mb-1">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                             <span>{messages.whyFtx.badge}</span>
                         </div>
@@ -258,7 +264,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                     </div>
 
                     {/* 3D Card Deck Carousel Stage */}
-                    <div className="relative w-full h-[350px] xs:h-[380px] max-w-[325px] xs:max-w-[355px] mx-auto my-auto flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d]">
+                    <div className="relative w-full h-[370px] xs:h-[400px] max-w-[310px] xs:max-w-[340px] mx-auto mt-14 flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d]">
                         {pillars.map((item, idx) => {
                             const IconComponent = item.icon;
 
@@ -266,7 +272,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                 <div
                                     key={idx}
                                     ref={(el) => { cardRefs.current[idx] = el; }}
-                                    className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-ftx-surface shadow-[0_20px_50px_rgba(0,0,0,0.95)]"
+                                    className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-gradient-to-b from-neutral-900/90 via-black to-neutral-950 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] overflow-hidden"
                                     style={{
                                         backfaceVisibility: "hidden",
                                         transformStyle: "preserve-3d",
@@ -278,28 +284,40 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                 >
                                     {/* Card Frame Content */}
                                     <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
-                                        {/* Background Image */}
+                                        {/* Background Image with Cinematic Overlay */}
                                         <img
                                             src={item.image}
                                             alt={item.title}
                                             decoding="async"
                                             loading="lazy"
-                                            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                                            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-85"
                                         />
 
-                                        {/* Dark Bottom & Top Gradient Overlays */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+                                        {/* Dark Bottom & Top Vignette Gradient Overlays */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/30" />
+                                        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
 
-                                        {/* Top-Left Squircle Icon Badge */}
-                                        <div className="relative z-10 p-5 xs:p-6">
-                                            <div className="inline-flex p-3 ftx-squircle-sm bg-black/80 backdrop-blur-md border border-ftx-lime/40 text-ftx-lime shadow-md">
+                                        {/* Top Bar: Icon Badge & Watermark Index */}
+                                        <div className="relative z-10 p-5 xs:p-6 flex items-start justify-between">
+                                            <div className="inline-flex items-center gap-2 p-2.5 xs:p-3 ftx-squircle-sm bg-black/80 backdrop-blur-xl border border-ftx-lime/40 text-ftx-lime shadow-lg">
                                                 <IconComponent className="w-5 h-5" />
+                                            </div>
+
+                                            {/* Large Watermark Step Counter */}
+                                            <div className="text-4xl xs:text-5xl font-mono font-black text-white/20 select-none tracking-tighter drop-shadow-md">
+                                                0{idx + 1}
                                             </div>
                                         </div>
 
                                         {/* Bottom Overlay: Title & Description */}
                                         <div className="relative z-10 p-6 xs:p-7 flex flex-col justify-end text-left space-y-2">
-                                            <h3 className="text-xl xs:text-2xl font-heading font-black text-white uppercase tracking-wider leading-tight drop-shadow-md">
+                                            <div className="flex items-center gap-2">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-ftx-lime animate-pulse" />
+                                                <span className="text-[10px] font-mono font-bold tracking-widest text-ftx-lime uppercase">
+                                                    PILLAR 0{idx + 1}
+                                                </span>
+                                            </div>
+                                            <h3 className="text-xl xs:text-2xl font-heading font-black text-white uppercase tracking-wider leading-tight drop-shadow-lg">
                                                 {item.title}
                                             </h3>
                                             <p className="text-xs xs:text-sm text-ftx-silver font-body leading-relaxed max-w-[270px] drop-shadow-sm">
@@ -312,7 +330,27 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                         })}
                     </div>
 
-
+                    {/* Pagination Dots Indicator Bar */}
+                    <div className="flex items-center justify-center gap-2.5 mt-28 z-20">
+                        {pillars.map((_, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                aria-label={`Go to slide ${idx + 1}`}
+                                onClick={() => {
+                                    const st = scrollTriggerRef.current;
+                                    if (st && typeof window !== "undefined") {
+                                        const targetScroll = st.start + (st.end - st.start) * (idx / (pillars.length - 1));
+                                        window.scrollTo({ top: targetScroll, behavior: "smooth" });
+                                    }
+                                }}
+                                className={`h-2.5 rounded-full transition-all duration-300 ${activeCardIndex === idx
+                                    ? "w-8 bg-ftx-lime shadow-[0_0_14px_rgba(164,214,94,0.85)]"
+                                    : "w-2.5 bg-white/20 hover:bg-white/40"
+                                    }`}
+                            />
+                        ))}
+                    </div>
                 </div>
             </section>
         </>

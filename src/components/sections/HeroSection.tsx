@@ -10,6 +10,7 @@ import { HeroTypography, HeroTypographyHandle } from "@/components/hero3d/HeroTy
 
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
 }
 
 interface HeroSectionProps {
@@ -326,7 +327,9 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     currentFrameRef.current = target;
                 } else {
                     // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
-                    const lerpFactor = absDiff > 15 ? 0.28 : absDiff > 6 ? 0.22 : 0.18;
+                    const lerpFactor = isMobile
+                        ? (absDiff > 15 ? 0.55 : absDiff > 6 ? 0.45 : 0.38)
+                        : (absDiff > 15 ? 0.28 : absDiff > 6 ? 0.22 : 0.18);
                     currentFrameRef.current += diff * lerpFactor;
                 }
 
@@ -391,8 +394,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 pin: pinWrapper,
                 start: "top top",
                 end: isMobile ? "+=1600px" : "+=2200px",
-                scrub: isMobile ? 0.2 : true,
+                scrub: true,
                 anticipatePin: 1,
+                fastScrollEnd: true,
+                preventOverlaps: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                     const progress = self.progress; // 0.0 -> 1.0
