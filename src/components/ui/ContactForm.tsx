@@ -192,25 +192,27 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     const selectedServiceObj = serviceOptions.find(opt => opt.value === formData.service);
 
     return (
-        <ScrollReveal type="card">
+        <ScrollReveal type="card" duration={800}>
             <div
                 ref={cardRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                className="bg-[#121212] border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-colors duration-300 transform-gpu"
+                className="bg-[#121212] border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-all duration-500 transform-gpu"
             >
                 {/* Form Card Ambient Corner Highlight */}
                 <div className="absolute top-0 right-0 w-40 h-40 bg-ftx-lime/5 rounded-bl-full pointer-events-none z-0" />
 
                 <div className="relative z-10">
-                    <div className="rejoin-header">
-                        <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-wider mb-1">
-                            {messages.contact.formTitle}
-                        </h3>
-                        <p className="text-xs text-ftx-silver-muted mb-4 font-body">
-                            {messages.contact?.formSub || "Fill out the details below for a customized studio quotation."}
-                        </p>
-                    </div>
+                    <ScrollReveal type="editorial" delay={100} duration={600}>
+                        <div className="rejoin-header">
+                            <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-wider mb-1">
+                                {messages.contact.formTitle}
+                            </h3>
+                            <p className="text-xs text-ftx-silver-muted mb-4 font-body">
+                                {messages.contact?.formSub || "Fill out the details below for a customized studio quotation."}
+                            </p>
+                        </div>
+                    </ScrollReveal>
 
                     {status === "success" && (
                         <div className="mb-6 p-4 bg-ftx-lime/10 border border-ftx-lime/50 rounded flex items-start gap-3 text-ftx-lime text-xs font-mono">
@@ -227,187 +229,200 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-3.5">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {/* Full Name */}
-                            <div className="rejoin-left">
-                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
-                                    {messages.contact.name} <span className="text-ftx-lime font-bold">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    placeholder={messages.contact?.namePlaceholder || "Enter full name"}
-                                    className={`w-full px-4 py-3 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.name ? "border-red-500" : "border-ftx-surface-high"
-                                        }`}
-                                />
-                                {errors.name && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.name}</p>}
-                            </div>
-
-                            {/* Phone Number */}
-                            <div className="rejoin-right">
-                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
-                                    {messages.contact.phone} <span className="text-ftx-lime font-bold">*</span>
-                                </label>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    placeholder={messages.contact?.phonePlaceholder || "Enter phone number"}
-                                    className={`w-full px-4 py-3 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.phone ? "border-red-500" : "border-ftx-surface-high"
-                                        }`}
-                                />
-                                {errors.phone && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.phone}</p>}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {/* Email Address */}
-                            <div className="rejoin-left">
-                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
-                                    {messages.contact.email} <span className="text-ftx-lime font-bold">*</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder={messages.contact?.emailPlaceholder || "Enter email address"}
-                                    className={`w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.email ? "border-red-500" : "border-ftx-surface-high"
-                                        }`}
-                                />
-                                {errors.email && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.email}</p>}
-                            </div>
-
-                            {/* Vehicle Make & Model */}
-                            <div className="rejoin-right">
-                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
-                                    {messages.contact.vehicle} <span className="text-ftx-lime font-bold">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="vehicleModel"
-                                    value={formData.vehicleModel}
-                                    onChange={handleChange}
-                                    placeholder={messages.contact?.vehiclePlaceholder || "Enter vehicle make & model"}
-                                    className={`w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right ${errors.vehicleModel ? "border-red-500" : "border-ftx-surface-high"
-                                        }`}
-                                />
-                                {errors.vehicleModel && (
-                                    <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.vehicleModel}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {/* Custom Animated Service Selection Dropdown */}
-                            <div className="relative z-30 rejoin-left" ref={dropdownRef}>
-                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
-                                    {messages.contact.service} <span className="text-ftx-lime font-bold">*</span>
-                                </label>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setIsServiceOpen(!isServiceOpen)}
-                                    className={`w-full px-4 py-2.5 bg-[#0a0a0a] flex items-center justify-between border ftx-squircle-sm text-xs font-mono focus:outline-none transition-all duration-300 ltr:text-left rtl:text-right ${isServiceOpen
-                                        ? "border-ftx-lime shadow-[0_0_20px_rgba(164,214,94,0.2)] text-white"
-                                        : errors.service
-                                            ? "border-red-500 text-white"
-                                            : "border-ftx-surface-high hover:border-ftx-silver/40 text-white"
-                                        }`}
-                                >
-                                    <span className={formData.service ? "text-white font-bold" : "text-ftx-silver-muted"}>
-                                        {selectedServiceObj ? selectedServiceObj.label : (messages.contact?.selectService || "Select detailing service")}
-                                    </span>
-                                    <ChevronDown
-                                        className={`w-4 h-4 text-ftx-silver transition-transform duration-300 ${isServiceOpen ? "rotate-180 text-ftx-lime" : ""
+                        {/* Row 1: Name & Phone */}
+                        <ScrollReveal type="editorial" delay={180} duration={650}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                {/* Full Name */}
+                                <div className="rejoin-left">
+                                    <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
+                                        {messages.contact.name} <span className="text-ftx-lime font-bold">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder={messages.contact?.namePlaceholder || "Enter full name"}
+                                        className={`w-full px-4 py-3 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] ltr:text-left rtl:text-right ${errors.name ? "border-red-500" : "border-ftx-surface-high"
                                             }`}
                                     />
-                                </button>
+                                    {errors.name && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.name}</p>}
+                                </div>
 
-                                {/* Animated Glassmorphic Dropdown Panel */}
-                                {isServiceOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-ftx-obsidian border border-ftx-surface-high ftx-squircle-sm shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <div className="py-1.5">
-                                            {serviceOptions.map((opt) => {
-                                                const isSelected = formData.service === opt.value;
-                                                return (
-                                                    <button
-                                                        key={opt.value}
-                                                        type="button"
-                                                        onClick={() => handleServiceSelect(opt.value)}
-                                                        className={`w-full px-4 py-2.5 text-xs font-mono flex items-center justify-between transition-colors duration-150 ltr:text-left rtl:text-right ${isSelected
-                                                            ? "bg-ftx-lime/15 text-ftx-lime font-bold"
-                                                            : opt.value === ""
-                                                                ? "text-ftx-silver-muted hover:bg-ftx-surface-high hover:text-white"
-                                                                : "text-ftx-silver hover:bg-[#1a1a1a] hover:text-ftx-lime"
-                                                            }`}
-                                                    >
-                                                        <span>{opt.label}</span>
-                                                        {isSelected && <Check className="w-3.5 h-3.5 text-ftx-lime" />}
-                                                    </button>
-                                                );
-                                            })}
+                                {/* Phone Number */}
+                                <div className="rejoin-right">
+                                    <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-2 ltr:text-left rtl:text-right">
+                                        {messages.contact.phone} <span className="text-ftx-lime font-bold">*</span>
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder={messages.contact?.phonePlaceholder || "Enter phone number"}
+                                        className={`w-full px-4 py-3 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] ltr:text-left rtl:text-right ${errors.phone ? "border-red-500" : "border-ftx-surface-high"
+                                            }`}
+                                    />
+                                    {errors.phone && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.phone}</p>}
+                                </div>
+                            </div>
+                        </ScrollReveal>
+
+                        {/* Row 2: Email & Vehicle */}
+                        <ScrollReveal type="editorial" delay={260} duration={650}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                {/* Email Address */}
+                                <div className="rejoin-left">
+                                    <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
+                                        {messages.contact.email} <span className="text-ftx-lime font-bold">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder={messages.contact?.emailPlaceholder || "Enter email address"}
+                                        className={`w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] ltr:text-left rtl:text-right ${errors.email ? "border-red-500" : "border-ftx-surface-high"
+                                            }`}
+                                    />
+                                    {errors.email && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.email}</p>}
+                                </div>
+
+                                {/* Vehicle Make & Model */}
+                                <div className="rejoin-right">
+                                    <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
+                                        {messages.contact.vehicle} <span className="text-ftx-lime font-bold">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="vehicleModel"
+                                        value={formData.vehicleModel}
+                                        onChange={handleChange}
+                                        placeholder={messages.contact?.vehiclePlaceholder || "Enter vehicle make & model"}
+                                        className={`w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] ltr:text-left rtl:text-right ${errors.vehicleModel ? "border-red-500" : "border-ftx-surface-high"
+                                            }`}
+                                    />
+                                    {errors.vehicleModel && (
+                                        <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.vehicleModel}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </ScrollReveal>
+
+                        {/* Row 3: Service Selection Dropdown & Preferred Package */}
+                        <ScrollReveal type="editorial" delay={340} duration={650}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                {/* Custom Animated Service Selection Dropdown */}
+                                <div className="relative z-30 rejoin-left" ref={dropdownRef}>
+                                    <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
+                                        {messages.contact.service} <span className="text-ftx-lime font-bold">*</span>
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsServiceOpen(!isServiceOpen)}
+                                        className={`w-full px-4 py-2.5 bg-[#0a0a0a] flex items-center justify-between border ftx-squircle-sm text-xs font-mono focus:outline-none transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] ltr:text-left rtl:text-right ${isServiceOpen
+                                            ? "border-ftx-lime shadow-[0_0_20px_rgba(164,214,94,0.2)] text-white"
+                                            : errors.service
+                                                ? "border-red-500 text-white"
+                                                : "border-ftx-surface-high hover:border-ftx-silver/40 text-white"
+                                            }`}
+                                    >
+                                        <span className={formData.service ? "text-white font-bold" : "text-ftx-silver-muted"}>
+                                            {selectedServiceObj ? selectedServiceObj.label : (messages.contact?.selectService || "Select detailing service")}
+                                        </span>
+                                        <ChevronDown
+                                            className={`w-4 h-4 text-ftx-silver transition-transform duration-300 ${isServiceOpen ? "rotate-180 text-ftx-lime" : ""
+                                                }`}
+                                        />
+                                    </button>
+
+                                    {/* Animated Glassmorphic Dropdown Panel */}
+                                    {isServiceOpen && (
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-ftx-obsidian border border-ftx-surface-high ftx-squircle-sm shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="py-1.5">
+                                                {serviceOptions.map((opt) => {
+                                                    const isSelected = formData.service === opt.value;
+                                                    return (
+                                                        <button
+                                                            key={opt.value}
+                                                            type="button"
+                                                            onClick={() => handleServiceSelect(opt.value)}
+                                                            className={`w-full px-4 py-2.5 text-xs font-mono flex items-center justify-between transition-colors duration-150 ltr:text-left rtl:text-right ${isSelected
+                                                                ? "bg-ftx-lime/15 text-ftx-lime font-bold"
+                                                                : opt.value === ""
+                                                                    ? "text-ftx-silver-muted hover:bg-ftx-surface-high hover:text-white"
+                                                                    : "text-ftx-silver hover:bg-[#1a1a1a] hover:text-ftx-lime"
+                                                                }`}
+                                                        >
+                                                            <span>{opt.label}</span>
+                                                            {isSelected && <Check className="w-3.5 h-3.5 text-ftx-lime" />}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                {errors.service && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.service}</p>}
-                            </div>
+                                    {errors.service && <p className="text-[10px] text-red-400 font-mono mt-1 ltr:text-left rtl:text-right">{errors.service}</p>}
+                                </div>
 
-                            {/* Preferred Package */}
-                            <div className="rejoin-right">
-                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
-                                    {messages.contact.package}
-                                </label>
-                                <input
-                                    type="text"
-                                    name="package"
-                                    value={formData.package}
-                                    onChange={handleChange}
-                                    placeholder={messages.contact?.packagePlaceholder || "Specify package or custom options"}
-                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-colors ltr:text-left rtl:text-right"
-                                />
+                                {/* Preferred Package */}
+                                <div className="rejoin-right">
+                                    <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
+                                        {messages.contact.package}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="package"
+                                        value={formData.package}
+                                        onChange={handleChange}
+                                        placeholder={messages.contact?.packagePlaceholder || "Specify package or custom options"}
+                                        className="w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-mono focus:outline-none focus:border-ftx-lime transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] ltr:text-left rtl:text-right"
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
 
                         {/* Message / Requirements */}
-                        <div className="rejoin-bottom">
-                            <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
-                                {messages.contact.message}
-                            </label>
-                            <textarea
-                                name="message"
-                                rows={3}
-                                value={formData.message}
-                                onChange={handleChange}
-                                placeholder={messages.contact?.messagePlaceholder || "Share any specific requests, timeline, or vehicle details..."}
-                                className="w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-colors resize-none ltr:text-left rtl:text-right"
-                            />
-                        </div>
+                        <ScrollReveal type="editorial" delay={420} duration={650}>
+                            <div className="rejoin-bottom">
+                                <label className="block text-xs font-mono font-bold text-ftx-silver uppercase mb-1.5 ltr:text-left rtl:text-right">
+                                    {messages.contact.message}
+                                </label>
+                                <textarea
+                                    name="message"
+                                    rows={3}
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    placeholder={messages.contact?.messagePlaceholder || "Share any specific requests, timeline, or vehicle details..."}
+                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] text-white border border-white/10 ftx-squircle-sm text-xs font-body focus:outline-none focus:border-ftx-lime transition-all duration-300 ease-out transform-gpu focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(164,214,94,0.15)] resize-none ltr:text-left rtl:text-right"
+                                />
+                            </div>
+                        </ScrollReveal>
 
                         {/* Submit Button */}
-                        <div className="rejoin-bottom pt-1">
-                            <button
-                                type="submit"
-                                disabled={status === "submitting"}
-                                className="ftx-btn-tech ftx-btn-specular w-full inline-flex items-center justify-center gap-2 py-4 text-xs font-mono font-bold tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright transition-all duration-200 shadow-lime-glow disabled:opacity-50"
-                            >
-                                {status === "submitting" ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin text-ftx-black" />
-                                        <span>{messages.contact.submitting || "SUBMITTING..."}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-4 h-4 text-ftx-black" />
-                                        <span>{messages.contact.submit || messages.contact.submitBtn || "SUBMIT QUOTE REQUEST"}</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                        <ScrollReveal type="editorial" delay={500} duration={650}>
+                            <div className="rejoin-bottom pt-1">
+                                <button
+                                    type="submit"
+                                    disabled={status === "submitting"}
+                                    className="ftx-btn-tech ftx-btn-specular w-full inline-flex items-center justify-center gap-2 py-4 text-xs font-mono font-bold tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright transition-all duration-300 ease-out transform-gpu hover:scale-[1.01] hover:-translate-y-0.5 shadow-lime-glow disabled:opacity-50"
+                                >
+                                    {status === "submitting" ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin text-ftx-black" />
+                                            <span>{messages.contact.submitting || "SUBMITTING..."}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send className="w-4 h-4 text-ftx-black" />
+                                            <span>{messages.contact.submit || messages.contact.submitBtn || "SUBMIT QUOTE REQUEST"}</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </ScrollReveal>
                     </form>
                 </div>
             </div>

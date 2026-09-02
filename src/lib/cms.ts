@@ -15,7 +15,7 @@ export async function getCmsServices() {
     try {
         await connectToDatabase();
         await seedDatabase();
-        const services = await ServiceItemModel.find().lean();
+        const services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
         if (services && services.length > 0) {
             const plainServices = JSON.parse(JSON.stringify(services));
             return plainServices.map((s: any) => ({

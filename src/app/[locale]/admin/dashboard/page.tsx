@@ -44,10 +44,10 @@ export default function AdminDashboardPage() {
     const [activeTab, setActiveTab] = useState<
         "home" | "about" | "services" | "gallery" | "packages" | "testimonials" | "contact" | "inquiries"
     >("home");
-    const [homeDropdownOpen, setHomeDropdownOpen] = useState<boolean>(true);
+    const [homeDropdownOpen, setHomeDropdownOpen] = useState<boolean>(false);
     const [selectedHomeSubSection, setSelectedHomeSubSection] = useState<string>("intro");
 
-    const [aboutDropdownOpen, setAboutDropdownOpen] = useState<boolean>(true);
+    const [aboutDropdownOpen, setAboutDropdownOpen] = useState<boolean>(false);
     const [selectedAboutSubSection, setSelectedAboutSubSection] = useState<string>("philosophy");
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -371,8 +371,11 @@ export default function AdminDashboardPage() {
                             <button
                                 onClick={() => {
                                     setActiveTab("home");
-                                    setHomeDropdownOpen(!homeDropdownOpen);
-                                    setMobileMenuOpen(false);
+                                    if (activeTab === "home") {
+                                        setHomeDropdownOpen(!homeDropdownOpen);
+                                    } else {
+                                        setHomeDropdownOpen(true);
+                                    }
                                 }}
                                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === "home"
                                     ? "bg-ftx-lime text-ftx-black shadow-lime-glow scale-[1.02]"
@@ -422,8 +425,11 @@ export default function AdminDashboardPage() {
                             <button
                                 onClick={() => {
                                     setActiveTab("about");
-                                    setAboutDropdownOpen(!aboutDropdownOpen);
-                                    setMobileMenuOpen(false);
+                                    if (activeTab === "about") {
+                                        setAboutDropdownOpen(!aboutDropdownOpen);
+                                    } else {
+                                        setAboutDropdownOpen(true);
+                                    }
                                 }}
                                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === "about"
                                     ? "bg-ftx-lime text-ftx-black shadow-lime-glow scale-[1.02]"
@@ -508,7 +514,7 @@ export default function AdminDashboardPage() {
                 </aside>
 
                 {/* Right Panel Main Workspace */}
-                <main data-lenis-prevent className="flex-1 min-h-0 h-full p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto w-full max-w-7xl overflow-x-hidden">
+                <main data-lenis-prevent className="flex-1 min-h-0 h-full p-2 sm:p-6 lg:p-8 space-y-3 sm:space-y-6 overflow-y-auto w-full max-w-7xl overflow-x-hidden">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl p-12">
                             <div className="p-4 rounded-full bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime shadow-lime-glow">
@@ -3102,7 +3108,9 @@ export default function AdminDashboardPage() {
 
 // Subcomponent for editing section cards
 function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (sec: any) => void; saving: boolean }) {
+    const isIntro = section.sectionKey === "intro";
     const isIntroOrPhilosophy = section.sectionKey === "intro" || section.sectionKey === "philosophy";
+    const isPhilosophy = section.sectionKey === "philosophy";
     const isInfrastructure = section.sectionKey === "infrastructure";
     const isMetrics = section.sectionKey === "metrics";
     const isServices = section.sectionKey === "services";
@@ -3125,10 +3133,10 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
     const [contentAr, setContentAr] = useState(section.content?.ar || "");
 
     const [imageUrl, setImageUrl] = useState(section.metadata?.imageUrl || (isIntroOrPhilosophy ? "/images/about/craftsmanship.jpg" : ""));
-    const [badgeTitleEn, setBadgeTitleEn] = useState(section.metadata?.badgeTitle?.en || (isIntroOrPhilosophy ? "SURGICAL PRECISION" : ""));
-    const [badgeTitleAr, setBadgeTitleAr] = useState(section.metadata?.badgeTitle?.ar || (isIntroOrPhilosophy ? "دقة جراحية" : ""));
-    const [badgeSubEn, setBadgeSubEn] = useState(section.metadata?.badgeSub?.en || (isIntroOrPhilosophy ? "Climate-Controlled Studio Bays" : ""));
-    const [badgeSubAr, setBadgeSubAr] = useState(section.metadata?.badgeSub?.ar || (isIntroOrPhilosophy ? "ورش مكيفة ومحايدة للحرارة" : ""));
+    const [badgeTitleEn, setBadgeTitleEn] = useState(section.metadata?.badgeTitle?.en || (isIntro ? "SURGICAL PRECISION" : ""));
+    const [badgeTitleAr, setBadgeTitleAr] = useState(section.metadata?.badgeTitle?.ar || (isIntro ? "دقة جراحية" : ""));
+    const [badgeSubEn, setBadgeSubEn] = useState(section.metadata?.badgeSub?.en || (isIntro ? "Climate-Controlled Studio Bays" : ""));
+    const [badgeSubAr, setBadgeSubAr] = useState(section.metadata?.badgeSub?.ar || (isIntro ? "ورش مكيفة ومحايدة للحرارة" : ""));
 
     const [card1Image, setCard1Image] = useState(section.metadata?.card1Image || (isWhyFtx ? "/images/pillars/precision.jpg" : "/images/about/plotter.jpg"));
     const [card1TitleEn, setCard1TitleEn] = useState(section.metadata?.card1Title?.en || (isWhyFtx ? "PRECISION" : "Surgical Plotter Cutting"));
@@ -3169,6 +3177,16 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
     const [metric3LabelEn, setMetric3LabelEn] = useState(section.metadata?.metric3Label?.en || "SATISFACTION FOCUS");
     const [metric3LabelAr, setMetric3LabelAr] = useState(section.metadata?.metric3Label?.ar || "تركيز على رضا العملاء");
 
+    const [stat1Val, setStat1Val] = useState(section.metadata?.stat1Val || "100");
+    const [stat1Suffix, setStat1Suffix] = useState(section.metadata?.stat1Suffix || "%");
+    const [stat1LabelEn, setStat1LabelEn] = useState(section.metadata?.stat1Label?.en || "Dust-Free Bays");
+    const [stat1LabelAr, setStat1LabelAr] = useState(section.metadata?.stat1Label?.ar || "كبائن خالية من الغبار");
+
+    const [stat2Val, setStat2Val] = useState(section.metadata?.stat2Val || "1500");
+    const [stat2Suffix, setStat2Suffix] = useState(section.metadata?.stat2Suffix || "+");
+    const [stat2LabelEn, setStat2LabelEn] = useState(section.metadata?.stat2Label?.en || "Supercars Protected");
+    const [stat2LabelAr, setStat2LabelAr] = useState(section.metadata?.stat2Label?.ar || "سيارة فائقة تم حمايتها");
+
     const [uploadingImage, setUploadingImage] = useState(false);
 
     useEffect(() => {
@@ -3179,12 +3197,13 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
         setContentEn(section.content?.en || "");
         setContentAr(section.content?.ar || "");
 
+        const isIntroSec = section.sectionKey === "intro";
         const isIntroOrPhil = section.sectionKey === "intro" || section.sectionKey === "philosophy";
         setImageUrl(section.metadata?.imageUrl || (isIntroOrPhil ? "/images/about/craftsmanship.jpg" : ""));
-        setBadgeTitleEn(section.metadata?.badgeTitle?.en || (isIntroOrPhil ? "SURGICAL PRECISION" : ""));
-        setBadgeTitleAr(section.metadata?.badgeTitle?.ar || (isIntroOrPhil ? "دقة جراحية" : ""));
-        setBadgeSubEn(section.metadata?.badgeSub?.en || (isIntroOrPhil ? "Climate-Controlled Studio Bays" : ""));
-        setBadgeSubAr(section.metadata?.badgeSub?.ar || (isIntroOrPhil ? "ورش مكيفة ومحايدة للحرارة" : ""));
+        setBadgeTitleEn(section.metadata?.badgeTitle?.en || (isIntroSec ? "SURGICAL PRECISION" : ""));
+        setBadgeTitleAr(section.metadata?.badgeTitle?.ar || (isIntroSec ? "دقة جراحية" : ""));
+        setBadgeSubEn(section.metadata?.badgeSub?.en || (isIntroSec ? "Climate-Controlled Studio Bays" : ""));
+        setBadgeSubAr(section.metadata?.badgeSub?.ar || (isIntroSec ? "ورش مكيفة ومحايدة للحرارة" : ""));
 
         const isWhyFtxSec = section.sectionKey === "why_ftx";
         setCard1Image(section.metadata?.card1Image || (isWhyFtxSec ? "/images/pillars/precision.jpg" : "/images/about/plotter.jpg"));
@@ -3225,6 +3244,16 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
         setMetric3Suffix(section.metadata?.metric3Suffix || "%");
         setMetric3LabelEn(section.metadata?.metric3Label?.en || "SATISFACTION FOCUS");
         setMetric3LabelAr(section.metadata?.metric3Label?.ar || "تركيز على رضا العملاء");
+
+        setStat1Val(section.metadata?.stat1Val || "100");
+        setStat1Suffix(section.metadata?.stat1Suffix || "%");
+        setStat1LabelEn(section.metadata?.stat1Label?.en || "Dust-Free Bays");
+        setStat1LabelAr(section.metadata?.stat1Label?.ar || "كبائن خالية من الغبار");
+
+        setStat2Val(section.metadata?.stat2Val || "1500");
+        setStat2Suffix(section.metadata?.stat2Suffix || "+");
+        setStat2LabelEn(section.metadata?.stat2Label?.en || "Supercars Protected");
+        setStat2LabelAr(section.metadata?.stat2Label?.ar || "سيارة فائقة تم حمايتها");
 
         setMapsUrl(section.metadata?.mapsUrl || "");
         setPhone(section.metadata?.phone || "");
@@ -3272,6 +3301,16 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
             metadata: {
                 ...section.metadata,
                 ...(imageUrl ? { imageUrl } : {}),
+                ...(isPhilosophy
+                    ? {
+                        stat1Val,
+                        stat1Suffix,
+                        stat1Label: { en: stat1LabelEn, ar: stat1LabelAr },
+                        stat2Val,
+                        stat2Suffix,
+                        stat2Label: { en: stat2LabelEn, ar: stat2LabelAr },
+                    }
+                    : {}),
                 ...(isInfrastructure || isWhyFtx
                     ? {
                         card1Image,
@@ -3313,7 +3352,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
     };
 
     return (
-        <div className="bg-ftx-surface border border-ftx-surface-high p-6 ftx-squircle-lg space-y-6">
+        <div className="bg-ftx-surface border border-ftx-surface-high p-3.5 sm:p-6 ftx-squircle-lg space-y-4 sm:space-y-6">
             {/* Card Header */}
             <div className="flex items-center justify-between gap-3 border-b border-ftx-surface-high pb-4">
                 <div className="flex items-center gap-2 min-w-0">
@@ -3339,9 +3378,9 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                         <span className="text-[10px] font-mono text-ftx-silver-muted">PNG, JPG, WEBP SUPPORTED</span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="flex flex-row items-center gap-3 sm:gap-4">
                         {/* Live Image Preview Thumbnail */}
-                        <div className="relative w-28 h-20 bg-ftx-surface border border-ftx-surface-high rounded-lg overflow-hidden shrink-0">
+                        <div className="relative w-24 h-20 sm:w-28 sm:h-20 bg-ftx-surface border border-ftx-surface-high rounded-lg overflow-hidden shrink-0">
                             {imageUrl ? (
                                 <img src={imageUrl} alt="Section media" className="w-full h-full object-cover" />
                             ) : (
@@ -3349,21 +3388,19 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                             )}
                         </div>
 
-                        <div className="flex-1 space-y-2 w-full min-w-0">
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                                <input
-                                    type="text"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="/images/about/craftsmanship.jpg or https://..."
-                                    className="flex-1 min-w-0 p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                />
-                                <label className="px-4 py-2.5 bg-ftx-surface-high hover:bg-ftx-surface text-white text-xs font-mono font-bold uppercase rounded-lg cursor-pointer transition-colors shrink-0 flex items-center justify-center gap-2 border border-ftx-silver/20">
-                                    {uploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5 text-ftx-lime" />}
-                                    <span>{uploadingImage ? "UPLOADING..." : "UPLOAD FILE"}</span>
-                                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                                </label>
-                            </div>
+                        <div className="flex-1 space-y-2 min-w-0">
+                            <input
+                                type="text"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                placeholder="/images/about/craftsmanship.jpg or https://..."
+                                className="w-full p-2 sm:p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                            />
+                            <label className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 bg-ftx-surface-high hover:bg-ftx-surface text-white text-xs font-mono font-bold uppercase rounded-lg cursor-pointer transition-colors shrink-0 flex items-center justify-center gap-2 border border-ftx-silver/20">
+                                {uploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5 text-ftx-lime" />}
+                                <span>{uploadingImage ? "UPLOADING..." : "UPLOAD FILE"}</span>
+                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -3895,8 +3932,8 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                 </div>
             )}
 
-            {/* Section Badge Card Inputs (Only shown for Intro section or when badge metadata exists) */}
-            {(isIntroOrPhilosophy || badgeTitleEn || badgeSubEn) && (
+            {/* Section Badge Card Inputs (Only shown for Intro section on Home Page) */}
+            {isIntro && (
                 <div className="bg-ftx-obsidian/60 border border-ftx-surface-high/60 p-4 rounded-xl space-y-3">
                     <span className="text-xs font-mono font-bold text-ftx-silver uppercase block">OVERLAY BADGE CARD (SURGICAL PRECISION / CLINIC BAY)</span>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -3936,6 +3973,102 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     onChange={(e) => setBadgeSubAr(e.target.value)}
                                     placeholder="ورش مكيفة ومحايدة للحرارة"
                                     className="p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Philosophy Stat Cards Inputs (100% Dust-Free Bays & 1,500+ Supercars Protected) */}
+            {isPhilosophy && (
+                <div className="bg-ftx-obsidian/60 border border-ftx-surface-high/60 p-4 rounded-xl space-y-3">
+                    <span className="text-xs font-mono font-bold text-ftx-silver uppercase block">PHILOSOPHY STAT CARDS (E.G. 100% DUST-FREE BAYS & 1,500+ SUPERCARS PROTECTED)</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Stat Card 1 */}
+                        <div className="space-y-3 bg-ftx-surface/50 p-3.5 rounded-lg border border-ftx-surface-high/50">
+                            <span className="text-[10px] font-mono font-bold text-white uppercase block">STAT CARD 1</span>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <span className="text-[9px] font-mono text-ftx-silver uppercase block">NUMBER</span>
+                                    <input
+                                        type="text"
+                                        value={stat1Val}
+                                        onChange={(e) => setStat1Val(e.target.value)}
+                                        placeholder="100"
+                                        className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[9px] font-mono text-ftx-silver uppercase block">SUFFIX</span>
+                                    <input
+                                        type="text"
+                                        value={stat1Suffix}
+                                        onChange={(e) => setStat1Suffix(e.target.value)}
+                                        placeholder="%"
+                                        className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1 pt-1">
+                                <span className="text-[9px] font-mono text-ftx-silver uppercase block">LABEL (EN / AR)</span>
+                                <input
+                                    type="text"
+                                    value={stat1LabelEn}
+                                    onChange={(e) => setStat1LabelEn(e.target.value)}
+                                    placeholder="Dust-Free Bays"
+                                    className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none mb-1"
+                                />
+                                <input
+                                    type="text"
+                                    value={stat1LabelAr}
+                                    onChange={(e) => setStat1LabelAr(e.target.value)}
+                                    placeholder="كبائن خالية من الغبار"
+                                    className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none text-right"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Stat Card 2 */}
+                        <div className="space-y-3 bg-ftx-surface/50 p-3.5 rounded-lg border border-ftx-surface-high/50">
+                            <span className="text-[10px] font-mono font-bold text-white uppercase block">STAT CARD 2</span>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <span className="text-[9px] font-mono text-ftx-silver uppercase block">NUMBER</span>
+                                    <input
+                                        type="text"
+                                        value={stat2Val}
+                                        onChange={(e) => setStat2Val(e.target.value)}
+                                        placeholder="1500"
+                                        className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[9px] font-mono text-ftx-silver uppercase block">SUFFIX</span>
+                                    <input
+                                        type="text"
+                                        value={stat2Suffix}
+                                        onChange={(e) => setStat2Suffix(e.target.value)}
+                                        placeholder="+"
+                                        className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1 pt-1">
+                                <span className="text-[9px] font-mono text-ftx-silver uppercase block">LABEL (EN / AR)</span>
+                                <input
+                                    type="text"
+                                    value={stat2LabelEn}
+                                    onChange={(e) => setStat2LabelEn(e.target.value)}
+                                    placeholder="Supercars Protected"
+                                    className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none mb-1"
+                                />
+                                <input
+                                    type="text"
+                                    value={stat2LabelAr}
+                                    onChange={(e) => setStat2LabelAr(e.target.value)}
+                                    placeholder="سيارة فائقة تم حمايتها"
+                                    className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-md focus:border-ftx-lime focus:outline-none text-right"
                                 />
                             </div>
                         </div>

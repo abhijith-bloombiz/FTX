@@ -21,9 +21,19 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
         return isAr ? (field.ar || field.en || fallbackStr) : (field.en || field.ar || fallbackStr);
     };
 
-    const hasDynamicServices = services && services.length > 0;
-    const firstService = hasDynamicServices ? services[0] : null;
-    const remainingServices = hasDynamicServices ? services.slice(1) : [];
+    const sortedServices = services && services.length > 0
+        ? [...services]
+            .sort((a: any, b: any) => {
+                const numA = parseInt(a.number || "0", 10);
+                const numB = parseInt(b.number || "0", 10);
+                return numA - numB;
+            })
+            .slice(0, 3)
+        : services;
+
+    const hasDynamicServices = sortedServices && sortedServices.length > 0;
+    const firstService = hasDynamicServices ? sortedServices[0] : null;
+    const remainingServices = hasDynamicServices ? sortedServices.slice(1) : [];
 
     return (
         <section id="services" className="py-10 sm:py-12 bg-black relative overflow-hidden">

@@ -53,6 +53,14 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
     const philosophyContent = philosophySec?.content?.[locale] || messages.intro?.p1;
     const philosophyImage = philosophySec?.metadata?.imageUrl || "/images/about/craftsmanship.jpg";
 
+    const stat1Val = Number(philosophySec?.metadata?.stat1Val) || 100;
+    const stat1Suffix = philosophySec?.metadata?.stat1Suffix ?? "%";
+    const stat1Label = philosophySec?.metadata?.stat1Label?.[locale] || (isAr ? "كبائن خالية من الغبار" : "Dust-Free Bays");
+
+    const stat2Val = Number(philosophySec?.metadata?.stat2Val) || 1500;
+    const stat2Suffix = philosophySec?.metadata?.stat2Suffix ?? "+";
+    const stat2Label = philosophySec?.metadata?.stat2Label?.[locale] || (isAr ? "سيارة فائقة تم حمايتها" : "Supercars Protected");
+
     const infraBadge = infraSec?.subtitle?.[locale] || (isAr ? "البنية التحتية" : "INFRASTRUCTURE");
     const infraTitle = infraSec?.title?.[locale] || (isAr ? "كبائن دقيقة ببيئة حرارية متحكم بها" : "CLIMATE-CONTROLLED PRECISION BAYS");
     const infraContent = infraSec?.content?.[locale];
@@ -116,18 +124,18 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                         <div className="grid grid-cols-2 gap-4 pt-4">
                             <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
                                 <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
-                                    <AnimatedCounter target={100} suffix="%" />
+                                    <AnimatedCounter target={stat1Val} suffix={stat1Suffix} />
                                 </div>
                                 <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
-                                    {locale === "ar" ? "كبائن خالية من الغبار" : "Dust-Free Bays"}
+                                    {stat1Label}
                                 </div>
                             </div>
                             <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
                                 <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
-                                    <AnimatedCounter target={1500} suffix="+" />
+                                    <AnimatedCounter target={stat2Val} suffix={stat2Suffix} />
                                 </div>
                                 <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
-                                    {locale === "ar" ? "سيارة فائقة تم حمايتها" : "Supercars Protected"}
+                                    {stat2Label}
                                 </div>
                             </div>
                         </div>
