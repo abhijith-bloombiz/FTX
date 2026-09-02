@@ -71,7 +71,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
 
             {/* Services List Breakdown */}
             <div className="space-y-0">
-                {servicesData.map((service, index) => {
+                {servicesData.map((service: any, index: number) => {
                     const isEven = index % 2 === 0;
 
                     const packageButtonText =
@@ -151,7 +151,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                                         {/* 2-Column Feature Highlight Cards */}
                                         {service.highlights && service.highlights.length > 0 && (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                                                {service.highlights.map((item, hIdx) => (
+                                                {service.highlights.map((item: any, hIdx: number) => (
                                                     <div
                                                         key={hIdx}
                                                         className="bg-ftx-surface/90 hover:bg-ftx-surface ftx-squircle-md p-5 border border-ftx-surface-high space-y-2.5 transition-colors duration-200"
