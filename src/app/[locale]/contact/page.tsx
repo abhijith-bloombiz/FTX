@@ -39,7 +39,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
     const messages = await getMessages(locale);
     const contactSection = await getCmsPageSection("contact", "info");
 
-    const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "معلومات التواصل وموقع الاستوديو" : "CONTACT & STUDIO LOCATION");
+    const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "تواصل معنا" : "CONTACT US");
     const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.";
     const headerDescription = contactSection?.content?.[locale];
 
@@ -66,7 +66,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
             />
             {/* Global Header */}
             <PageHeader
-                badge={contactSection?.subtitle?.[locale] || messages.contact.formTitle || "STUDIO LOCATION & QUOTATION"}
+                badge={contactSection?.subtitle?.[locale] || messages.contact.formTitle || "QUOTATION & INQUIRIES"}
                 title={headerTitle}
                 subtitle={headerDescription || headerSubtitle}
             />

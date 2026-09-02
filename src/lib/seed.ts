@@ -290,8 +290,8 @@ export async function seedDatabase() {
                 page: "contact",
                 sectionKey: "info",
                 title: {
-                    en: "CONTACT & STUDIO LOCATION",
-                    ar: "معلومات التواصل وموقع الاستوديو",
+                    en: "CONTACT US",
+                    ar: "تواصل معنا",
                 },
                 subtitle: {
                     en: "AL QUOZ INDUSTRIAL AREA, DUBAI",

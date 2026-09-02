@@ -93,7 +93,7 @@ export const DEFAULT_SECTIONS = [
     {
         page: "contact",
         sectionKey: "info",
-        title: { en: "GET IN TOUCH.", ar: "معلومات التواصل وموقع الاستوديو" },
+        title: { en: "GET IN TOUCH", ar: "تواصل معنا" },
         subtitle: { en: "STUDIO LOCATION & QUOTATION", ar: "تواصل معنا" },
         content: {
             en: "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.",

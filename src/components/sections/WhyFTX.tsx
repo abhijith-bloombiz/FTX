@@ -24,7 +24,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     const [activeCardIndex, setActiveCardIndex] = useState(0);
     const activeCardIndexRef = useRef(0);
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
     const pillars = [
         {
@@ -54,71 +54,47 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     ];
 
     const updateMobileCards = useCallback((progress: number) => {
-        // Map progress 0.0 -> 1.0 across 3 smooth card stack transitions
-        const animProgress = Math.min(1, Math.max(0, progress));
-        const stage = animProgress * 3;
-        const activeIdx = Math.min(pillars.length - 1, Math.floor(animProgress * 3.99));
+        const totalPillars = pillars.length;
+        if (totalPillars === 0) return;
 
-        // Update active index state strictly when index changes (0 re-renders while on same card)
+        const animProgress = Math.min(1, Math.max(0, progress));
+        const stage = animProgress * (totalPillars - 1);
+        const activeIdx = Math.min(totalPillars - 1, Math.round(stage));
+
         if (activeIdx !== activeCardIndexRef.current) {
             activeCardIndexRef.current = activeIdx;
             setActiveCardIndex(activeIdx);
         }
 
-        // Direct DOM manipulation of 3D cards & icons for 0 React re-renders during scroll
+        const firstCard = cardRefs.current[0];
+        const cardWidth = firstCard ? firstCard.offsetWidth : 340;
+        const cubeRadius = Math.round(cardWidth / 2); // Dynamic 3D cube pivot radius (half card width)
+
         pillars.forEach((_, idx) => {
             const cardEl = cardRefs.current[idx];
-            const iconEl = iconRefs.current[idx];
-
-            if (iconEl) {
-                // 3D rotation linked directly to scroll progress
-                const rotY = (progress * 720) % 360;
-                const rotX = Math.sin(progress * Math.PI * 4) * 25;
-                const rotZ = Math.cos(progress * Math.PI * 2) * 12;
-                iconEl.style.transform = `perspective(1000px) rotateY(${rotY.toFixed(1)}deg) rotateX(${rotX.toFixed(1)}deg) rotateZ(${rotZ.toFixed(1)}deg)`;
-            }
-
             if (!cardEl) return;
 
-            const dist = stage - idx;
-            let translateY = 0;
-            let translateZ = 0;
-            let rotateX = 0;
-            let scale = 1;
-            let opacity = 1;
+            const dist = stage - idx; // >0: scrolled past/top face; <0: incoming/bottom face
+            const absDist = Math.abs(dist);
 
-            if (dist < 0) {
-                // Waiting in stack behind active card
-                const stackOffset = -dist;
-                translateY = stackOffset * 14;
-                translateZ = -stackOffset * 45;
-                rotateX = -stackOffset * 4;
-                scale = Math.max(0.82, 1 - stackOffset * 0.05);
-                opacity = Math.max(0.25, 1 - stackOffset * 0.22);
-            } else if (dist <= 1) {
-                // Currently swiping UP off top of stack
-                const ease = (1 - Math.cos(dist * Math.PI)) / 2;
-                translateY = -ease * 140;
-                translateZ = ease * 50;
-                rotateX = ease * 12;
-                scale = 1 - ease * 0.04;
-                opacity = Math.max(0, 1 - ease * 0.95);
-            } else {
-                // Swiped off stage completely
-                translateY = -140;
-                translateZ = 50;
-                rotateX = 12;
-                scale = 0.96;
-                opacity = 0;
-            }
+            // Natural 3D Cube Rotation Easing Math:
+            // Smooth non-linear curve for organic physical rotation
+            const easedDist = Math.sign(dist) * Math.pow(absDist, 0.92);
+            const rotY = easedDist * -90;
+            const rotX = Math.sin(dist * Math.PI) * 3.5; // Subtle organic pitch tilt during rotation
+            const scale = Math.max(0.78, 1 - Math.pow(Math.min(1, absDist), 1.2) * 0.12);
+            const opacity = Math.min(1, Math.max(0, 1 - Math.pow(absDist, 1.4) * 0.85));
+            const zIndex = Math.max(1, Math.round(30 - absDist * 10));
 
-            cardEl.style.transform = `perspective(1000px) translate3d(0, ${translateY.toFixed(1)}px, ${translateZ.toFixed(1)}px) rotateX(${rotateX.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
-            cardEl.style.opacity = opacity.toFixed(2);
-            cardEl.style.pointerEvents = opacity < 0.2 ? "none" : "auto";
+            cardEl.style.transformOrigin = `50% 50% -${cubeRadius}px`;
+            cardEl.style.transform = `perspective(1200px) rotateY(${rotY.toFixed(2)}deg) rotateX(${rotX.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+            cardEl.style.opacity = opacity.toFixed(3);
+            cardEl.style.zIndex = String(zIndex);
+            cardEl.style.pointerEvents = absDist < 0.4 ? "auto" : "none";
         });
     }, [pillars.length]);
 
-    // GSAP ScrollTrigger Mobile Section Pinning using official gsap.matchMedia & GSAP Context
+    // GSAP ScrollTrigger Mobile Section Pinning
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -132,26 +108,27 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         const ctx = gsap.context(() => {
             const mm = gsap.matchMedia();
 
-            mm.add("(max-width: 639px)", () => {
-                ScrollTrigger.create({
-                    id: "why-ftx-mobile-pin",
+            mm.add("(max-width: 767px)", () => {
+                const st = ScrollTrigger.create({
+                    id: "why-ftx-mobile-3d-pin",
                     trigger: section,
                     pin: section,
                     pinSpacing: true,
                     anticipatePin: 1,
-                    start: "top top+=70px",
-                    end: "+=2800px",
-                    scrub: 0.1,
+                    start: "top top+=65px",
+                    end: "+=2400px",
+                    scrub: 0.4,
                     invalidateOnRefresh: true,
                     onUpdate: (self) => {
                         updateMobileCards(self.progress);
                     },
                 });
 
+                scrollTriggerRef.current = st;
+
                 // Guarantee first card is active initially
                 updateMobileCards(0);
 
-                // Force refresh ScrollTrigger calculations after layout mount
                 setTimeout(() => {
                     ScrollTrigger.refresh();
                 }, 150);
@@ -160,8 +137,9 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
         return () => {
             ctx.revert();
+            scrollTriggerRef.current = null;
             ScrollTrigger.getAll().forEach((st) => {
-                if (st.trigger === section || (st as any).vars?.pin === section || (st as any).vars?.id === "why-ftx-mobile-pin") {
+                if (st.trigger === section || (st as any).vars?.pin === section || (st as any).vars?.id === "why-ftx-mobile-3d-pin") {
                     try {
                         (st as any).revert?.(true);
                     } catch (e) { }
@@ -188,10 +166,20 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         };
     }, [updateMobileCards]);
 
+    const handleDotClick = (index: number) => {
+        const st = scrollTriggerRef.current;
+        if (!st) return;
+        const totalSteps = pillars.length - 1;
+        if (totalSteps <= 0) return;
+        const targetProgress = index / totalSteps;
+        const targetScroll = st.start + targetProgress * (st.end - st.start);
+        window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    };
+
     return (
         <>
-            {/* DESKTOP & TABLET LAYOUT (>= sm): Unchanged Standard Grid Section */}
-            <section id="packages" className="hidden sm:block py-12 bg-black relative overflow-x-clip">
+            {/* DESKTOP & TABLET LAYOUT (>= md): Unchanged Standard Grid Section */}
+            <section id="packages" className="hidden md:block py-12 bg-black relative overflow-x-clip">
                 {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
                 <div
                     className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
@@ -243,11 +231,11 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 </div>
             </section>
 
-            {/* MOBILE GSAP PINNED SCROLL DECK LAYOUT (< sm): Standard Section Spacing */}
+            {/* MOBILE 3D CARD DECK CAROUSEL LAYOUT (< md) */}
             <section
                 ref={mobileSectionRef}
                 id="packages-mobile"
-                className="block sm:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-10 sm:py-12"
+                className="block md:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-8"
             >
                 {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
                 <div
@@ -257,164 +245,77 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
                 <div
                     ref={mobilePinWrapperRef}
-                    className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-5rem)] py-4 z-10"
+                    className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent relative flex flex-col justify-between min-h-[calc(100vh-4.5rem)] py-2 z-10"
                 >
-                    {/* Mobile Pinned Section Heading - Aligned with standard page grid */}
-                    <div className="text-left w-full space-y-3 mb-8">
+                    {/* Section Header */}
+                    <div className="text-left w-full space-y-2 mb-4">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                             <span>{messages.whyFtx.badge}</span>
                         </div>
-                        <h2 className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight">
+                        <h2 className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
                             {messages.whyFtx.title}
                         </h2>
                     </div>
 
-                    {/* MAIN PARENT CONTAINER (Plain flex wrapper fitting mobile screen size) */}
-                    <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-start gap-[30px] my-auto py-1">
-                        {/* TOP: 3D Image Card Deck Stage */}
-                        <div className="relative w-full h-[250px] [perspective:1000px] [transform-style:preserve-3d]">
-                            {pillars.map((item, idx) => {
-                                const IconComponent = item.icon;
+                    {/* 3D Card Deck Carousel Stage */}
+                    <div className="relative w-full h-[350px] xs:h-[380px] max-w-[325px] xs:max-w-[355px] mx-auto my-auto flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d]">
+                        {pillars.map((item, idx) => {
+                            const IconComponent = item.icon;
 
-                                return (
-                                    <div
-                                        key={idx}
-                                        ref={(el) => { cardRefs.current[idx] = el; }}
-                                        className="absolute inset-0 w-full h-full will-change-transform [backface-visibility:hidden]"
-                                        style={{
-                                            zIndex: (idx + 1) * 10,
-                                            transform: `perspective(1000px) translate3d(0, ${idx === 0 ? 0 : 90}px, ${idx === 0 ? 0 : -60}px) rotateX(${idx === 0 ? 0 : -12}deg) scale(${idx === 0 ? 1 : 0.94})`,
-                                            opacity: idx === 0 ? 1 : 0,
-                                            transformOrigin: "center bottom",
-                                            pointerEvents: idx === 0 ? "auto" : "none",
-                                        }}
-                                    >
-                                        {/* Styled Image Card Frame */}
-                                        <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-white/15 overflow-hidden h-full shadow-[0_16px_50px_rgba(0,0,0,0.95)]">
-                                            <div className="relative w-full h-full overflow-hidden">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.title}
-                                                    decoding="async"
-                                                    loading="lazy"
-                                                    className="w-full h-full object-cover will-change-transform"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                                                <div className="absolute top-3.5 left-3.5 p-2 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime">
-                                                    <IconComponent className="w-4 h-4" />
-                                                </div>
+                            return (
+                                <div
+                                    key={idx}
+                                    ref={(el) => { cardRefs.current[idx] = el; }}
+                                    className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-ftx-surface shadow-[0_20px_50px_rgba(0,0,0,0.95)]"
+                                    style={{
+                                        backfaceVisibility: "hidden",
+                                        transformStyle: "preserve-3d",
+                                        transform: `perspective(1200px) rotateY(${idx === 0 ? 0 : 12}deg) scale(${idx === 0 ? 1 : 0.84})`,
+                                        opacity: idx === 0 ? 1 : 0.45,
+                                        zIndex: idx === 0 ? 30 : 20 - idx,
+                                        pointerEvents: idx === 0 ? "auto" : "none",
+                                    }}
+                                >
+                                    {/* Card Frame Content */}
+                                    <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
+                                        {/* Background Image */}
+                                        <img
+                                            src={item.image}
+                                            alt={item.title}
+                                            decoding="async"
+                                            loading="lazy"
+                                            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                                        />
+
+                                        {/* Dark Bottom & Top Gradient Overlays */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+
+                                        {/* Top-Left Squircle Icon Badge */}
+                                        <div className="relative z-10 p-5 xs:p-6">
+                                            <div className="inline-flex p-3 ftx-squircle-sm bg-black/80 backdrop-blur-md border border-ftx-lime/40 text-ftx-lime shadow-md">
+                                                <IconComponent className="w-5 h-5" />
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
 
-                        {/* BOTTOM: Content Card Fitting Available Space with Smooth Fade Transition */}
-                        <div className="w-full flex-1 min-h-[160px] relative overflow-hidden">
-                            {pillars.map((item, idx) => {
-                                const isActive = activeCardIndex === idx;
-                                const IconComponent = item.icon;
-
-                                return (
-                                    <div
-                                        key={idx}
-                                        className={`absolute inset-0 w-full h-full transition-all duration-300 ease-out flex flex-col justify-between p-1 ${isActive
-                                            ? "opacity-100 z-10 pointer-events-auto translate-y-0"
-                                            : "opacity-0 z-0 pointer-events-none translate-y-2"
-                                            }`}
-                                    >
-                                        <div className="space-y-1.5 flex flex-col justify-start">
-                                            <h3 className="text-xl sm:text-2xl font-heading font-bold text-white uppercase tracking-wide">
+                                        {/* Bottom Overlay: Title & Description */}
+                                        <div className="relative z-10 p-6 xs:p-7 flex flex-col justify-end text-left space-y-2">
+                                            <h3 className="text-xl xs:text-2xl font-heading font-black text-white uppercase tracking-wider leading-tight drop-shadow-md">
                                                 {item.title}
                                             </h3>
-
-                                            <p className="text-sm sm:text-base text-ftx-silver-muted font-body leading-relaxed min-h-[50px]">
-                                                <TypewriterText text={item.desc} isActive={isActive} speed={18} delay={120} />
+                                            <p className="text-xs xs:text-sm text-ftx-silver font-body leading-relaxed max-w-[270px] drop-shadow-sm">
+                                                {item.desc}
                                             </p>
                                         </div>
-
-                                        {/* Center Aligned 3D Scroll-Animated Icon */}
-                                        <div
-                                            ref={(el) => { iconRefs.current[idx] = el; }}
-                                            className="pt-2 pb-1 flex items-center justify-center w-full my-auto [perspective:1000px] will-change-transform"
-                                        >
-                                            <IconComponent className="w-20 h-20 text-ftx-lime animate-pulse transition-transform duration-100 ease-out" />
-                                        </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                </div>
+                            );
+                        })}
                     </div>
+
+
                 </div>
             </section>
         </>
     );
 }
 
-function TypewriterText({
-    text,
-    isActive,
-    speed = 25,
-    delay = 0,
-    className = "",
-}: {
-    text: string;
-    isActive: boolean;
-    speed?: number;
-    delay?: number;
-    className?: string;
-}) {
-    const textRef = useRef<HTMLSpanElement>(null);
-    const [isTyping, setIsTyping] = useState(false);
-
-    useEffect(() => {
-        if (!isActive) {
-            if (textRef.current) textRef.current.textContent = "";
-            setIsTyping(false);
-            return;
-        }
-
-        let timeoutId: NodeJS.Timeout;
-        let intervalId: NodeJS.Timeout;
-        let index = 0;
-        setIsTyping(true);
-
-        const startTyping = () => {
-            intervalId = setInterval(() => {
-                if (index < text.length) {
-                    if (textRef.current) {
-                        textRef.current.textContent = text.slice(0, index + 1);
-                    }
-                    index++;
-                } else {
-                    clearInterval(intervalId);
-                    setIsTyping(false);
-                }
-            }, speed);
-        };
-
-        if (delay > 0) {
-            timeoutId = setTimeout(() => {
-                startTyping();
-            }, delay);
-        } else {
-            startTyping();
-        }
-
-        return () => {
-            if (timeoutId) clearTimeout(timeoutId);
-            if (intervalId) clearInterval(intervalId);
-        };
-    }, [text, isActive, speed, delay]);
-
-    return (
-        <span className={`inline-block ${className}`}>
-            <span ref={textRef} />
-            <span
-                aria-hidden="true"
-                className={`inline-block w-1.5 h-4 ml-0.5 bg-ftx-lime animate-pulse align-middle transition-opacity duration-150 ${isTyping ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-            />
-        </span>
-    );
-}
