@@ -88,14 +88,53 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         });
     }, [pillars.length]);
 
+    const isPausedRef = useRef(false);
+    const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const pauseAutoPlay = () => {
+        isPausedRef.current = true;
+        if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = setTimeout(() => {
+            isPausedRef.current = false;
+        }, 4000);
+    };
+
     useEffect(() => {
         if (!isHomePage) return;
         updateMobileCardsFromStage(0);
     }, [isHomePage, updateMobileCardsFromStage]);
 
+    // Auto-scroll slideshow timer (cycles cards every 3.5s)
+    useEffect(() => {
+        if (!isHomePage) return;
+
+        const interval = setInterval(() => {
+            if (!isPausedRef.current) {
+                setActiveCardIndex((prev) => {
+                    const nextIdx = (prev + 1) % pillars.length;
+                    gsap.to(currentStageRef.current, {
+                        stage: nextIdx,
+                        duration: 0.5,
+                        ease: "power2.out",
+                        onUpdate: () => {
+                            updateMobileCardsFromStage(currentStageRef.current.stage);
+                        },
+                    });
+                    return nextIdx;
+                });
+            }
+        }, 3500);
+
+        return () => {
+            clearInterval(interval);
+            if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        };
+    }, [isHomePage, pillars.length, updateMobileCardsFromStage]);
+
     const animateStageTo = (targetStage: number) => {
-        const clampedStage = Math.max(0, Math.min(pillars.length - 1, targetStage));
+        const clampedStage = (targetStage + pillars.length) % pillars.length;
         setActiveCardIndex(clampedStage);
+        pauseAutoPlay();
 
         gsap.to(currentStageRef.current, {
             stage: clampedStage,
@@ -108,6 +147,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     };
 
     const handleTouchStart = (e: React.TouchEvent) => {
+        pauseAutoPlay();
         touchStartXRef.current = e.touches[0].clientX;
         touchEndXRef.current = null;
     };
@@ -289,8 +329,8 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                     onClick={() => handleDotClick(dotIdx)}
                                     aria-label={`Go to slide ${dotIdx + 1}`}
                                     className={`h-2 rounded-full transition-all duration-300 ${isActive
-                                            ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
-                                            : "w-2 bg-white/20 hover:bg-white/40"
+                                        ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
+                                        : "w-2 bg-white/20 hover:bg-white/40"
                                         }`}
                                 />
                             );
