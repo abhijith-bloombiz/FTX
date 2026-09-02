@@ -112,25 +112,33 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                     return navEl ? navEl.offsetHeight : 72;
                 };
 
-                const st = ScrollTrigger.create({
-                    id: "why-ftx-mobile-3d-pin",
-                    trigger: section,
-                    pin: section,
-                    pinSpacing: true,
-                    anticipatePin: 1,
-                    start: () => `top ${getNavHeight()}px`,
-                    end: "+=1600px",
-                    scrub: 0.5,
-                    fastScrollEnd: true,
-                    preventOverlaps: true,
-                    invalidateOnRefresh: true,
-                    onUpdate: (self) => {
-                        const stage = self.progress * (pillars.length - 1);
-                        updateMobileCardsFromStage(stage);
+                const stageProxy = { stage: 0 };
+
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        id: "why-ftx-mobile-3d-pin",
+                        trigger: section,
+                        pin: section,
+                        pinSpacing: true,
+                        anticipatePin: 1,
+                        start: () => `top ${getNavHeight()}px`,
+                        end: "+=2800px",
+                        scrub: 1.2,
+                        fastScrollEnd: true,
+                        preventOverlaps: true,
+                        invalidateOnRefresh: true,
                     },
                 });
 
-                scrollTriggerRef.current = st;
+                tl.to(stageProxy, {
+                    stage: pillars.length - 1,
+                    ease: "none",
+                    onUpdate: () => {
+                        updateMobileCardsFromStage(stageProxy.stage);
+                    },
+                });
+
+                scrollTriggerRef.current = tl.scrollTrigger || null;
                 updateMobileCardsFromStage(0);
 
                 setTimeout(() => {
@@ -268,8 +276,11 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             <section
                 ref={mobileSectionRef}
                 id="packages-mobile"
-                className="block md:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip border-t border-ftx-lime/25 py-7 sm:py-8"
+                className="block md:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip py-7 sm:py-8"
             >
+                {/* Top Glowing Partition Light Line - Parallel & Harmonized with Navbar Bottom Border */}
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-ftx-lime/50 to-transparent shadow-[0_0_8px_#a4d65e] pointer-events-none z-20" />
+
                 {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
                 <div
                     className="absolute bottom-0 left-0 w-full h-[250px] pointer-events-none z-0"

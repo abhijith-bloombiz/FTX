@@ -514,7 +514,7 @@ export default function AdminDashboardPage() {
                 </aside>
 
                 {/* Right Panel Main Workspace */}
-                <main data-lenis-prevent className="flex-1 min-h-0 h-full p-2 sm:p-6 lg:p-8 space-y-3 sm:space-y-6 overflow-y-auto w-full max-w-7xl overflow-x-hidden">
+                <main data-lenis-prevent className="flex-1 min-h-0 h-full p-3 pb-14 sm:p-6 sm:pb-8 lg:p-8 space-y-3 sm:space-y-6 overflow-y-auto w-full max-w-7xl overflow-x-hidden">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl p-12">
                             <div className="p-4 rounded-full bg-ftx-lime/10 border border-ftx-lime/30 text-ftx-lime shadow-lime-glow">
