@@ -51,12 +51,17 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     const touchEndXRef = useRef<number | null>(null);
     const currentStageRef = useRef<{ stage: number }>({ stage: 0 });
 
+    const activeCardIndexRef = useRef(0);
+
     const updateMobileCardsFromStage = useCallback((stage: number) => {
         const totalPillars = pillars.length;
         if (totalPillars === 0) return;
 
         const activeIdx = Math.min(totalPillars - 1, Math.max(0, Math.round(stage)));
-        setActiveCardIndex(activeIdx);
+        if (activeIdx !== activeCardIndexRef.current) {
+            activeCardIndexRef.current = activeIdx;
+            setActiveCardIndex(activeIdx);
+        }
 
         pillars.forEach((_, idx) => {
             const cardEl = cardRefs.current[idx];
@@ -74,17 +79,14 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             const rotY = dist * -45;
 
             const scale = Math.max(0.72, 1 - absDist * 0.14);
-            const opacity = absDist > 1.8 ? 0 : Math.max(0, 1 - Math.pow(absDist, 1.4) * 0.42);
+            const opacity = absDist > 1.8 ? 0 : Math.max(0, 1 - absDist * 0.35);
             const zIndex = Math.max(1, Math.round(30 - absDist * 10));
-            const brightness = Math.max(0.5, 1 - absDist * 0.45);
 
             cardEl.style.transformOrigin = "50% 50%";
-            cardEl.style.transform = `perspective(1000px) translateX(${tx.toFixed(2)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+            cardEl.style.transform = `perspective(1000px) translate3d(${tx.toFixed(2)}px, 0px, 0px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
             cardEl.style.opacity = opacity.toFixed(3);
-            cardEl.style.filter = brightness < 0.98 ? `brightness(${brightness.toFixed(2)})` : "none";
             cardEl.style.zIndex = String(zIndex);
             cardEl.style.pointerEvents = absDist < 0.3 ? "auto" : "none";
-            cardEl.style.willChange = "transform, opacity";
         });
     }, [pillars.length]);
 
