@@ -2,18 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { Shield, Sparkles, Award, Zap } from "lucide-react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { TextReveal } from "@/components/motion/TextReveal";
-
-if (typeof window !== "undefined") {
-    gsap.registerPlugin(ScrollTrigger);
-    ScrollTrigger.config({ ignoreMobileResize: true });
-}
 
 interface WhyFTXProps {
     locale: Locale;
@@ -24,32 +17,8 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     const pathname = usePathname();
     const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/` || pathname === "/";
 
-    if (!isHomePage) {
-        if (typeof window !== "undefined") {
-            const st = ScrollTrigger.getById("why-ftx-mobile-3d-pin");
-            if (st) {
-                try {
-                    (st as any).revert?.(true);
-                } catch (e) { }
-                st.kill(true);
-            }
-            document.querySelectorAll(".pin-spacer").forEach((spacer) => {
-                if (spacer.innerHTML.includes("packages-mobile") || spacer.contains(mobileSectionRef.current)) {
-                    spacer.replaceWith(...Array.from(spacer.children));
-                }
-            });
-            ScrollTrigger.refresh();
-        }
-        return null;
-    }
-    const mobileSectionRef = useRef<HTMLElement>(null);
-    const mobilePinWrapperRef = useRef<HTMLDivElement>(null);
     const [activeCardIndex, setActiveCardIndex] = useState(0);
-    const activeCardIndexRef = useRef(0);
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
-
-    const cachedCardWidthRef = useRef<number>(340);
 
     const pillars = [
         {
@@ -93,7 +62,6 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             const cardEl = cardRefs.current[idx];
             if (!cardEl) return;
 
-            // Continuous circular offset in range [-2, 2)
             let dist = (idx - stage) % totalPillars;
             if (dist > 2) dist -= totalPillars;
             if (dist <= -2) dist += totalPillars;
@@ -121,82 +89,9 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     }, [pillars.length]);
 
     useEffect(() => {
-        if (typeof window === "undefined") return;
-
-        const section = mobileSectionRef.current;
-        if (!section) return;
-
-        const ctx = gsap.context(() => {
-            const mm = gsap.matchMedia();
-
-            mm.add("(max-width: 767px)", () => {
-                const getNavHeight = () => {
-                    const navEl = document.querySelector("header");
-                    const h = navEl ? navEl.offsetHeight : 72;
-                    return Math.max(0, h - 12);
-                };
-
-                const stageProxy = { stage: 0 };
-
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        id: "why-ftx-mobile-3d-pin",
-                        trigger: section,
-                        pin: section,
-                        pinSpacing: true,
-                        anticipatePin: 1,
-                        start: () => `top ${getNavHeight()}px`,
-                        end: "+=3600px", // Extended scroll height for slower, elegant transitions on mobile
-                        scrub: 1.8,     // Silky inertia damping for buttery smooth phone scrolling
-                        fastScrollEnd: false,
-                        preventOverlaps: true,
-                        invalidateOnRefresh: true,
-                    },
-                });
-
-                tl.to(stageProxy, {
-                    stage: pillars.length - 1,
-                    ease: "none",
-                    onUpdate: () => {
-                        updateMobileCardsFromStage(stageProxy.stage);
-                    },
-                });
-
-                scrollTriggerRef.current = tl.scrollTrigger || null;
-                updateMobileCardsFromStage(0);
-
-                setTimeout(() => {
-                    ScrollTrigger.refresh();
-                }, 150);
-            });
-        }, section);
-
-        return () => {
-            ctx.revert();
-            scrollTriggerRef.current = null;
-            const st = ScrollTrigger.getById("why-ftx-mobile-3d-pin");
-            if (st) {
-                try {
-                    (st as any).revert?.(true);
-                } catch (e) { }
-                st.kill(true);
-            }
-
-            if (typeof document !== "undefined") {
-                document.querySelectorAll(".pin-spacer").forEach((spacer) => {
-                    if (spacer.innerHTML.includes("packages-mobile")) {
-                        spacer.replaceWith(...Array.from(spacer.children));
-                    }
-                });
-            }
-
-            if (section) {
-                section.style.cssText = "";
-            }
-
-            ScrollTrigger.refresh();
-        };
-    }, [updateMobileCardsFromStage, pillars.length, pathname]);
+        if (!isHomePage) return;
+        updateMobileCardsFromStage(0);
+    }, [isHomePage, updateMobileCardsFromStage]);
 
     const animateStageTo = (targetStage: number) => {
         const clampedStage = Math.max(0, Math.min(pillars.length - 1, targetStage));
@@ -204,7 +99,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
         gsap.to(currentStageRef.current, {
             stage: clampedStage,
-            duration: 0.6,
+            duration: 0.5,
             ease: "power2.out",
             onUpdate: () => {
                 updateMobileCardsFromStage(currentStageRef.current.stage);
@@ -224,7 +119,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     const handleTouchEnd = () => {
         if (!touchStartXRef.current || !touchEndXRef.current) return;
         const diffX = touchStartXRef.current - touchEndXRef.current;
-        const swipeThreshold = 40;
+        const swipeThreshold = 35;
 
         if (diffX > swipeThreshold) {
             // Swiped Left -> Next Card
@@ -241,6 +136,10 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     const handleDotClick = (index: number) => {
         animateStageTo(index);
     };
+
+    if (!isHomePage) {
+        return null;
+    }
 
     return (
         <>
@@ -297,11 +196,10 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 </div>
             </section>
 
-            {/* MOBILE 3D CARD DECK CAROUSEL LAYOUT (< md) */}
+            {/* MOBILE 3D CARD DECK CAROUSEL LAYOUT (< md) - Pure Swipable 3D Deck */}
             <section
-                ref={mobileSectionRef}
                 id="packages-mobile"
-                className="block md:hidden relative w-full bg-black motion-reduce:h-auto overflow-x-clip pt-2 pb-7 sm:py-8"
+                className="block md:hidden relative w-full bg-black py-10 overflow-x-clip"
             >
                 {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
                 <div
@@ -309,12 +207,9 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                     style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
                 />
 
-                <div
-                    ref={mobilePinWrapperRef}
-                    className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent relative flex flex-col justify-start gap-2 min-h-[calc(100vh-4.5rem)] pt-3 pb-5 z-10"
-                >
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent relative flex flex-col justify-start gap-4 z-10">
                     {/* Section Header */}
-                    <div className="text-left w-full space-y-1.5 mb-1 mt-3.5 xs:mt-4">
+                    <div className="text-left w-full space-y-1.5 mb-2 mt-2">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
                             <span>{messages.whyFtx.title}</span>
                         </div>
@@ -328,49 +223,25 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}
-                        className="relative w-full h-[370px] xs:h-[400px] max-w-[280px] xs:max-w-[310px] mx-auto mt-10 flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] touch-pan-y"
+                        className="relative w-full h-[370px] xs:h-[400px] max-w-[280px] xs:max-w-[310px] mx-auto mt-4 flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] touch-pan-y"
                     >
                         {pillars.map((item, idx) => {
                             const IconComponent = item.icon;
-                            const isCenter = idx === 0;
-                            const isRight = idx === 1;
-                            const isLeft = idx === 3;
-                            let initRotY = -180;
-                            let initOpacity = 0;
-                            let initZIndex = 10;
-
-                            if (isCenter) {
-                                initRotY = 0;
-                                initOpacity = 1;
-                                initZIndex = 30;
-                            } else if (isRight) {
-                                initRotY = -90;
-                                initOpacity = 0.85;
-                                initZIndex = 20;
-                            } else if (isLeft) {
-                                initRotY = 90;
-                                initOpacity = 0.85;
-                                initZIndex = 20;
-                            }
 
                             return (
                                 <div
                                     key={idx}
                                     ref={(el) => { cardRefs.current[idx] = el; }}
-                                    className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-gradient-to-b from-neutral-900/90 via-black to-neutral-950 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] overflow-hidden"
+                                    className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-gradient-to-b from-neutral-900/90 via-black to-neutral-950 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] overflow-hidden cursor-pointer"
                                     style={{
                                         transformOrigin: "50% 50% -140px",
                                         backfaceVisibility: "hidden",
                                         transformStyle: "preserve-3d",
-                                        transform: `perspective(1000px) rotateY(${initRotY}deg)`,
-                                        opacity: initOpacity,
-                                        zIndex: initZIndex,
-                                        pointerEvents: isCenter ? "auto" : "none",
                                     }}
                                 >
                                     {/* Card Frame Content */}
                                     <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
-                                        {/* Background Image with High-Clarity Visibility */}
+                                        {/* Background Image */}
                                         <img
                                             src={item.image}
                                             alt={item.title}
@@ -379,7 +250,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                             className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-100"
                                         />
 
-                                        {/* Light Bottom Vignette Gradient Overlay for Readable Text */}
+                                        {/* Light Bottom Vignette Gradient Overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
 
                                         {/* Top Bar: Icon Badge & Watermark Index */}
@@ -388,7 +259,6 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                                 <IconComponent className="w-5 h-5" />
                                             </div>
 
-                                            {/* Large Dark Watermark Step Counter */}
                                             <div className="text-4xl xs:text-5xl font-mono font-black text-black/70 select-none tracking-tighter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                                                 0{idx + 1}
                                             </div>
@@ -399,7 +269,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                             <h3 className="text-xl xs:text-2xl font-heading font-black text-white uppercase tracking-wider leading-tight drop-shadow-lg">
                                                 {item.title}
                                             </h3>
-                                            <p className="text-xs xs:text-sm text-ftx-silver font-body leading-relaxed max-w-[270px] drop-shadow-sm">
+                                            <p className="text-xs xs:text-sm text-ftx-silver font-body leading-relaxed line-clamp-3">
                                                 {item.desc}
                                             </p>
                                         </div>
@@ -409,24 +279,25 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                         })}
                     </div>
 
-                    {/* Pagination Dots Indicator Bar */}
-                    <div className="flex items-center justify-center gap-2.5 mt-24 sm:mt-28 z-20">
-                        {pillars.map((_, idx) => (
-                            <button
-                                key={idx}
-                                type="button"
-                                aria-label={`Go to slide ${idx + 1}`}
-                                onClick={() => handleDotClick(idx)}
-                                className={`h-2.5 rounded-full transition-all duration-300 ${activeCardIndex === idx
-                                    ? "w-8 bg-ftx-lime shadow-[0_0_14px_rgba(164,214,94,0.85)]"
-                                    : "w-2.5 bg-white/20 hover:bg-white/40"
-                                    }`}
-                            />
-                        ))}
+                    {/* Pagination Dots */}
+                    <div className="flex items-center justify-center gap-2.5 mt-6 z-20">
+                        {pillars.map((_, dotIdx) => {
+                            const isActive = dotIdx === activeCardIndex;
+                            return (
+                                <button
+                                    key={dotIdx}
+                                    onClick={() => handleDotClick(dotIdx)}
+                                    aria-label={`Go to slide ${dotIdx + 1}`}
+                                    className={`h-2 rounded-full transition-all duration-300 ${isActive
+                                            ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
+                                            : "w-2 bg-white/20 hover:bg-white/40"
+                                        }`}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             </section>
         </>
     );
 }
-

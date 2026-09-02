@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/db";
 import { ContactInquiryModel } from "@/lib/models/ContactInquiry";
 import { getAdminSession } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
     try {
         const session = await getAdminSession();
