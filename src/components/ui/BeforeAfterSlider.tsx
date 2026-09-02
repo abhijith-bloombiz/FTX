@@ -102,14 +102,11 @@ export function BeforeAfterSlider({
                     src={afterImage}
                     alt={`After: ${alt}`}
                     fill
-                    quality={100}
-                    priority
-                    unoptimized
-                    sizes="100vw"
+                    sizes="(max-width: 768px) 100vw, 1200px"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
-                <div className="absolute bottom-4 right-4 px-3 py-1 bg-ftx-black/80 backdrop-blur-sm border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest rounded pointer-events-auto shadow-lg">
+                <div className="absolute bottom-4 right-4 px-3 py-1 bg-ftx-black/80 border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest rounded pointer-events-auto shadow-lg">
                     {afterLabel}
                 </div>
             </div>
@@ -123,14 +120,11 @@ export function BeforeAfterSlider({
                     src={beforeImage}
                     alt={`Before: ${alt}`}
                     fill
-                    quality={100}
-                    priority
-                    unoptimized
-                    sizes="100vw"
+                    sizes="(max-width: 768px) 100vw, 1200px"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
-                <div className="absolute bottom-4 left-4 px-3 py-1 bg-ftx-black/80 backdrop-blur-sm border border-ftx-surface-high text-[10px] font-mono font-bold text-ftx-silver tracking-widest rounded pointer-events-auto shadow-lg">
+                <div className="absolute bottom-4 left-4 px-3 py-1 bg-ftx-black/80 border border-ftx-surface-high text-[10px] font-mono font-bold text-ftx-silver tracking-widest rounded pointer-events-auto shadow-lg">
                     {beforeLabel}
                 </div>
             </div>

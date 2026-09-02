@@ -121,9 +121,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                         fill
                                         decoding="async"
                                         loading="lazy"
-                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
                                         <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
                                             {getTitle(featuredItems[0])}
                                         </h4>
@@ -147,9 +147,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                         fill
                                         decoding="async"
                                         loading="lazy"
-                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
                                         <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
                                             {getTitle(featuredItems[1])}
                                         </h4>
@@ -173,9 +173,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                         fill
                                         decoding="async"
                                         loading="lazy"
-                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
                                         <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
                                             {getTitle(featuredItems[2])}
                                         </h4>
@@ -199,9 +199,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                                         fill
                                         decoding="async"
                                         loading="lazy"
-                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black/95 via-ftx-black/75 to-transparent backdrop-blur-sm p-3 sm:p-5 z-10">
+                                    <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
                                         <h4 className="text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors leading-tight line-clamp-1">
                                             {getTitle(featuredItems[3])}
                                         </h4>

@@ -14,6 +14,12 @@ export function PackageCard({ packageData, locale, ctaText }: PackageCardProps) 
 
     const quoteHref = `/${locale}/contact?service=${category}&package=${id}`;
 
+    const badgeText = badge
+        ? (typeof badge === "string" ? badge : badge[locale] || badge.en || "")
+        : (popular ? (locale === "ar" ? "الأكثر شعبية" : "POPULAR CHOICE") : "");
+
+    const showBadge = Boolean(popular || (badgeText && badgeText.trim() !== ""));
+
     return (
         <div
             className={`relative flex flex-col justify-between p-6 sm:p-8 ftx-squircle-xl !overflow-visible transition-all duration-500 hover:-translate-y-1.5 h-full ${popular
@@ -22,9 +28,9 @@ export function PackageCard({ packageData, locale, ctaText }: PackageCardProps) 
                 }`}
         >
             {/* Badge highlight - Floating on top of top border */}
-            {(popular || badge) && (
+            {showBadge && (
                 <div className="absolute -top-3.5 ltr:right-6 rtl:left-6 z-30 px-3 py-1 bg-ftx-lime text-ftx-black text-[10px] font-mono font-bold tracking-widest uppercase ftx-btn-tech shadow-lime-glow">
-                    {badge ? badge[locale] : (locale === "ar" ? "الأكثر شعبية" : "POPULAR CHOICE")}
+                    {badgeText}
                 </div>
             )}
 

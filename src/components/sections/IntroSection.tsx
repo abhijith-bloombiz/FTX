@@ -36,19 +36,21 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                         </ScrollReveal>
                     </div>
 
-                    {/* Image Grid (Static - GPU Accelerated) */}
-                    <div className="order-2 lg:order-1 lg:col-span-5 relative w-full transform-gpu">
+                    {/* Image Grid */}
+                    <div className="order-2 lg:order-1 lg:col-span-5 relative w-full">
                         <div className="relative w-full aspect-[4/3] ftx-squircle-lg border border-ftx-surface-high shadow-2xl group overflow-hidden bg-ftx-obsidian">
                             <Image
                                 src={messages.intro?.image || "/images/about/craftsmanship.jpg"}
                                 alt="FTX Precision Studio Craftsmanship"
                                 fill
+                                sizes="(max-width: 1024px) 100vw, 45vw"
+                                quality={92}
                                 decoding="async"
                                 loading="lazy"
-                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-104 transform-gpu"
+                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
                             />
                         </div>
-                        <div className="absolute -bottom-6 -right-6 hidden sm:block w-48 h-32 bg-ftx-surface border border-ftx-lime/40 ftx-squircle-sm p-4 shadow-2xl transform-gpu">
+                        <div className="absolute -bottom-6 -right-6 hidden sm:block w-48 h-32 bg-ftx-surface border border-ftx-lime/40 ftx-squircle-sm p-4 shadow-2xl">
                             <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
                                 {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
                             </div>

@@ -35,25 +35,17 @@ export function ScrollReveal({
     style = {},
 }: ScrollRevealProps) {
     const [isVisible, setIsVisible] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        checkMobile();
-        window.addEventListener("resize", checkMobile, { passive: true });
-
-        const prefersReducedMotion = window.matchMedia(
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+        const prefersReducedMotion = typeof window !== "undefined" && window.matchMedia(
             "(prefers-reduced-motion: reduce)"
         ).matches;
 
         if (prefersReducedMotion) {
             setIsVisible(true);
-            return () => {
-                window.removeEventListener("resize", checkMobile);
-            };
+            return;
         }
 
         const observer = new IntersectionObserver(
@@ -67,7 +59,7 @@ export function ScrollReveal({
                     setIsVisible(false);
                 }
             },
-            { threshold: isMobile ? 0.08 : threshold }
+            { threshold: isMobile ? 0.05 : threshold }
         );
 
         if (ref.current) {
@@ -76,13 +68,13 @@ export function ScrollReveal({
 
         return () => {
             observer.disconnect();
-            window.removeEventListener("resize", checkMobile);
         };
-    }, [threshold, once, isMobile]);
+    }, [threshold, once]);
 
     const getStyles = (): React.CSSProperties => {
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
         const baseTransition: React.CSSProperties = {
-            transitionProperty: "transform, opacity, filter, clip-path",
+            transitionProperty: "transform, opacity",
             transitionDuration: `${duration}ms`,
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
             transitionDelay: `${delay}ms`,
@@ -94,10 +86,7 @@ export function ScrollReveal({
                 ...baseTransition,
                 opacity: 1,
                 transform: "perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1)",
-                filter: undefined,
-                willChange: "auto",
                 transformOrigin: "bottom center",
-                clipPath: type === "heading-inset" ? "inset(0 0 0 0)" : undefined,
             };
         }
 
@@ -108,12 +97,10 @@ export function ScrollReveal({
                     ...baseTransition,
                     opacity: 0,
                     transform: `perspective(1200px) rotateX(28deg) translate3d(0, ${floorY}, -50px) scale(0.92)`,
-                    filter: "blur(6px)",
                     transformOrigin: "bottom center",
                 };
 
             case "card":
-                // Phenomenon Studio Card Entrance: translateY 80px (45px mobile) + scale 0.96 (0.98 mobile)
                 const cardY = isMobile ? "45px" : "80px";
                 const cardScale = isMobile ? "0.98" : "0.96";
                 return {
@@ -131,17 +118,13 @@ export function ScrollReveal({
                 };
 
             case "image-mask":
-                // Image settle from scale 1.06 to 1.0
                 return {
                     ...baseTransition,
                     opacity: 0.7,
                     transform: "scale(1.06)",
-                    clipPath: "inset(0 0 0 0)",
                 };
 
             case "horizontal":
-                // direction === "left" means slide in FROM LEFT TO RIGHT (initialX: -150px)
-                // direction === "right" means slide in FROM RIGHT TO LEFT (initialX: 150px)
                 const isFromLeft = direction === "left";
                 const initialX = isFromLeft
                     ? (isMobile ? "-60px" : "-150px")
@@ -165,7 +148,6 @@ export function ScrollReveal({
                     ...baseTransition,
                     opacity: 0,
                     transform: "translate3d(0, 35px, 0)",
-                    filter: "blur(4px)",
                 };
 
             default:

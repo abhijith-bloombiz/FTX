@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
@@ -78,12 +79,13 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                         >
                             {/* Full-Bleed Background Image Container */}
                             <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-black">
-                                <img
+                                <Image
                                     src={firstService?.image || "/images/gallery/gt3rs-ppf.jpg"}
                                     alt={firstService ? getLangText(firstService.title) : "Paint Protection Film"}
+                                    fill
+                                    sizes="(max-width: 1024px) 100vw, 60vw"
                                     decoding="async"
-                                    loading="lazy"
-                                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                 />
                                 {/* Gradient Overlay for High-Contrast Typography */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/80 to-ftx-black/30 z-10" />
@@ -134,12 +136,13 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                     >
                                         {/* Full-Bleed Background Image Container */}
                                         <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-black">
-                                            <img
+                                            <Image
                                                 src={serv.image || "/images/services/ceramic-main.png"}
                                                 alt={getLangText(serv.title)}
+                                                fill
+                                                sizes="(max-width: 1024px) 100vw, 40vw"
                                                 decoding="async"
-                                                loading="lazy"
-                                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
                                             {/* Gradient Overlay for Typography Contrast */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/80 to-ftx-black/20 z-10" />
@@ -189,12 +192,13 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                         className="group relative overflow-hidden ftx-squircle-xl bg-[#131313] border border-white/10 min-h-[235px] sm:min-h-[245px] flex flex-col justify-between p-5 sm:p-6 shadow-2xl transition-[transform,border-color,box-shadow] duration-500 hover:border-ftx-lime/50 hover:-translate-y-1 h-full"
                                     >
                                         <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-black">
-                                            <img
+                                            <Image
                                                 src="/images/services/ceramic-main.png"
                                                 alt="Ceramic Coating"
+                                                fill
+                                                sizes="(max-width: 1024px) 100vw, 40vw"
                                                 decoding="async"
-                                                loading="lazy"
-                                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/80 to-ftx-black/20 z-10" />
                                         </div>
@@ -234,12 +238,13 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                         className="group relative overflow-hidden ftx-squircle-xl bg-[#131313] border border-white/10 min-h-[235px] sm:min-h-[245px] flex flex-col justify-between p-5 sm:p-6 shadow-2xl transition-[transform,border-color,box-shadow] duration-500 hover:border-ftx-lime/50 hover:-translate-y-1 h-full"
                                     >
                                         <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-black">
-                                            <img
+                                            <Image
                                                 src="/images/gallery/g63-after.jpg"
                                                 alt="Pro Detailing"
+                                                fill
+                                                sizes="(max-width: 1024px) 100vw, 40vw"
                                                 decoding="async"
-                                                loading="lazy"
-                                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 will-change-transform"
+                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/80 to-ftx-black/20 z-10" />
                                         </div>

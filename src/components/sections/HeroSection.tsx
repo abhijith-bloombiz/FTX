@@ -329,7 +329,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
                     const lerpFactor = isMobile
                         ? (absDiff > 15 ? 0.55 : absDiff > 6 ? 0.45 : 0.38)
-                        : (absDiff > 15 ? 0.28 : absDiff > 6 ? 0.22 : 0.18);
+                        : (absDiff > 15 ? 0.48 : absDiff > 6 ? 0.38 : 0.30);
                     currentFrameRef.current += diff * lerpFactor;
                 }
 
@@ -457,7 +457,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                         opacity: revealed ? 1 : 0,
                         transform: revealed ? "scale(1)" : "scale(1.03)",
                         transition: "opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1400ms cubic-bezier(0.16, 1, 0.3, 1)",
-                        willChange: "opacity, transform",
+                        willChange: revealed ? "auto" : "opacity, transform",
                     }}
                 />
 
