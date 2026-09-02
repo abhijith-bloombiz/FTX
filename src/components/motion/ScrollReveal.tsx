@@ -35,11 +35,14 @@ export function ScrollReveal({
     style = {},
 }: ScrollRevealProps) {
     const [isVisible, setIsVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-        const prefersReducedMotion = typeof window !== "undefined" && window.matchMedia(
+        const mobileCheck = window.innerWidth < 768;
+        setIsMobile(mobileCheck);
+
+        const prefersReducedMotion = window.matchMedia(
             "(prefers-reduced-motion: reduce)"
         ).matches;
 
@@ -59,7 +62,7 @@ export function ScrollReveal({
                     setIsVisible(false);
                 }
             },
-            { threshold: isMobile ? 0.05 : threshold }
+            { threshold: mobileCheck ? 0.05 : threshold }
         );
 
         if (ref.current) {
@@ -72,7 +75,6 @@ export function ScrollReveal({
     }, [threshold, once]);
 
     const getStyles = (): React.CSSProperties => {
-        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
         const baseTransition: React.CSSProperties = {
             transitionProperty: "transform, opacity",
             transitionDuration: `${duration}ms`,
