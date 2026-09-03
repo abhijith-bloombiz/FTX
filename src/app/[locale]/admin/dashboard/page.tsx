@@ -394,7 +394,6 @@ export default function AdminDashboardPage() {
                                 <div className="pl-3.5 pt-1 pb-1 space-y-1 border-l border-ftx-surface-high/60 ml-4">
                                     {[
                                         { id: "intro", label: "Intro Section" },
-                                        { id: "services", label: "Services Section" },
                                         { id: "why_ftx", label: "Why FTX Section" },
                                     ].map((sub) => {
                                         const isSubActive = activeTab === "home" && selectedHomeSubSection === sub.id;
@@ -547,7 +546,7 @@ export default function AdminDashboardPage() {
                                         {sections
                                             .filter((s) => {
                                                 if (s.page !== "home") return false;
-                                                const allowed = ["intro", "services", "why_ftx"];
+                                                const allowed = ["intro", "why_ftx"];
                                                 if (!allowed.includes(s.sectionKey)) return false;
                                                 if (selectedHomeSubSection !== "all" && s.sectionKey !== selectedHomeSubSection) return false;
                                                 return true;
@@ -555,106 +554,6 @@ export default function AdminDashboardPage() {
                                             .map((sec, idx) => (
                                                 <div key={`home-${sec.sectionKey}-${idx}`} className="space-y-6">
                                                     <SectionEditCard section={sec} onSave={handleSaveSection} saving={saving} />
-
-                                                    {/* If viewing Services Section under Home Page, render real Service Items management below header */}
-                                                    {sec.sectionKey === "services" && (
-                                                        <div className="bg-ftx-surface/80 border border-ftx-surface-high p-6 ftx-squircle-lg space-y-6">
-                                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ftx-surface-high pb-4">
-                                                                <div>
-                                                                    <h3 className="text-lg font-heading font-bold uppercase text-ftx-lime flex items-center gap-2">
-                                                                        <Wrench className="w-5 h-5" />
-                                                                        <span>SERVICES CMS — LIVE SERVICE ITEMS</span>
-                                                                    </h3>
-                                                                    <p className="text-xs text-ftx-silver-muted font-mono mt-0.5">
-                                                                        Manage Paint Protection Film (PPF), Ceramic Coating, Pro Detailing & custom services displayed on public portal
-                                                                    </p>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setIsCreateNew(true);
-                                                                        setEditModalType("service");
-                                                                        setEditModalItem({
-                                                                            serviceId: `service-${Date.now()}`,
-                                                                            number: `0${services.length + 1}`,
-                                                                            badge: { en: "NEW SERVICE", ar: "خدمة جديدة" },
-                                                                            title: { en: "NEW SERVICE TITLE", ar: "عنوان الخدمة الجديدة" },
-                                                                            subtitle: { en: "Service Subtitle", ar: "وصف فرعي للخدمة" },
-                                                                            description: { en: "Service description text", ar: "نص تفصيلي للخدمة" },
-                                                                            benefits: { en: ["Benefit 1"], ar: ["ميزة 1"] },
-                                                                            image: "/images/services/ppf-main.png",
-                                                                            detailImages: [],
-                                                                            highlights: [],
-                                                                            process: [],
-                                                                        });
-                                                                    }}
-                                                                    className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
-                                                                >
-                                                                    <Plus className="w-4 h-4 shrink-0" />
-                                                                    <span>ADD SERVICE</span>
-                                                                </button>
-                                                            </div>
-
-                                                            <div className="grid grid-cols-1 gap-4">
-                                                                {services.length === 0 ? (
-                                                                    <div className="p-8 bg-ftx-obsidian border border-ftx-surface-high text-center text-xs font-mono text-ftx-silver-muted rounded-xl">
-                                                                        NO SERVICES FOUND IN DATABASE. CLICK "ADD NEW SERVICE" TO CREATE ONE.
-                                                                    </div>
-                                                                ) : (
-                                                                    services.map((serv) => (
-                                                                        <div
-                                                                            key={serv._id}
-                                                                            className="bg-ftx-obsidian border border-ftx-surface-high p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-ftx-lime/30 transition-colors"
-                                                                        >
-                                                                            <div className="flex items-center gap-4">
-                                                                                {serv.image && (
-                                                                                    <div className="w-16 h-16 bg-ftx-surface border border-ftx-surface-high rounded-lg overflow-hidden shrink-0">
-                                                                                        <img src={serv.image} alt={serv.title?.en} className="w-full h-full object-cover" />
-                                                                                    </div>
-                                                                                )}
-                                                                                <div className="space-y-1">
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        <span className="px-2 py-0.5 bg-ftx-surface text-ftx-lime border border-ftx-lime/30 text-[10px] font-mono font-bold uppercase">
-                                                                                            #{serv.number || "01"} {serv.badge?.en || "SERVICE"}
-                                                                                        </span>
-                                                                                        <span className="text-[10px] font-mono text-ftx-silver-muted">
-                                                                                            ID: {serv.serviceId}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    <h4 className="text-sm font-bold font-heading text-white uppercase">
-                                                                                        {serv.title?.en} / {serv.title?.ar}
-                                                                                    </h4>
-                                                                                    <p className="text-xs text-ftx-silver-muted font-body line-clamp-1">
-                                                                                        {serv.subtitle?.en || serv.description?.en}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                                                                                <button
-                                                                                    onClick={() => {
-                                                                                        setIsCreateNew(false);
-                                                                                        setEditModalType("service");
-                                                                                        setEditModalItem(serv);
-                                                                                    }}
-                                                                                    className="px-3 py-2 bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-ftx-lime text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
-                                                                                >
-                                                                                    <Edit3 className="w-3.5 h-3.5" />
-                                                                                    <span>EDIT</span>
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={() => handleDeleteItem("services", serv._id)}
-                                                                                    className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
-                                                                                >
-                                                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                                                    <span>DELETE</span>
-                                                                                </button>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             ))}
                                     </div>
