@@ -310,7 +310,7 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
                         </ScrollReveal>
 
                         {/* Row 3: Service Selection Dropdown & Preferred Package */}
-                        <ScrollReveal type="editorial" delay={340} duration={650}>
+                        <ScrollReveal type="editorial" delay={340} duration={650} className={`relative ${isServiceOpen ? "z-40" : "z-10"}`}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 {/* Custom Animated Service Selection Dropdown */}
                                 <div className="relative z-30 rejoin-left" ref={dropdownRef}>

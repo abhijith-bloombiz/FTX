@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { galleryData, getVehicleLabel } from "@/data/gallery";
@@ -42,9 +42,51 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     const availableItems = allGalleryItems.filter((g) => !isBeforeAfterItem(g));
     const beforeAfterItem = allGalleryItems.find((g) => isBeforeAfterItem(g));
 
-    // Staggered smooth auto-switch through all gallery items across the 4 card slots
+    const [isIdle, setIsIdle] = useState(true);
+    const sectionRef = useRef<HTMLElement>(null);
+    const [isInView, setIsInView] = useState(true);
+
+    // 1. Viewport Awareness: Only run image rotation when section is in view
     useEffect(() => {
-        if (availableItems.length <= 4) return;
+        if (!sectionRef.current || typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsInView(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(sectionRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    // 2. Scroll Detector: Pause image rotation while scrolling, set idle after 2.5s of no scroll
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        let scrollTimer: NodeJS.Timeout | null = null;
+
+        const handleScroll = () => {
+            setIsIdle(false);
+            if (scrollTimer) clearTimeout(scrollTimer);
+
+            scrollTimer = setTimeout(() => {
+                setIsIdle(true);
+            }, 2500);
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (scrollTimer) clearTimeout(scrollTimer);
+        };
+    }, []);
+
+    // 3. Image Auto-Switch: ONLY rotates card images when visible AND user is idle
+    useEffect(() => {
+        if (availableItems.length <= 4 || !isInView || !isIdle) return;
 
         let currentSlot = 0;
         let fadeTimeout: NodeJS.Timeout | null = null;
@@ -56,7 +98,6 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
             fadeTimeout = setTimeout(() => {
                 setSlotIndices((prev) => {
                     const next = [...prev];
-                    // Pick next item not currently visible in other slots
                     let candidate = (next[slotToUpdate] + 1) % availableItems.length;
                     while (next.some((idx, sIdx) => sIdx !== slotToUpdate && idx === candidate)) {
                         candidate = (candidate + 1) % availableItems.length;
@@ -65,16 +106,16 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     return next;
                 });
                 setFadingSlot(null);
-            }, 400); // Fade transition duration
+            }, 400);
 
             currentSlot++;
-        }, 3000); // Cycle one card slot every 3 seconds
+        }, 3500);
 
         return () => {
             clearInterval(interval);
             if (fadeTimeout) clearTimeout(fadeTimeout);
         };
-    }, [availableItems.length]);
+    }, [availableItems.length, isInView, isIdle]);
 
     const getTitle = (item: any) => {
         if (!item?.title) return "";
@@ -142,7 +183,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     };
 
     return (
-        <section id="ourwork" className="py-10 sm:py-12 bg-black relative overflow-hidden">
+        <section ref={sectionRef} id="ourwork" className="py-10 sm:py-12 bg-black relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
             <div
                 className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"

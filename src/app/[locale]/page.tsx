@@ -226,10 +226,10 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                     {/* Header with Title */}
                     <div className="mb-8 sm:mb-10 text-left max-w-3xl space-y-3">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
-                            <span>{messages.contact?.heroSub || "EXPERIENCE UNYIELDING PRECISION"}</span>
+                            <span>{messages.contact?.heroSub || (locale === "ar" ? "دقة فائقة" : "UNYIELDING PRECISION")}</span>
                         </div>
                         <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
-                            <span>{messages.contact?.heroTitle || "SCHEDULE YOUR CONSULTATION"}</span>
+                            <span>{messages.contact?.heroTitle || (locale === "ar" ? "حجز استشارة" : "BOOK CONSULTATION")}</span>
                         </TextReveal>
                     </div>
 

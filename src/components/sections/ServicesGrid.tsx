@@ -48,10 +48,10 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
                     <div className="space-y-2">
                         <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
-                            <span>{messages?.servicesSection?.badge || messages?.services?.badge || "CORE SERVICES"}</span>
+                            <span>{messages?.servicesSection?.badge || messages?.services?.badge || "AUTOMOTIVE DEFENSE"}</span>
                         </div>
                         <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
-                            <span>{messages?.servicesSection?.title || "WORLD-CLASS PROTECTION & DETAILING"}</span>
+                            <span>{messages?.servicesSection?.title || "PROTECTION & DETAILING SERVICES"}</span>
                         </TextReveal>
                     </div>
 

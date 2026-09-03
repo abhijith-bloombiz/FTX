@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { Shield, Sparkles, Award, Zap } from "lucide-react";
 import { gsap } from "gsap";
 import { Locale } from "@/i18n/config";
@@ -19,6 +20,23 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
     const [activeCardIndex, setActiveCardIndex] = useState(0);
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const sectionRef = useRef<HTMLElement>(null);
+    const [isInView, setIsInView] = useState(true);
+
+    // Viewport awareness to suspend background auto-play when scrolled off-screen
+    useEffect(() => {
+        if (!sectionRef.current || typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsInView(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(sectionRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     const pillars = [
         {
@@ -103,14 +121,39 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         }, 4000);
     };
 
+    const [isIdle, setIsIdle] = useState(true);
+
+    // Scroll Detector: Pause 3D card deck auto-play while scrolling, set idle state after 2.5s of no scroll
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        let scrollTimer: NodeJS.Timeout | null = null;
+
+        const handleScroll = () => {
+            setIsIdle(false);
+            if (scrollTimer) clearTimeout(scrollTimer);
+
+            scrollTimer = setTimeout(() => {
+                setIsIdle(true);
+            }, 2500);
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (scrollTimer) clearTimeout(scrollTimer);
+        };
+    }, []);
+
     useEffect(() => {
         if (!isHomePage) return;
         updateMobileCardsFromStage(0);
     }, [isHomePage, updateMobileCardsFromStage]);
 
-    // Auto-scroll slideshow timer (continuously cycles infinite cards every 3.5s)
+    // Auto-scroll 3D card slideshow timer (ONLY cycles when visible, idle, and not paused by touch)
     useEffect(() => {
-        if (!isHomePage) return;
+        if (!isHomePage || !isInView || !isIdle) return;
 
         const interval = setInterval(() => {
             if (!isPausedRef.current) {
@@ -123,7 +166,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             clearInterval(interval);
             if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
         };
-    }, [isHomePage, pillars.length, updateMobileCardsFromStage]);
+    }, [isHomePage, isInView, isIdle, pillars.length, updateMobileCardsFromStage]);
 
     const animateStageTo = (targetStage: number) => {
         const totalPillars = pillars.length;
@@ -212,13 +255,18 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                 <ScrollReveal key={idx} type="card" delay={idx * 100} duration={850}>
                                     <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface/60 overflow-hidden flex flex-col justify-between transition-all duration-500 hover:-translate-y-1.5 h-full shadow-lg">
                                         <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                            <img
+                                            <Image
                                                 src={item.image}
                                                 alt={item.title}
+                                                fill
+                                                sizes="(max-width: 1024px) 50vw, 25vw"
+                                                quality={88}
+                                                decoding="async"
+                                                loading="lazy"
                                                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                            <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform duration-300">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90 pointer-events-none" />
+                                            <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform duration-300 z-10">
                                                 <IconComponent className="w-5 h-5" />
                                             </div>
                                         </div>
@@ -242,6 +290,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
             {/* MOBILE 3D CARD DECK CAROUSEL LAYOUT (< md) - Pure Swipable 3D Deck */}
             <section
+                ref={sectionRef}
                 id="packages-mobile"
                 className="block md:hidden relative w-full bg-black py-10 overflow-x-clip"
             >
@@ -287,16 +336,19 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                         {/* Card Frame Content */}
                                         <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
                                             {/* Background Image */}
-                                            <img
+                                            <Image
                                                 src={item.image}
                                                 alt={item.title}
+                                                fill
+                                                sizes="(max-width: 768px) 310px, 25vw"
+                                                quality={85}
                                                 decoding="async"
                                                 loading="lazy"
                                                 className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-100"
                                             />
 
                                             {/* Light Bottom Vignette Gradient Overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
 
                                             {/* Top Bar: Icon Badge & Watermark Index */}
                                             <div className="relative z-10 p-5 xs:p-6 flex items-start justify-between">
@@ -347,3 +399,4 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         </>
     );
 }
+

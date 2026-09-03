@@ -2,8 +2,6 @@
 
 import Image from "next/image";
 import { Locale } from "@/i18n/config";
-import { ScrollReveal } from "@/components/motion/ScrollReveal";
-import { TextReveal } from "@/components/motion/TextReveal";
 
 interface IntroSectionProps {
     locale: Locale;
@@ -26,19 +24,19 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                             {messages.intro.badge}
                         </div>
 
-                        <TextReveal as="h2" className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight">
-                            <span>{messages.intro.title}</span>
-                        </TextReveal>
+                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight">
+                            {messages.intro.title}
+                        </h2>
 
-                        <ScrollReveal type="editorial" delay={150} duration={850} className="space-y-4 text-sm text-ftx-silver font-body leading-relaxed">
+                        <div className="space-y-4 text-sm text-ftx-silver font-body leading-relaxed">
                             <p>{messages.intro.p1}</p>
                             <p>{messages.intro.p2}</p>
-                        </ScrollReveal>
+                        </div>
                     </div>
 
                     {/* Image Grid with Overlapping Badge (Desktop-parity on Mobile) */}
                     <div className="order-2 lg:order-1 lg:col-span-5 relative w-full pr-4 pb-4 sm:pr-6 sm:pb-6">
-                        <div className="relative w-full aspect-[4/3] ftx-squircle-lg border border-ftx-surface-high shadow-2xl group overflow-hidden bg-ftx-obsidian">
+                        <div className="relative w-full aspect-[4/3] ftx-squircle-lg border border-ftx-surface-high shadow-2xl overflow-hidden bg-ftx-obsidian">
                             <Image
                                 src={messages.intro?.image || "/images/about/craftsmanship.jpg"}
                                 alt="FTX Precision Studio Craftsmanship"
@@ -47,26 +45,17 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                                 quality={92}
                                 decoding="async"
                                 loading="lazy"
-                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
+                                className="object-cover"
                             />
                         </div>
-                        <ScrollReveal
-                            type="horizontal"
-                            direction="right"
-                            delay={150}
-                            duration={850}
-                            once={false}
-                            className="absolute bottom-0 right-0 z-20"
-                        >
-                            <div className="w-40 sm:w-48 bg-ftx-surface/95 backdrop-blur-md border border-ftx-lime/40 ftx-squircle-sm p-3 sm:p-4 shadow-2xl">
-                                <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
-                                    {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
-                                </div>
-                                <div className="text-xs text-ftx-silver mt-1 font-body leading-tight">
-                                    {messages.intro?.badgeSub || "Climate-Controlled Studio Bays"}
-                                </div>
+                        <div className="absolute bottom-0 right-0 z-20 w-40 sm:w-48 bg-ftx-surface/95 backdrop-blur-md border border-ftx-lime/40 ftx-squircle-sm p-3 sm:p-4 shadow-2xl">
+                            <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
+                                {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
                             </div>
-                        </ScrollReveal>
+                            <div className="text-xs text-ftx-silver mt-1 font-body leading-tight">
+                                {messages.intro?.badgeSub || "Climate-Controlled Studio Bays"}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

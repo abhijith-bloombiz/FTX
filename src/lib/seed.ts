@@ -106,12 +106,12 @@ export async function seedDatabase() {
                 page: "home",
                 sectionKey: "services",
                 title: {
-                    en: "SURGICAL PROTECTION & DETAILING SERVICES",
-                    ar: "خدمات الحماية والتفصيل الدقيق الفائقة",
+                    en: "PROTECTION & DETAILING SERVICES",
+                    ar: "خدمات الحماية والتفصيل الدقيق",
                 },
                 subtitle: {
-                    en: "HIGH-FIDELITY AUTOMOTIVE DEFENSE",
-                    ar: "حماية عالية الدقة للهياكل الرياضية",
+                    en: "AUTOMOTIVE DEFENSE",
+                    ar: "حماية السيارات الفائقة",
                 },
                 content: {
                     en: "Explore our specialized services engineered to shield factory paint and enhance visual depth.",
@@ -184,12 +184,12 @@ export async function seedDatabase() {
                 page: "home",
                 sectionKey: "contact",
                 title: {
-                    en: "SCHEDULE YOUR CONSULTATION",
-                    ar: "احجز استشارتك الخاصة الآن",
+                    en: "BOOK CONSULTATION",
+                    ar: "حجز استشارة",
                 },
                 subtitle: {
-                    en: "EXPERIENCE UNYIELDING PRECISION",
-                    ar: "خض تجربة الدقة الفائقة معنا",
+                    en: "UNYIELDING PRECISION",
+                    ar: "دقة فائقة",
                 },
                 content: {
                     en: "Connect directly with our master technicians to discuss custom paint protection film or ceramic coating packages.",
@@ -320,10 +320,14 @@ export async function seedDatabase() {
             );
         }
 
-        // Force update testimonials subtitle if it contains old wording
+        // Force update contact and services section titles and subtitles to shorter versions
         await PageSection.updateOne(
-            { page: "home", sectionKey: "testimonials", "subtitle.en": /DUBAI'S DISCERNING/i },
-            { $set: { "subtitle.en": "TRUSTED BY DISCERNING AUTOMOTIVE ENTHUSIASTS", "subtitle.ar": "ثقة ملاك وعشاق السيارات الفاخرة" } }
+            { page: "home", sectionKey: "contact" },
+            { $set: { "title.en": "BOOK CONSULTATION", "title.ar": "حجز استشارة", "subtitle.en": "UNYIELDING PRECISION", "subtitle.ar": "دقة فائقة" } }
+        );
+        await PageSection.updateOne(
+            { page: "home", sectionKey: "services" },
+            { $set: { "title.en": "PROTECTION & DETAILING SERVICES", "title.ar": "خدمات الحماية والتفصيل الدقيق", "subtitle.en": "AUTOMOTIVE DEFENSE", "subtitle.ar": "حماية السيارات الفائقة" } }
         );
 
         console.log("Seeded Page Sections successfully!");

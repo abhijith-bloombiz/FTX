@@ -19,6 +19,48 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
     const touchStartX = useRef<number | null>(null);
     const touchEndX = useRef<number | null>(null);
 
+    const [isIdle, setIsIdle] = useState(true);
+    const sectionRef = useRef<HTMLElement>(null);
+    const [isInView, setIsInView] = useState(true);
+
+    // Viewport Awareness: Only run carousel when section is in view
+    useEffect(() => {
+        if (!sectionRef.current || typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsInView(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(sectionRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    // Scroll Detector: Pause carousel while scrolling, set idle state after 2.5s of no scroll
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        let scrollTimer: NodeJS.Timeout | null = null;
+
+        const handleScroll = () => {
+            setIsIdle(false);
+            if (scrollTimer) clearTimeout(scrollTimer);
+
+            scrollTimer = setTimeout(() => {
+                setIsIdle(true);
+            }, 2500);
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (scrollTimer) clearTimeout(scrollTimer);
+        };
+    }, []);
+
     const isRTL = locale === "ar";
 
     useEffect(() => {
@@ -59,16 +101,16 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
         setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
     }, [maxIndex]);
 
-    // Autoplay effect
+    // Autoplay effect (ONLY cycles when visible, idle, and not hovered/paused)
     useEffect(() => {
-        if (isPaused) return;
+        if (isPaused || !isInView || !isIdle) return;
 
         const interval = setInterval(() => {
             handleNext();
         }, 4500);
 
         return () => clearInterval(interval);
-    }, [isPaused, handleNext]);
+    }, [isPaused, isInView, isIdle, handleNext]);
 
     // Touch swipe handlers for mobile
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -96,7 +138,7 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
     };
 
     return (
-        <section className="py-10 sm:py-16 bg-black relative overflow-hidden">
+        <section ref={sectionRef} className="py-10 sm:py-16 bg-black relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Left Side) */}
             <div
                 className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
