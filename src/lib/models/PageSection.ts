@@ -15,6 +15,7 @@ export interface IPageSection extends Document {
         en: string;
         ar: string;
     };
+    isVisible?: boolean;
     metadata?: Record<string, any>;
     updatedAt: Date;
 }
@@ -35,6 +36,7 @@ const PageSectionSchema = new Schema<IPageSection>(
             en: { type: String, default: "" },
             ar: { type: String, default: "" },
         },
+        isVisible: { type: Boolean, default: true },
         metadata: { type: Schema.Types.Mixed, default: {} },
     },
     { timestamps: true }

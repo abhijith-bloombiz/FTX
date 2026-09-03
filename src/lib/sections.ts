@@ -202,6 +202,7 @@ export async function getSectionsForPage(page: string) {
         return {
             ...def,
             ...source,
+            isVisible: source.isVisible !== undefined ? Boolean(source.isVisible) : true,
             _id: source._id ? String(source._id) : undefined,
             title: { ...def.title, ...(source.title || {}) },
             subtitle: { ...def.subtitle, ...(source.subtitle || {}) },

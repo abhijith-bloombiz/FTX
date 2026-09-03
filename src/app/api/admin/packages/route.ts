@@ -46,13 +46,19 @@ export async function POST(req: NextRequest) {
 
         body = await req.json();
 
+        const cleanBody = { ...body };
+        if (!cleanBody._id || cleanBody._id === "") delete cleanBody._id;
+        if (!cleanBody.packageId) cleanBody.packageId = `pkg-${Date.now()}`;
+
         try {
             await connectToDatabase();
-            const pkg = await PackageItemModel.create(body);
+            const pkg = await PackageItemModel.create(cleanBody);
             return NextResponse.json({ success: true, package: pkg }, { status: 201 });
         } catch (dbErr: any) {
-            console.warn("DB connection offline during POST /api/admin/packages, applying fallback response.");
-            return NextResponse.json({ success: true, package: body, fallback: true }, { status: 201 });
+            console.warn("DB connection error/offline during POST /api/admin/packages, updating fallback memory:", dbErr.message);
+            const fallbackItem = { ...cleanBody, id: cleanBody.packageId, _id: cleanBody.packageId };
+            packagesData.push(fallbackItem as any);
+            return NextResponse.json({ success: true, package: fallbackItem, fallback: true }, { status: 201 });
         }
     } catch (error: any) {
         return NextResponse.json({ error: error.message || "Failed to create package" }, { status: 500 });

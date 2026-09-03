@@ -33,13 +33,44 @@ export async function POST(req: NextRequest) {
 
         body = await req.json();
 
+        // Sanitize body to avoid CastErrors on empty _id
+        const cleanBody = { ...body };
+        if (!cleanBody._id || cleanBody._id === "") delete cleanBody._id;
+
+        if (!cleanBody.serviceId) {
+            cleanBody.serviceId = `service-${Date.now()}`;
+        }
+        if (!cleanBody.number) {
+            cleanBody.number = "04";
+        }
+        if (!cleanBody.image) {
+            cleanBody.image = "/images/services/ppf-main.png";
+        }
+
         try {
             await connectToDatabase();
-            const service = await ServiceItemModel.create(body);
+            const service = await ServiceItemModel.create(cleanBody);
+
+            const plainService = service.toObject ? service.toObject() : service;
+            const fallbackItem = { ...plainService, id: plainService.serviceId };
+            const existingIdx = servicesData.findIndex((s: any) => s.id === fallbackItem.id || (s as any).serviceId === fallbackItem.id);
+            if (existingIdx !== -1) {
+                servicesData[existingIdx] = fallbackItem as any;
+            } else {
+                servicesData.push(fallbackItem as any);
+            }
+
             return NextResponse.json({ success: true, service }, { status: 201 });
         } catch (dbErr: any) {
-            console.warn("DB connection offline during POST /api/admin/services, applying fallback response.");
-            return NextResponse.json({ success: true, service: body, fallback: true }, { status: 201 });
+            const isConnErr = dbErr?.message?.includes("ECONNREFUSED") || dbErr?.name === "MongooseServerSelectionError" || dbErr?.name === "MongooseError" || dbErr?.message?.includes("connect") || dbErr?.message?.includes("timed out");
+            if (isConnErr) {
+                console.warn("DB connection offline during POST /api/admin/services, updating fallback memory:", dbErr.message);
+                const fallbackItem = { ...cleanBody, id: cleanBody.serviceId, _id: cleanBody.serviceId };
+                servicesData.push(fallbackItem as any);
+                return NextResponse.json({ success: true, service: fallbackItem, fallback: true }, { status: 201 });
+            }
+            console.error("Mongoose Service Creation Error:", dbErr);
+            return NextResponse.json({ error: dbErr.message || "Failed to save service item to database" }, { status: 500 });
         }
     } catch (error: any) {
         console.error("Create Service Error:", error);
@@ -85,10 +116,30 @@ export async function PUT(req: NextRequest) {
                 });
             }
 
+            if (updated) {
+                const plainUpdated = updated.toObject ? updated.toObject() : updated;
+                const fallbackItem = { ...plainUpdated, id: plainUpdated.serviceId };
+                const idx = servicesData.findIndex((s) => s.id === targetId || (s as any).serviceId === targetId);
+                if (idx !== -1) {
+                    servicesData[idx] = fallbackItem as any;
+                } else {
+                    servicesData.push(fallbackItem as any);
+                }
+            }
+
             return NextResponse.json({ success: true, service: updated });
         } catch (dbErr: any) {
-            console.warn("DB connection offline during PUT /api/admin/services, applying fallback response.");
-            return NextResponse.json({ success: true, service: { ...body, serviceId: targetId }, fallback: true });
+            const isConnErr = dbErr?.message?.includes("ECONNREFUSED") || dbErr?.name === "MongooseServerSelectionError" || dbErr?.name === "MongooseError" || dbErr?.message?.includes("connect") || dbErr?.message?.includes("timed out");
+            if (isConnErr) {
+                console.warn("DB connection offline during PUT /api/admin/services, applying fallback response.");
+                const idx = servicesData.findIndex((s) => s.id === targetId || (s as any).serviceId === targetId);
+                if (idx !== -1) {
+                    servicesData[idx] = { ...servicesData[idx], ...updateData };
+                }
+                return NextResponse.json({ success: true, service: { ...body, serviceId: targetId }, fallback: true });
+            }
+            console.error("Mongoose Service Update Error:", dbErr);
+            return NextResponse.json({ error: dbErr.message || "Failed to update service item in database" }, { status: 500 });
         }
     } catch (error: any) {
         console.error("Update Service Error:", error);

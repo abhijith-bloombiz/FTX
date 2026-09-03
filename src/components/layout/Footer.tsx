@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -17,10 +18,51 @@ interface FooterProps {
 
 export function Footer({ locale, messages }: FooterProps) {
     const pathname = usePathname();
+    const isAr = locale === "ar";
+    const [contactData, setContactData] = useState({
+        phone: contactConfig.phone,
+        email: contactConfig.email,
+        address: contactConfig.address[locale],
+        workingHours: contactConfig.workingHours[locale],
+        social: contactConfig.social,
+    });
+
+    useEffect(() => {
+        fetch("/api/admin/sections")
+            .then((res) => res.json())
+            .then((data) => {
+                const contactSec = data.sections?.find((s: any) => s.page === "contact");
+                if (contactSec?.metadata) {
+                    const meta = contactSec.metadata;
+                    const addr = isAr
+                        ? (meta.addressAr || meta.address?.ar || contactConfig.address[locale])
+                        : (meta.addressEn || meta.address?.en || contactConfig.address[locale]);
+
+                    const hours = isAr
+                        ? (meta.workingHoursAr || meta.workingHours?.ar || contactConfig.workingHours[locale])
+                        : (meta.workingHoursEn || meta.workingHours?.en || contactConfig.workingHours[locale]);
+
+                    setContactData({
+                        phone: meta.phone || contactConfig.phone,
+                        email: meta.email || contactConfig.email,
+                        address: addr,
+                        workingHours: hours,
+                        social: {
+                            ...contactConfig.social,
+                            ...(meta.social || {}),
+                        },
+                    });
+                }
+            })
+            .catch(() => { });
+    }, [locale, isAr]);
 
     if (pathname?.includes("/admin")) {
         return null;
     }
+
+    const phoneRaw = contactData.phone.replace(/\s+/g, "");
+
     return (
         <footer className="relative bg-black text-ftx-silver border-t border-ftx-surface-high overflow-hidden">
             {/* Background Honeycomb Texture */}
@@ -49,33 +91,39 @@ export function Footer({ locale, messages }: FooterProps) {
 
                             {/* Social Media Links with FTX Squircle Custom Border Radius */}
                             <div className="flex items-center gap-3 pt-2">
-                                <a
-                                    href={contactConfig.social.instagram}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
-                                    aria-label="Instagram"
-                                >
-                                    <Instagram className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-12" />
-                                </a>
-                                <a
-                                    href={contactConfig.social.youtube}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
-                                    aria-label="YouTube"
-                                >
-                                    <Youtube className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:-rotate-6" />
-                                </a>
-                                <a
-                                    href={contactConfig.social.facebook}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
-                                    aria-label="Facebook"
-                                >
-                                    <Facebook className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-6" />
-                                </a>
+                                {contactData.social.instagram && (
+                                    <a
+                                        href={contactData.social.instagram}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
+                                        aria-label="Instagram"
+                                    >
+                                        <Instagram className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-12" />
+                                    </a>
+                                )}
+                                {contactData.social.youtube && (
+                                    <a
+                                        href={contactData.social.youtube}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
+                                        aria-label="YouTube"
+                                    >
+                                        <Youtube className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:-rotate-6" />
+                                    </a>
+                                )}
+                                {contactData.social.facebook && (
+                                    <a
+                                        href={contactData.social.facebook}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2.5 text-ftx-silver hover:text-ftx-black bg-ftx-surface hover:bg-ftx-lime border border-ftx-surface-high hover:border-ftx-lime ftx-squircle-sm transition-all duration-300 group hover:shadow-[0_0_20px_rgba(164,214,94,0.45)] relative overflow-hidden ftx-btn-specular"
+                                        aria-label="Facebook"
+                                    >
+                                        <Facebook className="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-125 group-hover:rotate-6" />
+                                    </a>
+                                )}
                             </div>
                         </div>
                     </ScrollReveal>
@@ -142,23 +190,23 @@ export function Footer({ locale, messages }: FooterProps) {
                             <ul className="space-y-3 text-xs text-ftx-silver font-body">
                                 <li className="flex items-start gap-2.5">
                                     <MapPin className="w-4 h-4 text-ftx-lime shrink-0 mt-0.5" />
-                                    <span>{contactConfig.address[locale]}</span>
+                                    <span>{contactData.address}</span>
                                 </li>
                                 <li className="flex items-center gap-2.5">
                                     <Phone className="w-4 h-4 text-ftx-lime shrink-0" />
-                                    <a href={`tel:${contactConfig.phoneRaw}`} className="font-mono hover:text-white transition-colors">
-                                        {contactConfig.phone}
+                                    <a href={`tel:${phoneRaw}`} className="font-mono hover:text-white transition-colors">
+                                        {contactData.phone}
                                     </a>
                                 </li>
                                 <li className="flex items-center gap-2.5">
                                     <Mail className="w-4 h-4 text-ftx-lime shrink-0" />
-                                    <a href={`mailto:${contactConfig.email}`} className="font-mono hover:text-white transition-colors">
-                                        {contactConfig.email}
+                                    <a href={`mailto:${contactData.email}`} className="font-mono hover:text-white transition-colors">
+                                        {contactData.email}
                                     </a>
                                 </li>
                                 <li className="flex items-start gap-2.5">
                                     <Clock className="w-4 h-4 text-ftx-lime shrink-0 mt-0.5" />
-                                    <span>{contactConfig.workingHours[locale]}</span>
+                                    <span>{contactData.workingHours}</span>
                                 </li>
                             </ul>
                         </div>

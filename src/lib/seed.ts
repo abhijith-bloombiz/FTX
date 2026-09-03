@@ -308,6 +308,11 @@ export async function seedDatabase() {
                     addressAr: "منطقة القوز الصناعية 3، شارع 8، دبي، الإمارات العربية المتحدة",
                     workingHoursEn: "Mon - Sat: 9:00 AM - 8:00 PM (Sun: Closed)",
                     workingHoursAr: "الإثنين - السبت: 9:00 صباحاً - 8:00 مساءً (الأحد: مغلق)",
+                    social: {
+                        instagram: "https://instagram.com/ftxdetailing",
+                        youtube: "https://youtube.com/@ftxdetailing",
+                        facebook: "https://facebook.com/ftxdetailing",
+                    },
                 },
             },
         ];

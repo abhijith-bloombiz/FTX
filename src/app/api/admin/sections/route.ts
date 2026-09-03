@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { page, sectionKey, title, subtitle, content, metadata } = body;
+        const { page, sectionKey, title, subtitle, content, metadata, isVisible } = body;
 
         if (!page || !sectionKey) {
             return NextResponse.json({ error: "Page and sectionKey are required" }, { status: 400 });
@@ -40,6 +40,7 @@ export async function PUT(req: NextRequest) {
         if (subtitle !== undefined) updateData.subtitle = subtitle;
         if (content !== undefined) updateData.content = content;
         if (metadata !== undefined) updateData.metadata = metadata;
+        if (isVisible !== undefined) updateData.isVisible = isVisible;
 
         let section: any = null;
         let connected = false;

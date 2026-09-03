@@ -12,21 +12,51 @@ import { getFormWhatsAppUrl } from "@/lib/whatsapp";
 interface ContactFormProps {
     locale: Locale;
     messages: any;
+    initialServices?: any[];
 }
 
-const serviceOptions = [
-    { value: "", label: "Select detailing service" },
-    { value: "ppf", label: "Paint Protection Film (PPF)" },
-    { value: "ceramic", label: "Ceramic Coating" },
-    { value: "detailing", label: "Professional Detailing" },
-];
+export function ContactForm({ locale, messages, initialServices }: ContactFormProps) {
+    const [servicesList, setServicesList] = useState<any[]>(initialServices || []);
 
-export function ContactForm({ locale, messages }: ContactFormProps) {
+    useEffect(() => {
+        const fetchCmsServices = async () => {
+            try {
+                const res = await fetch("/api/admin/services");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.services && Array.isArray(data.services) && data.services.length > 0) {
+                        setServicesList(data.services);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch CMS services for contact form:", err);
+            }
+        };
+
+        if (!initialServices || initialServices.length === 0) {
+            fetchCmsServices();
+        }
+    }, [initialServices]);
+
     const serviceOptions = [
         { value: "", label: messages.contact?.selectService || "Select detailing service" },
-        { value: "ppf", label: messages.contact?.ppf || "Paint Protection Film (PPF)" },
-        { value: "ceramic", label: messages.contact?.ceramic || "Ceramic Coating" },
-        { value: "detailing", label: messages.contact?.detailing || "Professional Detailing" },
+        ...(servicesList.length > 0
+            ? servicesList.map((s: any) => {
+                const val = s.serviceId || s.id || s._id;
+                let label = val;
+                if (typeof s.title === "object" && s.title !== null) {
+                    label = s.title[locale] || s.title.en || s.title.ar || val;
+                } else if (typeof s.title === "string" && s.title.trim() !== "") {
+                    label = s.title;
+                }
+                return { value: val, label };
+            })
+            : [
+                { value: "ppf", label: messages.contact?.ppf || "Paint Protection Film (PPF)" },
+                { value: "ceramic", label: messages.contact?.ceramic || "Ceramic Coating" },
+                { value: "detailing", label: messages.contact?.detailing || "Professional Detailing" },
+            ]
+        )
     ];
 
     const searchParams = useSearchParams();
@@ -88,6 +118,22 @@ export function ContactForm({ locale, messages }: ContactFormProps) {
     const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
     const [responseMsg, setResponseMsg] = useState("");
     const [cmsPhone, setCmsPhone] = useState<string>("");
+
+    useEffect(() => {
+        const sParam = searchParams.get("service");
+        const pParam = searchParams.get("package");
+        if (sParam !== null || pParam !== null) {
+            let matchedService = sParam || "";
+            if (matchedService === "paint-protection-film") matchedService = "ppf";
+            if (matchedService === "ceramic-coating") matchedService = "ceramic";
+
+            setFormData((prev) => ({
+                ...prev,
+                service: matchedService || prev.service,
+                package: pParam !== null ? pParam : prev.package,
+            }));
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchCmsPhone = async () => {

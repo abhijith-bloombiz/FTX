@@ -104,190 +104,198 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
             />
 
             {/* Studio Philosophy & Craftsmanship */}
-            <section className="py-10 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                    <ScrollReveal type="editorial" className="lg:col-span-6 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-ftx-surface border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime uppercase rounded">
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>{philosophyBadge}</span>
-                        </div>
-
-                        <h2 className="text-3xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight">
-                            {philosophyTitle}
-                        </h2>
-
-                        <div className="space-y-4 text-xs sm:text-sm text-ftx-silver font-body leading-relaxed">
-                            <p>{philosophyContent}</p>
-                            <p>{messages.intro?.p2}</p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 pt-4">
-                            <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
-                                <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
-                                    <AnimatedCounter target={stat1Val} suffix={stat1Suffix} />
-                                </div>
-                                <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
-                                    {stat1Label}
-                                </div>
+            {philosophySec?.isVisible !== false && (
+                <section className="py-10 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                        <ScrollReveal type="editorial" className="lg:col-span-6 space-y-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-ftx-surface border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime uppercase rounded">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <span>{philosophyBadge}</span>
                             </div>
-                            <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
-                                <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
-                                    <AnimatedCounter target={stat2Val} suffix={stat2Suffix} />
-                                </div>
-                                <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
-                                    {stat2Label}
-                                </div>
-                            </div>
-                        </div>
-                    </ScrollReveal>
 
-                    <ScrollReveal type="image-mask" delay={150} className="lg:col-span-6 relative">
-                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-ftx-surface-high shadow-2xl">
-                            <Image
-                                src={philosophyImage}
-                                alt="FTX Studio Master Technicians"
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                    </ScrollReveal>
-                </div>
-            </section>
+                            <h2 className="text-3xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight">
+                                {philosophyTitle}
+                            </h2>
+
+                            <div className="space-y-4 text-xs sm:text-sm text-ftx-silver font-body leading-relaxed">
+                                <p>{philosophyContent}</p>
+                                <p>{messages.intro?.p2}</p>
+                            </div>
+
+                            {(philosophySec?.metadata?.showStatCards !== false) && (
+                                <div className="grid grid-cols-2 gap-4 pt-4">
+                                    <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
+                                        <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
+                                            <AnimatedCounter target={stat1Val} suffix={stat1Suffix} />
+                                        </div>
+                                        <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
+                                            {stat1Label}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-ftx-surface border border-ftx-surface-high ftx-squircle-md">
+                                        <div className="text-2xl sm:text-3xl font-mono font-black text-ftx-lime">
+                                            <AnimatedCounter target={stat2Val} suffix={stat2Suffix} />
+                                        </div>
+                                        <div className="text-[10px] font-mono text-ftx-silver uppercase mt-1">
+                                            {stat2Label}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </ScrollReveal>
+
+                        <ScrollReveal type="image-mask" delay={150} className="lg:col-span-6 relative">
+                            <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-ftx-surface-high shadow-2xl">
+                                <Image
+                                    src={philosophyImage}
+                                    alt="FTX Studio Master Technicians"
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                        </ScrollReveal>
+                    </div>
+                </section>
+            )}
 
             {/* Facilities & Equipment Highlights */}
-            <section className="py-6 sm:py-8 bg-black relative overflow-hidden">
-                {/* Atmospheric Lime Ambient Glow (Bottom Left) */}
-                <div
-                    className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
-                    style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
-                />
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <ScrollReveal type="editorial" className="text-left rtl:text-right mb-6 sm:mb-8">
-                        <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                            {infraBadge}
-                        </span>
-                        <h2 className="text-2xl sm:text-3xl font-heading font-black text-white uppercase mt-1">
-                            {infraTitle}
-                        </h2>
-                    </ScrollReveal>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <ScrollReveal type="editorial" delay={100}>
-                            <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
-                                <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                    <Image
-                                        src={infraCard1Image}
-                                        alt="Surgical Plotter Cutting"
-                                        fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                    <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
-                                        <Wrench className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                        {infraCard1Title}
-                                    </h3>
-                                    <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        {infraCard1Desc}
-                                    </p>
-                                </div>
-                            </div>
+            {infraSec?.isVisible !== false && (
+                <section className="py-6 sm:py-8 bg-black relative overflow-hidden">
+                    {/* Atmospheric Lime Ambient Glow (Bottom Left) */}
+                    <div
+                        className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                        style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                    />
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        <ScrollReveal type="editorial" className="text-left rtl:text-right mb-6 sm:mb-8">
+                            <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                {infraBadge}
+                            </span>
+                            <h2 className="text-2xl sm:text-3xl font-heading font-black text-white uppercase mt-1">
+                                {infraTitle}
+                            </h2>
                         </ScrollReveal>
 
-                        <ScrollReveal type="editorial" delay={200}>
-                            <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
-                                <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                    <Image
-                                        src={infraCard2Image}
-                                        alt="HEPA Filtered Air"
-                                        fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                    <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
-                                        <ShieldCheck className="w-5 h-5" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <ScrollReveal type="editorial" delay={100}>
+                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
+                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
+                                        <Image
+                                            src={infraCard1Image}
+                                            alt="Surgical Plotter Cutting"
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
+                                        <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
+                                            <Wrench className="w-5 h-5" />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
+                                        <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                            {infraCard1Title}
+                                        </h3>
+                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                            {infraCard1Desc}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                        {infraCard2Title}
-                                    </h3>
-                                    <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        {infraCard2Desc}
-                                    </p>
-                                </div>
-                            </div>
-                        </ScrollReveal>
+                            </ScrollReveal>
 
-                        <ScrollReveal type="editorial" delay={300}>
-                            <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
-                                <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                    <Image
-                                        src={infraCard3Image}
-                                        alt="Curing Infrared Lamps"
-                                        fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                    <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
-                                        <Award className="w-5 h-5" />
+                            <ScrollReveal type="editorial" delay={200}>
+                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
+                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
+                                        <Image
+                                            src={infraCard2Image}
+                                            alt="HEPA Filtered Air"
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
+                                        <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
+                                            <ShieldCheck className="w-5 h-5" />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
+                                        <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                            {infraCard2Title}
+                                        </h3>
+                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                            {infraCard2Desc}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                    <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                        {infraCard3Title}
-                                    </h3>
-                                    <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                        {infraCard3Desc}
-                                    </p>
+                            </ScrollReveal>
+
+                            <ScrollReveal type="editorial" delay={300}>
+                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
+                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
+                                        <Image
+                                            src={infraCard3Image}
+                                            alt="Curing Infrared Lamps"
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
+                                        <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
+                                            <Award className="w-5 h-5" />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
+                                        <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                            {infraCard3Title}
+                                        </h3>
+                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                            {infraCard3Desc}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        </ScrollReveal>
+                            </ScrollReveal>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* Bottom Metrics Banner matching design specification with animated counters */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12">
-                <ScrollReveal type="editorial" delay={100}>
-                    <div className="bg-ftx-surface/80 ftx-squircle-xl p-8 sm:p-12 border border-ftx-surface-high shadow-2xl">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                            {/* Metric 1 */}
-                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
-                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={metric1Val} suffix={metric1Suffix} />
+            {metricsSec?.isVisible !== false && (metricsSec?.metadata?.showMetricsCards !== false) && (
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12">
+                    <ScrollReveal type="editorial" delay={100}>
+                        <div className="bg-ftx-surface/80 ftx-squircle-xl p-8 sm:p-12 border border-ftx-surface-high shadow-2xl">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                                {/* Metric 1 */}
+                                <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
+                                    <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
+                                        <AnimatedCounter target={metric1Val} suffix={metric1Suffix} />
+                                    </div>
+                                    <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                        {metric1Label}
+                                    </div>
                                 </div>
-                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {metric1Label}
-                                </div>
-                            </div>
 
-                            {/* Metric 2 */}
-                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
-                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={metric2Val} suffix={metric2Suffix} />
+                                {/* Metric 2 */}
+                                <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
+                                    <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
+                                        <AnimatedCounter target={metric2Val} suffix={metric2Suffix} />
+                                    </div>
+                                    <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                        {metric2Label}
+                                    </div>
                                 </div>
-                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {metric2Label}
-                                </div>
-                            </div>
 
-                            {/* Metric 3 */}
-                            <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
-                                <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
-                                    <AnimatedCounter target={metric3Val} suffix={metric3Suffix} />
-                                </div>
-                                <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                    {metric3Label}
+                                {/* Metric 3 */}
+                                <div className="border-l-2 border-ftx-lime pl-5 sm:pl-6 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-5 rtl:pr-6 space-y-1">
+                                    <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-white tracking-tight">
+                                        <AnimatedCounter target={metric3Val} suffix={metric3Suffix} />
+                                    </div>
+                                    <div className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-widest">
+                                        {metric3Label}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </ScrollReveal>
-            </section>
+                    </ScrollReveal>
+                </section>
+            )}
 
             {/* Book Visit Banner */}
             <section className="py-10 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

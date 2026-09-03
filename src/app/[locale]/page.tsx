@@ -130,6 +130,12 @@ export async function generateMetadata({ params: { locale } }: HomePageProps) {
 export default async function HomePage({ params: { locale } }: HomePageProps) {
     const messages = await getDynamicMessages(locale);
     const services = await getCmsServices();
+    const homeSections = await getSectionsForPage("home");
+
+    const isVisible = (key: string) => {
+        const sec = homeSections?.find((s: any) => s.sectionKey === key);
+        return sec ? sec.isVisible !== false : true;
+    };
 
     const jsonLd = {
         "@context": "https://schema.org",
@@ -197,47 +203,49 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
             {/* 1. Cinematic Hero */}
-            <HeroSection locale={locale} messages={messages} />
+            {isVisible("hero") && <HeroSection locale={locale} messages={messages} />}
 
             {/* 2. Editorial Philosophy Intro (About) */}
-            <IntroSection locale={locale} messages={messages} />
+            {isVisible("intro") && <IntroSection locale={locale} messages={messages} />}
 
             {/* 3. Core Services Grid (Services) */}
-            <ServicesGrid locale={locale} messages={messages} services={services} />
+            {isVisible("services") && <ServicesGrid locale={locale} messages={messages} services={services} />}
 
             {/* 4. Why FTX 4-Pillars (Packages) */}
-            <WhyFTX locale={locale} messages={messages} />
+            {isVisible("why_ftx") && <WhyFTX locale={locale} messages={messages} />}
 
             {/* 5. Interactive Before/After & Gallery Showcase (Our Work) */}
-            <FeaturedWork locale={locale} messages={messages} />
+            {isVisible("gallery") && <FeaturedWork locale={locale} messages={messages} />}
 
             {/* 6. Client Testimonials */}
-            <Testimonials locale={locale} messages={messages} />
+            {isVisible("testimonials") && <Testimonials locale={locale} messages={messages} />}
 
             {/* 7. Book a Studio Visit / Quick Quote (Contacts) */}
-            <section id="contact" className="py-10 sm:py-12 bg-black relative overflow-hidden">
-                {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
-                <div
-                    className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
-                    style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
-                />
+            {isVisible("contact") && (
+                <section id="contact" className="py-10 sm:py-12 bg-black relative overflow-hidden">
+                    {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
+                    <div
+                        className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                        style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                    />
 
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    {/* Header with Title */}
-                    <div className="mb-8 sm:mb-10 text-left max-w-3xl space-y-3">
-                        <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
-                            <span>{messages.contact?.heroSub || (locale === "ar" ? "دقة فائقة" : "UNYIELDING PRECISION")}</span>
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        {/* Header with Title */}
+                        <div className="mb-8 sm:mb-10 text-left max-w-3xl space-y-3">
+                            <div className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-ftx-lime uppercase">
+                                <span>{messages.contact?.heroSub || (locale === "ar" ? "دقة فائقة" : "UNYIELDING PRECISION")}</span>
+                            </div>
+                            <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
+                                <span>{messages.contact?.heroTitle || (locale === "ar" ? "حجز استشارة" : "BOOK CONSULTATION")}</span>
+                            </TextReveal>
                         </div>
-                        <TextReveal as="h2" className="text-3xl sm:text-5xl font-heading font-black text-white uppercase tracking-tight leading-tight sm:leading-[0.95]">
-                            <span>{messages.contact?.heroTitle || (locale === "ar" ? "حجز استشارة" : "BOOK CONSULTATION")}</span>
-                        </TextReveal>
-                    </div>
 
-                    <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
-                        <ContactForm locale={locale} messages={messages} />
-                    </Suspense>
-                </div>
-            </section>
+                        <Suspense fallback={<div className="p-8 text-center font-mono text-xs text-ftx-silver">Loading Form...</div>}>
+                            <ContactForm locale={locale} messages={messages} initialServices={services} />
+                        </Suspense>
+                    </div>
+                </section>
+            )}
         </>
     );
 }

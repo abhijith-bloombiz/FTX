@@ -8,7 +8,7 @@ import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 
-import { getCmsPageSection } from "@/lib/cms";
+import { getCmsPageSection, getCmsServices } from "@/lib/cms";
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -38,6 +38,7 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
 export default async function ContactPage({ params: { locale } }: ContactPageProps) {
     const messages = await getMessages(locale);
     const contactSection = await getCmsPageSection("contact", "info");
+    const services = await getCmsServices();
 
     const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "تواصل معنا" : "CONTACT US");
     const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.";
@@ -157,7 +158,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
                     {/* Right Column: Contact & Quotation Form */}
                     <div className="lg:col-span-7">
                         <Suspense fallback={<div className="p-8 text-center text-xs font-mono text-ftx-silver">Loading Form...</div>}>
-                            <ContactForm locale={locale} messages={messages} />
+                            <ContactForm locale={locale} messages={messages} initialServices={services} />
                         </Suspense>
                     </div>
                 </div>

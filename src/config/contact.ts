@@ -16,6 +16,5 @@ export const contactConfig = {
         instagram: "https://instagram.com/ftxdetailing",
         youtube: "https://youtube.com/@ftxdetailing",
         facebook: "https://facebook.com/ftxdetailing",
-        tiktok: "https://tiktok.com/@ftxdetailing",
     },
 };

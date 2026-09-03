@@ -18,10 +18,15 @@ export async function getCmsServices() {
         const services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
         if (services && services.length > 0) {
             const plainServices = JSON.parse(JSON.stringify(services));
-            return plainServices.map((s: any) => ({
+            const mapped = plainServices.map((s: any) => ({
                 ...s,
                 id: s.serviceId || s._id,
             }));
+            return mapped.sort((a: any, b: any) => {
+                const numA = parseInt(a.number || "99", 10);
+                const numB = parseInt(b.number || "99", 10);
+                return numA - numB;
+            });
         }
     } catch (e) {
         console.error("getCmsServices error:", e);

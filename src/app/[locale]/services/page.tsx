@@ -148,23 +148,20 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                                             </p>
                                         </div>
 
-                                        {/* 2-Column Feature Highlight Cards */}
+                                        {/* Compact Feature Highlight Cards */}
                                         {service.highlights && service.highlights.length > 0 && (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                                                 {service.highlights.map((item: any, hIdx: number) => (
                                                     <div
                                                         key={hIdx}
-                                                        className="bg-ftx-surface/90 hover:bg-ftx-surface ftx-squircle-md p-5 border border-ftx-surface-high space-y-2.5 transition-colors duration-200"
+                                                        className="bg-ftx-surface/90 hover:bg-ftx-surface ftx-squircle-md p-3.5 border border-ftx-surface-high space-y-2 transition-colors duration-200"
                                                     >
-                                                        <div className="p-2 rounded bg-ftx-lime/10 w-fit">
+                                                        <div className="p-1.5 rounded bg-ftx-lime/10 w-fit">
                                                             {getHighlightIcon(item.icon)}
                                                         </div>
-                                                        <h3 className="text-sm font-heading font-bold text-white uppercase tracking-wide">
-                                                            {item.title[locale]}
+                                                        <h3 className="text-xs sm:text-sm font-heading font-bold text-white uppercase tracking-wide leading-tight">
+                                                            {typeof item.title === "object" ? item.title[locale] || item.title.en : item.title}
                                                         </h3>
-                                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                                            {item.description[locale]}
-                                                        </p>
                                                     </div>
                                                 ))}
                                             </div>

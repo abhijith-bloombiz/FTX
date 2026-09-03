@@ -12,7 +12,8 @@ interface PackageCardProps {
 export function PackageCard({ packageData, locale, ctaText }: PackageCardProps) {
     const { id, category, name, description, price, popular, features, badge } = packageData;
 
-    const quoteHref = `/${locale}/contact?service=${category}&package=${id}`;
+    const packageNameStr = typeof name === "object" ? (name[locale] || name.en || name.ar || "") : (name || "");
+    const quoteHref = `/${locale}/contact?service=${encodeURIComponent(category || "")}&package=${encodeURIComponent(packageNameStr || id || "")}`;
 
     const badgeText = badge
         ? (typeof badge === "string" ? badge : badge[locale] || badge.en || "")

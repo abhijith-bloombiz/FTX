@@ -24,23 +24,23 @@ export interface IServiceItem extends Document {
 
 const ServiceItemSchema = new Schema<IServiceItem>(
     {
-        serviceId: { type: String, required: true, unique: true },
-        number: { type: String, required: true },
+        serviceId: { type: String, required: true },
+        number: { type: String, default: "01" },
         badge: {
-            en: { type: String, required: true },
-            ar: { type: String, required: true },
+            en: { type: String, default: "SERVICE" },
+            ar: { type: String, default: "خدمة" },
         },
         title: {
-            en: { type: String, required: true },
-            ar: { type: String, required: true },
+            en: { type: String, default: "NEW SERVICE" },
+            ar: { type: String, default: "خدمة جديدة" },
         },
         subtitle: {
-            en: { type: String, required: true },
-            ar: { type: String, required: true },
+            en: { type: String, default: "" },
+            ar: { type: String, default: "" },
         },
         description: {
-            en: { type: String, required: true },
-            ar: { type: String, required: true },
+            en: { type: String, default: "" },
+            ar: { type: String, default: "" },
         },
         benefits: {
             en: [{ type: String }],
@@ -49,18 +49,18 @@ const ServiceItemSchema = new Schema<IServiceItem>(
         highlights: [
             {
                 icon: { type: String, default: "shield" },
-                title: { en: { type: String }, ar: { type: String } },
-                description: { en: { type: String }, ar: { type: String } },
+                title: { en: { type: String, default: "" }, ar: { type: String, default: "" } },
+                description: { en: { type: String, default: "" }, ar: { type: String, default: "" } },
             },
         ],
         process: [
             {
-                number: { type: String },
-                title: { en: { type: String }, ar: { type: String } },
-                description: { en: { type: String }, ar: { type: String } },
+                number: { type: String, default: "01" },
+                title: { en: { type: String, default: "" }, ar: { type: String, default: "" } },
+                description: { en: { type: String, default: "" }, ar: { type: String, default: "" } },
             },
         ],
-        image: { type: String, required: true },
+        image: { type: String, default: "/images/services/ppf-main.png" },
         detailImages: [{ type: String }],
     },
     { timestamps: true }
