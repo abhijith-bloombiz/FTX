@@ -104,7 +104,7 @@ export function GalleryFilter({
     };
 
     return (
-        <div className="pt-1 sm:pt-2 pb-4 border-b border-ftx-surface-high/50 mb-8 space-y-4">
+        <div className="py-4 sm:pt-2 sm:pb-4 border-b border-ftx-surface-high/50 mb-8 space-y-4">
             {/* Mobile Controls Row (sm:hidden): Category Filter FIRST, Media Format SECOND */}
             <div className="flex sm:hidden items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
