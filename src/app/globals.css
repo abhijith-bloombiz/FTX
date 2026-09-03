@@ -602,6 +602,23 @@ html[dir="rtl"] {
   animation: ftxIconSeq3 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Arrow Button Continuous Auto Nudge Animation */
+@keyframes ftxArrowNudge {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(3px, -3px);
+  }
+}
+
+.animate-arrow-nudge {
+  animation: ftxArrowNudge 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 /* Mouse Hover Override: Pause auto animation and force icon color to black on card hover */
 .group:hover.animate-icon-seq-1 svg,
 .group:hover.animate-icon-seq-2 svg,

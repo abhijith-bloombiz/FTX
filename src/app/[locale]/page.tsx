@@ -131,8 +131,71 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
     const messages = await getDynamicMessages(locale);
     const services = await getCmsServices();
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "AutomotiveBusiness",
+        "name": "FTX – FIRST TORQUE X",
+        "image": "https://ftx.ae/images/gallery/ppf-studio-hero.jpg",
+        "@id": "https://ftx.ae",
+        "url": `https://ftx.ae/${locale}`,
+        "telephone": "+971500000000",
+        "priceRange": "$$$$",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Al Quoz Industrial Area 3",
+            "addressLocality": "Dubai",
+            "addressRegion": "Dubai",
+            "addressCountry": "AE",
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 25.1328,
+            "longitude": 55.2289,
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "09:00",
+            "closes": "20:00",
+        },
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Automotive Protection & Detailing Services",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Paint Protection Film (PPF)",
+                        "description": "Ultra-clear self-healing thermoplastic protection against stone chips, scratches, and road debris."
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "9H+ Ceramic Coating",
+                        "description": "Permanent hydrophobic nano-ceramic shield for extreme optical gloss and UV defense."
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Surgical Car Detailing",
+                        "description": "Multi-stage paint correction, interior leather restoration, and engine bay detailing."
+                    }
+                }
+            ]
+        }
+    };
+
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* 1. Cinematic Hero */}
             <HeroSection locale={locale} messages={messages} />
 

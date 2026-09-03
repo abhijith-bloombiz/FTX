@@ -113,7 +113,7 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                 </div>
 
                                 <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-ftx-lime flex items-center justify-center text-ftx-lime bg-ftx-black/80 group-hover:bg-ftx-lime group-hover:text-ftx-black transition-all duration-300 shrink-0 shadow-lg mb-1">
-                                    <ArrowUpRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                    <ArrowUpRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 animate-arrow-nudge" />
                                 </div>
                             </div>
                         </Link>
@@ -172,7 +172,7 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                             </div>
 
                                             <div className="w-10 h-10 rounded-full border border-ftx-lime flex items-center justify-center text-ftx-lime bg-ftx-black/80 group-hover:bg-ftx-lime group-hover:text-ftx-black transition-all duration-300 shadow-lg shrink-0">
-                                                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 animate-arrow-nudge" />
                                             </div>
                                         </div>
                                     </Link>
@@ -220,7 +220,7 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                             </div>
 
                                             <div className="w-10 h-10 rounded-full border border-ftx-lime flex items-center justify-center text-ftx-lime bg-ftx-black/80 group-hover:bg-ftx-lime group-hover:text-ftx-black transition-all duration-300 shadow-lg shrink-0">
-                                                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 animate-arrow-nudge" />
                                             </div>
                                         </div>
                                     </Link>
@@ -266,7 +266,7 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                             </div>
 
                                             <div className="w-10 h-10 rounded-full border border-ftx-lime flex items-center justify-center text-ftx-lime bg-ftx-black/80 group-hover:bg-ftx-lime group-hover:text-ftx-black transition-all duration-300 shadow-lg shrink-0">
-                                                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 animate-arrow-nudge" />
                                             </div>
                                         </div>
                                     </Link>

@@ -36,8 +36,8 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                         </ScrollReveal>
                     </div>
 
-                    {/* Image Grid */}
-                    <div className="order-2 lg:order-1 lg:col-span-5 relative w-full">
+                    {/* Image Grid with Overlapping Badge (Desktop-parity on Mobile) */}
+                    <div className="order-2 lg:order-1 lg:col-span-5 relative w-full pr-4 pb-4 sm:pr-6 sm:pb-6">
                         <div className="relative w-full aspect-[4/3] ftx-squircle-lg border border-ftx-surface-high shadow-2xl group overflow-hidden bg-ftx-obsidian">
                             <Image
                                 src={messages.intro?.image || "/images/about/craftsmanship.jpg"}
@@ -50,14 +50,23 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
                             />
                         </div>
-                        <div className="absolute -bottom-6 -right-6 hidden sm:block w-48 h-32 bg-ftx-surface border border-ftx-lime/40 ftx-squircle-sm p-4 shadow-2xl">
-                            <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
-                                {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
+                        <ScrollReveal
+                            type="horizontal"
+                            direction="right"
+                            delay={150}
+                            duration={850}
+                            once={false}
+                            className="absolute bottom-0 right-0 z-20"
+                        >
+                            <div className="w-40 sm:w-48 bg-ftx-surface/95 backdrop-blur-md border border-ftx-lime/40 ftx-squircle-sm p-3 sm:p-4 shadow-2xl">
+                                <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
+                                    {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
+                                </div>
+                                <div className="text-xs text-ftx-silver mt-1 font-body leading-tight">
+                                    {messages.intro?.badgeSub || "Climate-Controlled Studio Bays"}
+                                </div>
                             </div>
-                            <div className="text-xs text-ftx-silver mt-1 font-body">
-                                {messages.intro?.badgeSub || "Climate-Controlled Studio Bays"}
-                            </div>
-                        </div>
+                        </ScrollReveal>
                     </div>
                 </div>
             </div>

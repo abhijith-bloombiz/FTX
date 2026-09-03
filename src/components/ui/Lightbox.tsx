@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight, Info, Volume2, VolumeX, Play, Pause, Maximize } from "lucide-react";
 import { GalleryItem } from "@/types/gallery";
 import { Locale } from "@/i18n/config";
@@ -199,7 +200,7 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
         }
     };
 
-    if (!item || !displayItem) return null;
+    if (!item || !displayItem || !isMounted) return null;
 
     const handleClose = () => {
         setIsClosing(true);
@@ -257,9 +258,9 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
         ? "max-h-[42vh] sm:max-h-[46vh]"
         : "max-h-[68vh] sm:max-h-[72vh]";
 
-    return (
+    return createPortal(
         <div
-            className={`fixed inset-0 z-[99999] bg-black/85 backdrop-blur-md flex flex-col items-center justify-between p-3 sm:p-6 pt-24 sm:pt-28 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
+            className={`fixed inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-between p-3 sm:p-6 pt-24 sm:pt-28 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) ${isClosing
                 ? "opacity-0 backdrop-blur-none pointer-events-none"
                 : isMounted
                     ? "opacity-100 scale-100"
@@ -445,6 +446,7 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

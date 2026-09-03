@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BeforeAfterSliderProps {
     beforeImage: string;
@@ -134,10 +134,22 @@ export function BeforeAfterSlider({
                 className="absolute top-0 bottom-0 w-1 bg-ftx-lime shadow-lime-glow z-10 -translate-x-1/2 pointer-events-none"
                 style={{ left: `${sliderPos}%` }}
             >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-ftx-obsidian border-2 border-ftx-lime rounded-full shadow-lime-glow flex items-center justify-center text-ftx-lime">
-                    <SlidersHorizontal className="w-5 h-5" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 bg-ftx-obsidian/95 border-2 border-ftx-lime rounded-full shadow-lime-glow flex items-center justify-center gap-0.5 text-ftx-lime backdrop-blur-md">
+                    <ChevronLeft className={`w-4 h-4 -mr-1 transition-transform ${!isDragging ? "animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] sm:animate-none" : ""}`} style={{ animation: !isDragging ? "bounceLeft 1.4s ease-in-out infinite" : "none" }} />
+                    <ChevronRight className={`w-4 h-4 -ml-1 transition-transform`} style={{ animation: !isDragging ? "bounceRight 1.4s ease-in-out infinite" : "none" }} />
                 </div>
             </div>
+
+            <style>{`
+                @keyframes bounceLeft {
+                    0%, 100% { transform: translateX(0); }
+                    50% { transform: translateX(-4px); }
+                }
+                @keyframes bounceRight {
+                    0%, 100% { transform: translateX(0); }
+                    50% { transform: translateX(4px); }
+                }
+            `}</style>
         </div>
     );
 }

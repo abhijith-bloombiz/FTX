@@ -471,13 +471,13 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
                                         <div>
                                             <span className="text-xs font-mono font-bold text-ftx-lime uppercase tracking-widest">
-                                                {getVehicleLabel(beforeAfterItem.vehicle, locale)}
+                                                {locale === "ar" ? "عرض التغيير" : "TRANSFORMATION SHOWCASE"}
                                             </span>
                                             <h3 className="text-xl sm:text-2xl font-heading font-bold text-white uppercase mt-1">
-                                                {beforeAfterItem.title[locale]}
+                                                {locale === "ar" ? "شاهد معايير FTX" : "WITNESS THE FTX STANDARD"}
                                             </h3>
                                         </div>
-                                        <span className="px-3 py-1 bg-ftx-obsidian text-[10px] font-mono text-ftx-silver border border-ftx-surface-high ftx-squircle-sm self-start sm:self-auto">
+                                        <span className="hidden sm:inline-block px-3 py-1 bg-ftx-obsidian text-[10px] font-mono text-ftx-silver border border-ftx-surface-high ftx-squircle-sm self-start sm:self-auto">
                                             {locale === "ar" ? "اسحب للمقارنة" : "SLIDE TO COMPARE"}
                                         </span>
                                     </div>

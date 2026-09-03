@@ -129,12 +129,12 @@ export function ScrollReveal({
             case "horizontal":
                 const isFromLeft = direction === "left";
                 const initialX = isFromLeft
-                    ? (isMobile ? "-60px" : "-150px")
-                    : (isMobile ? "60px" : "150px");
+                    ? (isMobile ? "-80px" : "-180px")
+                    : (isMobile ? "80px" : "180px");
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: `translate3d(${initialX}, 0, 0) scale(0.97)`,
+                    transform: `translate3d(${initialX}, 0, 0) scale(0.96)`,
                 };
 
             case "scale":
