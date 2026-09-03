@@ -4,6 +4,8 @@ import { seedDatabase } from "@/lib/seed";
 import { ServiceItemModel } from "@/lib/models/ServiceItem";
 import { getAdminSession } from "@/lib/auth";
 import { servicesData } from "@/data/services";
+import { deleteUploadedFile } from "@/lib/deleteFile";
+import mongoose from "mongoose";
 
 // GET all services
 export async function GET() {
@@ -78,8 +80,6 @@ export async function POST(req: NextRequest) {
     }
 }
 
-import mongoose from "mongoose";
-
 // PUT update service
 export async function PUT(req: NextRequest) {
     let body: any = {};
@@ -104,10 +104,20 @@ export async function PUT(req: NextRequest) {
 
             let updated = null;
             if (filterConditions.length > 0) {
+                const existing: any = await ServiceItemModel.findOne({ $or: filterConditions }).lean();
+                if (existing) {
+                    if (updateData.image && existing.image && updateData.image !== existing.image) {
+                        await deleteUploadedFile(existing.image);
+                    }
+                    if (updateData.icon && existing.icon && updateData.icon !== existing.icon) {
+                        await deleteUploadedFile(existing.icon);
+                    }
+                }
+
                 updated = await ServiceItemModel.findOneAndUpdate(
                     { $or: filterConditions },
                     { ...updateData, serviceId: targetId },
-                    { new: true, upsert: true }
+                    { returnDocument: "after", upsert: true }
                 );
             } else {
                 updated = await ServiceItemModel.create({
@@ -163,6 +173,12 @@ export async function DELETE(req: NextRequest) {
             const filterConditions: any[] = [{ serviceId: id }];
             if (mongoose.Types.ObjectId.isValid(id)) {
                 filterConditions.push({ _id: id });
+            }
+
+            const existing: any = await ServiceItemModel.findOne({ $or: filterConditions }).lean();
+            if (existing) {
+                await deleteUploadedFile(existing.image);
+                await deleteUploadedFile(existing.icon);
             }
 
             await ServiceItemModel.deleteOne({ $or: filterConditions });

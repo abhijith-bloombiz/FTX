@@ -23,7 +23,10 @@ import {
     Loader2,
     RefreshCw,
     Eye,
+    EyeOff,
     ChevronDown,
+    ChevronUp,
+    GripVertical,
     Video,
     User as UserIcon,
     Menu,
@@ -58,6 +61,8 @@ export default function AdminDashboardPage() {
     // Data States
     const [sections, setSections] = useState<any[]>([]);
     const [services, setServices] = useState<any[]>([]);
+    const [draggedServiceIndex, setDraggedServiceIndex] = useState<number | null>(null);
+    const [touchTargetIndex, setTouchTargetIndex] = useState<number | null>(null);
     const [packages, setPackages] = useState<any[]>([]);
     const [gallery, setGallery] = useState<any[]>([]);
     const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -218,17 +223,73 @@ export default function AdminDashboardPage() {
         });
     };
 
+    const handleReorderServices = async (newOrder: any[]) => {
+        const updated = newOrder.map((item, idx) => ({
+            ...item,
+            number: String(idx + 1).padStart(2, "0"),
+        }));
+        setServices(updated);
+        try {
+            const res = await fetch("/api/admin/services/reorder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ services: updated }),
+            });
+            if (!res.ok) throw new Error("Failed to save service order");
+            setMessage({ type: "success", text: "Services order updated & synced!" });
+        } catch (err: any) {
+            console.error("Failed to persist service order:", err);
+            setMessage({ type: "error", text: err.message || "Failed to update service order" });
+        }
+    };
+
     const handleSaveModalItem = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editModalType || !editModalItem) return;
         setSaving(true);
         try {
+            let itemToSave = { ...editModalItem };
+
+            const uploadFile = async (file: File): Promise<string> => {
+                const formData = new FormData();
+                formData.append("file", file);
+                const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+                const data = await res.json();
+                return data.url || "";
+            };
+
+            if (itemToSave._pendingImageFile) {
+                const url = await uploadFile(itemToSave._pendingImageFile);
+                if (url) itemToSave.image = url;
+                delete itemToSave._pendingImageFile;
+            }
+            if (itemToSave._pendingVideoFile) {
+                const url = await uploadFile(itemToSave._pendingVideoFile);
+                if (url) itemToSave.video = url;
+                delete itemToSave._pendingVideoFile;
+            }
+            if (itemToSave._pendingBeforeFile) {
+                const url = await uploadFile(itemToSave._pendingBeforeFile);
+                if (url) itemToSave.beforeImage = url;
+                delete itemToSave._pendingBeforeFile;
+            }
+            if (itemToSave._pendingAfterFile) {
+                const url = await uploadFile(itemToSave._pendingAfterFile);
+                if (url) itemToSave.afterImage = url;
+                delete itemToSave._pendingAfterFile;
+            }
+            if (itemToSave._pendingAvatarFile) {
+                const url = await uploadFile(itemToSave._pendingAvatarFile);
+                if (url) itemToSave.avatar = url;
+                delete itemToSave._pendingAvatarFile;
+            }
+
             const method = isCreateNew ? "POST" : "PUT";
             const apiPath = editModalType === "gallery" ? "gallery" : `${editModalType}s`;
             const res = await fetch(`/api/admin/${apiPath}`, {
                 method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(editModalItem),
+                body: JSON.stringify(itemToSave),
             });
 
             if (!res.ok) {
@@ -614,47 +675,153 @@ export default function AdminDashboardPage() {
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-4">
-                                        {services.map((serv, idx) => (
-                                            <div
-                                                key={serv._id || serv.id || serv.serviceId || `serv-${idx}`}
-                                                className="bg-ftx-surface border border-ftx-surface-high p-5 ftx-squircle-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                                            >
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-2 py-0.5 bg-ftx-obsidian text-ftx-lime border border-ftx-lime/30 text-[10px] font-mono font-bold uppercase">
-                                                            #{serv.number} {serv.badge?.en}
-                                                        </span>
-                                                    </div>
-                                                    <h3 className="text-base font-bold font-heading text-white uppercase">
-                                                        {serv.title?.en} / {serv.title?.ar}
-                                                    </h3>
-                                                    <p className="text-xs text-ftx-silver-muted font-body line-clamp-1">
-                                                        {serv.subtitle?.en}
-                                                    </p>
-                                                </div>
+                                        {services.map((serv, idx) => {
+                                            const isDragged = draggedServiceIndex === idx;
+                                            return (
+                                                <div
+                                                    key={serv._id || serv.id || serv.serviceId || `serv-${idx}`}
+                                                    data-service-index={idx}
+                                                    draggable
+                                                    onDragStart={(e) => {
+                                                        setDraggedServiceIndex(idx);
+                                                        e.dataTransfer.effectAllowed = "move";
+                                                    }}
+                                                    onDragOver={(e) => {
+                                                        e.preventDefault();
+                                                        e.dataTransfer.dropEffect = "move";
+                                                    }}
+                                                    onDrop={(e) => {
+                                                        e.preventDefault();
+                                                        if (draggedServiceIndex === null || draggedServiceIndex === idx) return;
+                                                        const updated = [...services];
+                                                        const [removed] = updated.splice(draggedServiceIndex, 1);
+                                                        updated.splice(idx, 0, removed);
+                                                        setDraggedServiceIndex(null);
+                                                        setTouchTargetIndex(null);
+                                                        handleReorderServices(updated);
+                                                    }}
+                                                    onDragEnd={() => {
+                                                        setDraggedServiceIndex(null);
+                                                        setTouchTargetIndex(null);
+                                                    }}
+                                                    className={`bg-ftx-surface border p-5 ftx-squircle-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-200 ${isDragged
+                                                        ? "border-ftx-lime bg-ftx-surface-high opacity-50 scale-[0.99]"
+                                                        : touchTargetIndex === idx && draggedServiceIndex !== null && draggedServiceIndex !== idx
+                                                            ? "border-ftx-lime bg-ftx-lime/10 shadow-[0_0_15px_rgba(204,255,0,0.2)]"
+                                                            : "border-ftx-surface-high hover:border-ftx-lime/50"
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                                                        {/* Drag Grip Handle */}
+                                                        <div
+                                                            className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-ftx-obsidian rounded border border-transparent hover:border-ftx-surface-high text-ftx-silver hover:text-ftx-lime transition-colors shrink-0 touch-none select-none"
+                                                            title="Drag to reorder position"
+                                                            onTouchStart={() => {
+                                                                setDraggedServiceIndex(idx);
+                                                                setTouchTargetIndex(idx);
+                                                            }}
+                                                            onTouchMove={(e) => {
+                                                                const touch = e.touches[0];
+                                                                if (!touch) return;
+                                                                const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                                                                const serviceCard = targetEl?.closest("[data-service-index]");
+                                                                if (serviceCard) {
+                                                                    const hoverIdx = Number(serviceCard.getAttribute("data-service-index"));
+                                                                    if (!isNaN(hoverIdx)) {
+                                                                        setTouchTargetIndex(hoverIdx);
+                                                                    }
+                                                                }
+                                                            }}
+                                                            onTouchEnd={() => {
+                                                                if (draggedServiceIndex !== null && touchTargetIndex !== null && draggedServiceIndex !== touchTargetIndex) {
+                                                                    const updated = [...services];
+                                                                    const [removed] = updated.splice(draggedServiceIndex, 1);
+                                                                    updated.splice(touchTargetIndex, 0, removed);
+                                                                    handleReorderServices(updated);
+                                                                }
+                                                                setDraggedServiceIndex(null);
+                                                                setTouchTargetIndex(null);
+                                                            }}
+                                                        >
+                                                            <GripVertical className="w-5 h-5" />
+                                                        </div>
 
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <button
-                                                        onClick={() => {
-                                                            setIsCreateNew(false);
-                                                            setEditModalType("service");
-                                                            setEditModalItem(serv);
-                                                        }}
-                                                        className="px-3 py-2 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-ftx-lime text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
-                                                    >
-                                                        <Edit3 className="w-3.5 h-3.5" />
-                                                        <span>EDIT</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteItem("services", serv._id || serv.id || serv.serviceId)}
-                                                        className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                        <span>DELETE</span>
-                                                    </button>
+                                                        {/* Up / Down Quick Reorder Buttons */}
+                                                        <div className="flex flex-col gap-0.5 shrink-0">
+                                                            <button
+                                                                type="button"
+                                                                disabled={idx === 0}
+                                                                onClick={() => {
+                                                                    if (idx > 0) {
+                                                                        const updated = [...services];
+                                                                        const temp = updated[idx];
+                                                                        updated[idx] = updated[idx - 1];
+                                                                        updated[idx - 1] = temp;
+                                                                        handleReorderServices(updated);
+                                                                    }
+                                                                }}
+                                                                className="p-1 text-ftx-silver hover:text-ftx-lime disabled:opacity-20 disabled:hover:text-ftx-silver transition-colors"
+                                                                title="Move Up"
+                                                            >
+                                                                <ChevronUp className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={idx === services.length - 1}
+                                                                onClick={() => {
+                                                                    if (idx < services.length - 1) {
+                                                                        const updated = [...services];
+                                                                        const temp = updated[idx];
+                                                                        updated[idx] = updated[idx + 1];
+                                                                        updated[idx + 1] = temp;
+                                                                        handleReorderServices(updated);
+                                                                    }
+                                                                }}
+                                                                className="p-1 text-ftx-silver hover:text-ftx-lime disabled:opacity-20 disabled:hover:text-ftx-silver transition-colors"
+                                                                title="Move Down"
+                                                            >
+                                                                <ChevronDown className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="px-2 py-0.5 bg-ftx-obsidian text-ftx-lime border border-ftx-lime/30 text-[10px] font-mono font-bold uppercase">
+                                                                    #{serv.number} {typeof serv.badge === "object" ? serv.badge?.en : serv.badge || "SERVICE"}
+                                                                </span>
+                                                            </div>
+                                                            <h3 className="text-base font-bold font-heading text-white uppercase">
+                                                                {typeof serv.title === "object" ? `${serv.title?.en} / ${serv.title?.ar}` : serv.title}
+                                                            </h3>
+                                                            <p className="text-xs text-ftx-silver-muted font-body line-clamp-1">
+                                                                {typeof serv.description === "object" ? serv.description?.en : serv.description}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                                        <button
+                                                            onClick={() => {
+                                                                setIsCreateNew(false);
+                                                                setEditModalType("service");
+                                                                setEditModalItem(serv);
+                                                            }}
+                                                            className="px-3 py-2 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-ftx-lime text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
+                                                        >
+                                                            <Edit3 className="w-3.5 h-3.5" />
+                                                            <span>EDIT</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteItem("services", serv._id || serv.id || serv.serviceId)}
+                                                            className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                            <span>DELETE</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -1222,6 +1389,70 @@ export default function AdminDashboardPage() {
                                                             className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
                                                         />
                                                     </div>
+
+                                                    {/* Social Media Links (Instagram, YouTube, Facebook) */}
+                                                    <div className="space-y-2">
+                                                        <label className="text-ftx-lime font-bold uppercase block">INSTAGRAM PROFILE URL</label>
+                                                        <input
+                                                            type="text"
+                                                            value={contactSec.metadata?.social?.instagram ?? "https://instagram.com/ftxdetailing"}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setSections((prev) =>
+                                                                    prev.map((s) => s.page === "contact" ? {
+                                                                        ...s,
+                                                                        metadata: {
+                                                                            ...s.metadata,
+                                                                            social: { ...(s.metadata?.social || {}), instagram: val }
+                                                                        }
+                                                                    } : s)
+                                                                );
+                                                            }}
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-ftx-lime font-bold uppercase block">YOUTUBE CHANNEL URL</label>
+                                                        <input
+                                                            type="text"
+                                                            value={contactSec.metadata?.social?.youtube ?? "https://youtube.com/@ftxdetailing"}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setSections((prev) =>
+                                                                    prev.map((s) => s.page === "contact" ? {
+                                                                        ...s,
+                                                                        metadata: {
+                                                                            ...s.metadata,
+                                                                            social: { ...(s.metadata?.social || {}), youtube: val }
+                                                                        }
+                                                                    } : s)
+                                                                );
+                                                            }}
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <label className="text-ftx-lime font-bold uppercase block">FACEBOOK PAGE URL</label>
+                                                        <input
+                                                            type="text"
+                                                            value={contactSec.metadata?.social?.facebook ?? "https://facebook.com/ftxdetailing"}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setSections((prev) =>
+                                                                    prev.map((s) => s.page === "contact" ? {
+                                                                        ...s,
+                                                                        metadata: {
+                                                                            ...s.metadata,
+                                                                            social: { ...(s.metadata?.social || {}), facebook: val }
+                                                                        }
+                                                                    } : s)
+                                                                );
+                                                            }}
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -1465,101 +1696,67 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                {/* Service Specific Fields: Index Number & Slug ID */}
+                                {/* Service Specific Fields: Index Number, Slug ID, and Description */}
                                 {editModalType === "service" && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">INDEX NUMBER (E.G. 01, 02)</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.number || ""}
-                                                onChange={(e) => setEditModalItem({ ...editModalItem, number: e.target.value })}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="01"
-                                                required
-                                            />
+                                    <>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">INDEX NUMBER (E.G. 01, 02)</label>
+                                                <input
+                                                    type="text"
+                                                    value={editModalItem.number || ""}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, number: e.target.value })}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="01"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">SERVICE ID / SLUG (E.G. ppf, ceramic)</label>
+                                                <input
+                                                    type="text"
+                                                    value={editModalItem.serviceId || ""}
+                                                    onChange={(e) => setEditModalItem({ ...editModalItem, serviceId: e.target.value })}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="ppf"
+                                                    required
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">SERVICE ID / SLUG (E.G. ppf, ceramic)</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.serviceId || ""}
-                                                onChange={(e) => setEditModalItem({ ...editModalItem, serviceId: e.target.value })}
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                placeholder="ppf"
-                                                required
-                                            />
+
+                                        {/* SERVICE MAIN DESCRIPTION (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">DESCRIPTION (EN)</label>
+                                                <textarea
+                                                    value={typeof editModalItem.description === "object" ? editModalItem.description?.en || "" : editModalItem.description || ""}
+                                                    onChange={(e) => {
+                                                        const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, description: { ...curDesc, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
+                                                    rows={3}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">DESCRIPTION (AR)</label>
+                                                <textarea
+                                                    value={typeof editModalItem.description === "object" ? editModalItem.description?.ar || "" : editModalItem.description || ""}
+                                                    onChange={(e) => {
+                                                        const curDesc = typeof editModalItem.description === "object" ? editModalItem.description : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, description: { ...curDesc, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none min-h-[90px]"
+                                                    rows={3}
+                                                    required
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
+                                    </>
                                 )}
 
-                                {/* Service Badge EN / AR */}
-                                {editModalItem.badge && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">BADGE TEXT (EN)</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.badge.en || ""}
-                                                onChange={(e) =>
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        badge: { ...editModalItem.badge, en: e.target.value },
-                                                    })
-                                                }
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">BADGE TEXT (AR)</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.badge.ar || ""}
-                                                onChange={(e) =>
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        badge: { ...editModalItem.badge, ar: e.target.value },
-                                                    })
-                                                }
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
 
-                                {/* Service Subtitle EN / AR */}
-                                {editModalItem.subtitle && !editModalItem.isBeforeAfter && editModalItem.category !== "before-after" && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">SUBTITLE / HIGHLIGHT (EN)</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.subtitle.en || ""}
-                                                onChange={(e) =>
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        subtitle: { ...editModalItem.subtitle, en: e.target.value },
-                                                    })
-                                                }
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[11px] font-mono text-ftx-silver uppercase">SUBTITLE / HIGHLIGHT (AR)</label>
-                                            <input
-                                                type="text"
-                                                value={editModalItem.subtitle.ar || ""}
-                                                onChange={(e) =>
-                                                    setEditModalItem({
-                                                        ...editModalItem,
-                                                        subtitle: { ...editModalItem.subtitle, ar: e.target.value },
-                                                    })
-                                                }
-                                                className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
 
                                 {/* Image / Video / Before-After Container */}
                                 {editModalType === "gallery" ? (
@@ -1685,22 +1882,16 @@ export default function AdminDashboardPage() {
                                                                 type="file"
                                                                 accept="image/*"
                                                                 className="hidden"
-                                                                onChange={async (e) => {
+                                                                onChange={(e) => {
                                                                     const file = e.target.files?.[0];
                                                                     if (!file) return;
-                                                                    const formData = new FormData();
-                                                                    formData.append("file", file);
-                                                                    try {
-                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                        const data = await res.json();
-                                                                        if (data.url) {
-                                                                            setEditModalItem((prev: any) => ({
-                                                                                ...prev,
-                                                                                beforeImage: data.url,
-                                                                                image: prev.image || data.url
-                                                                            }));
-                                                                        }
-                                                                    } catch (err) { console.error("Before image upload error", err); }
+                                                                    const preview = URL.createObjectURL(file);
+                                                                    setEditModalItem((prev: any) => ({
+                                                                        ...prev,
+                                                                        beforeImage: preview,
+                                                                        image: prev.image || preview,
+                                                                        _pendingBeforeFile: file
+                                                                    }));
                                                                 }}
                                                             />
                                                         </label>
@@ -1746,22 +1937,16 @@ export default function AdminDashboardPage() {
                                                                 type="file"
                                                                 accept="image/*"
                                                                 className="hidden"
-                                                                onChange={async (e) => {
+                                                                onChange={(e) => {
                                                                     const file = e.target.files?.[0];
                                                                     if (!file) return;
-                                                                    const formData = new FormData();
-                                                                    formData.append("file", file);
-                                                                    try {
-                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                        const data = await res.json();
-                                                                        if (data.url) {
-                                                                            setEditModalItem((prev: any) => ({
-                                                                                ...prev,
-                                                                                afterImage: data.url,
-                                                                                image: data.url
-                                                                            }));
-                                                                        }
-                                                                    } catch (err) { console.error("After image upload error", err); }
+                                                                    const preview = URL.createObjectURL(file);
+                                                                    setEditModalItem((prev: any) => ({
+                                                                        ...prev,
+                                                                        afterImage: preview,
+                                                                        image: preview,
+                                                                        _pendingAfterFile: file
+                                                                    }));
                                                                 }}
                                                             />
                                                         </label>
@@ -1812,16 +1997,15 @@ export default function AdminDashboardPage() {
                                                             type="file"
                                                             accept="image/*"
                                                             className="hidden"
-                                                            onChange={async (e) => {
+                                                            onChange={(e) => {
                                                                 const file = e.target.files?.[0];
                                                                 if (!file) return;
-                                                                const formData = new FormData();
-                                                                formData.append("file", file);
-                                                                try {
-                                                                    const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                    const data = await res.json();
-                                                                    if (data.url) setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
-                                                                } catch (err) { console.error("Upload error", err); }
+                                                                const preview = URL.createObjectURL(file);
+                                                                setEditModalItem((prev: any) => ({
+                                                                    ...prev,
+                                                                    image: preview,
+                                                                    _pendingImageFile: file
+                                                                }));
                                                             }}
                                                         />
                                                     </label>
@@ -1893,16 +2077,15 @@ export default function AdminDashboardPage() {
                                                                     type="file"
                                                                     accept="image/*"
                                                                     className="hidden"
-                                                                    onChange={async (e) => {
+                                                                    onChange={(e) => {
                                                                         const file = e.target.files?.[0];
                                                                         if (!file) return;
-                                                                        const formData = new FormData();
-                                                                        formData.append("file", file);
-                                                                        try {
-                                                                            const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                            const data = await res.json();
-                                                                            if (data.url) setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
-                                                                        } catch (err) { console.error("Thumbnail upload error", err); }
+                                                                        const preview = URL.createObjectURL(file);
+                                                                        setEditModalItem((prev: any) => ({
+                                                                            ...prev,
+                                                                            image: preview,
+                                                                            _pendingImageFile: file
+                                                                        }));
                                                                     }}
                                                                 />
                                                             </label>
@@ -1955,22 +2138,15 @@ export default function AdminDashboardPage() {
                                                                 onChange={async (e) => {
                                                                     const file = e.target.files?.[0];
                                                                     if (!file) return;
-                                                                    const formData = new FormData();
-                                                                    formData.append("file", file);
-                                                                    try {
-                                                                        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                        const data = await res.json();
-                                                                        if (data.url) {
-                                                                            // Automatically extract thumbnail from the uploaded video file
-                                                                            const autoThumb = await generateVideoThumbnail(file);
-                                                                            setEditModalItem((prev: any) => ({
-                                                                                ...prev,
-                                                                                video: data.url,
-                                                                                isVideo: true,
-                                                                                image: autoThumb || prev.image || "/images/gallery/ppf-studio-hero.jpg",
-                                                                            }));
-                                                                        }
-                                                                    } catch (err) { console.error("Video upload error", err); }
+                                                                    const preview = URL.createObjectURL(file);
+                                                                    const autoThumb = await generateVideoThumbnail(file);
+                                                                    setEditModalItem((prev: any) => ({
+                                                                        ...prev,
+                                                                        video: preview,
+                                                                        isVideo: true,
+                                                                        image: autoThumb || prev.image || "/images/gallery/ppf-studio-hero.jpg",
+                                                                        _pendingVideoFile: file
+                                                                    }));
                                                                 }}
                                                             />
                                                         </label>
@@ -2014,23 +2190,15 @@ export default function AdminDashboardPage() {
                                                         type="file"
                                                         accept="image/*"
                                                         className="hidden"
-                                                        onChange={async (e) => {
+                                                        onChange={(e) => {
                                                             const file = e.target.files?.[0];
                                                             if (!file) return;
-                                                            const formData = new FormData();
-                                                            formData.append("file", file);
-                                                            try {
-                                                                const res = await fetch("/api/admin/upload", {
-                                                                    method: "POST",
-                                                                    body: formData,
-                                                                });
-                                                                const data = await res.json();
-                                                                if (data.url) {
-                                                                    setEditModalItem((prev: any) => ({ ...prev, image: data.url }));
-                                                                }
-                                                            } catch (err) {
-                                                                console.error("Upload error", err);
-                                                            }
+                                                            const preview = URL.createObjectURL(file);
+                                                            setEditModalItem((prev: any) => ({
+                                                                ...prev,
+                                                                image: preview,
+                                                                _pendingImageFile: file
+                                                            }));
                                                         }}
                                                     />
                                                 </label>
@@ -2313,20 +2481,15 @@ export default function AdminDashboardPage() {
                                                         type="file"
                                                         accept="image/*"
                                                         className="hidden"
-                                                        onChange={async (e) => {
+                                                        onChange={(e) => {
                                                             const file = e.target.files?.[0];
                                                             if (!file) return;
-                                                            const formData = new FormData();
-                                                            formData.append("file", file);
-                                                            try {
-                                                                const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                                                                const data = await res.json();
-                                                                if (data.url) {
-                                                                    setEditModalItem((prev: any) => ({ ...prev, avatar: data.url }));
-                                                                }
-                                                            } catch (err) {
-                                                                console.error("Upload avatar error", err);
-                                                            }
+                                                            const preview = URL.createObjectURL(file);
+                                                            setEditModalItem((prev: any) => ({
+                                                                ...prev,
+                                                                avatar: preview,
+                                                                _pendingAvatarFile: file
+                                                            }));
                                                         }}
                                                     />
                                                 </label>
@@ -2544,94 +2707,11 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                {/* SERVICE SPECIFIC ADVANCED EDITORS (BENEFITS, HIGHLIGHTS, PROCESS, DETAIL IMAGES) */}
+                                {/* SERVICE SPECIFIC ADVANCED EDITORS (HIGHLIGHTS, DETAIL IMAGES) */}
                                 {editModalType === "service" && (
                                     <div className="space-y-6 pt-4 border-t border-ftx-surface-high">
-                                        {/* 1. KEY BENEFITS LIST */}
+                                        {/* 1. FEATURE HIGHLIGHT CARDS */}
                                         <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
-                                                    KEY BENEFITS (EN & AR)
-                                                </label>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const curEn = editModalItem.benefits?.en || [];
-                                                        const curAr = editModalItem.benefits?.ar || [];
-                                                        setEditModalItem({
-                                                            ...editModalItem,
-                                                            benefits: {
-                                                                en: [...curEn, ""],
-                                                                ar: [...curAr, ""],
-                                                            },
-                                                        });
-                                                    }}
-                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
-                                                >
-                                                    + ADD BENEFIT ITEM
-                                                </button>
-                                            </div>
-
-                                            {(!editModalItem.benefits?.en || editModalItem.benefits.en.length === 0) ? (
-                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No benefit bullet points added yet.</p>
-                                            ) : (
-                                                (editModalItem.benefits.en || []).map((bEn: string, bIdx: number) => (
-                                                    <div key={`benefit-${bIdx}`} className="p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-[10px] font-mono text-ftx-silver uppercase">BENEFIT #{bIdx + 1}</span>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newEn = [...(editModalItem.benefits?.en || [])];
-                                                                    const newAr = [...(editModalItem.benefits?.ar || [])];
-                                                                    newEn.splice(bIdx, 1);
-                                                                    newAr.splice(bIdx, 1);
-                                                                    setEditModalItem({
-                                                                        ...editModalItem,
-                                                                        benefits: { en: newEn, ar: newAr },
-                                                                    });
-                                                                }}
-                                                                className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
-                                                            >
-                                                                REMOVE
-                                                            </button>
-                                                        </div>
-                                                        <input
-                                                            type="text"
-                                                            value={bEn}
-                                                            onChange={(e) => {
-                                                                const newEn = [...(editModalItem.benefits?.en || [])];
-                                                                newEn[bIdx] = e.target.value;
-                                                                setEditModalItem({
-                                                                    ...editModalItem,
-                                                                    benefits: { ...editModalItem.benefits, en: newEn },
-                                                                });
-                                                            }}
-                                                            placeholder="English benefit description..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            dir="rtl"
-                                                            value={editModalItem.benefits?.ar?.[bIdx] || ""}
-                                                            onChange={(e) => {
-                                                                const newAr = [...(editModalItem.benefits?.ar || [])];
-                                                                newAr[bIdx] = e.target.value;
-                                                                setEditModalItem({
-                                                                    ...editModalItem,
-                                                                    benefits: { ...editModalItem.benefits, ar: newAr },
-                                                                });
-                                                            }}
-                                                            placeholder="وصف الميزة باللغة العربية..."
-                                                            className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                        />
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-
-                                        {/* 2. FEATURE HIGHLIGHT CARDS */}
-                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
                                                     FEATURE HIGHLIGHT CARDS
@@ -2640,21 +2720,30 @@ export default function AdminDashboardPage() {
                                                     type="button"
                                                     onClick={() => {
                                                         const cur = editModalItem.highlights || [];
+                                                        const newIdx = cur.length;
                                                         setEditModalItem({
                                                             ...editModalItem,
                                                             highlights: [
                                                                 ...cur,
                                                                 {
                                                                     icon: "shield",
-                                                                    title: { en: "Feature Title", ar: "عنوان الميزة" },
-                                                                    description: { en: "Feature details...", ar: "تفاصيل الميزة..." },
+                                                                    title: { en: "", ar: "" },
                                                                 },
                                                             ],
                                                         });
+                                                        setTimeout(() => {
+                                                            const el = document.getElementById(`highlight-card-${newIdx}`);
+                                                            if (el) {
+                                                                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                                                                const input = el.querySelector("input") as HTMLInputElement | null;
+                                                                if (input) input.focus();
+                                                            }
+                                                        }, 100);
                                                     }}
-                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
+                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold flex items-center gap-1"
                                                 >
-                                                    + ADD HIGHLIGHT CARD
+                                                    <Plus className="w-3 h-3" />
+                                                    <span>ADD HIGHLIGHT CARD</span>
                                                 </button>
                                             </div>
 
@@ -2662,7 +2751,7 @@ export default function AdminDashboardPage() {
                                                 <p className="text-xs text-ftx-silver-muted font-mono italic">No highlight cards configured.</p>
                                             ) : (
                                                 editModalItem.highlights.map((hl: any, hIdx: number) => (
-                                                    <div key={`hl-${hIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3">
+                                                    <div id={`highlight-card-${hIdx}`} key={`hl-${hIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3 transition-all duration-300 focus-within:border-ftx-lime/60">
                                                         <div className="flex items-center justify-between">
                                                             <span className="text-[10px] font-mono text-ftx-silver uppercase">CARD #{hIdx + 1}</span>
                                                             <button
@@ -2723,154 +2812,12 @@ export default function AdminDashboardPage() {
                                                                 className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
                                                             />
                                                         </div>
-
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                            <textarea
-                                                                rows={2}
-                                                                value={hl.description?.en || ""}
-                                                                onChange={(e) => {
-                                                                    const newHl = [...(editModalItem.highlights || [])];
-                                                                    newHl[hIdx] = { ...newHl[hIdx], description: { ...newHl[hIdx].description, en: e.target.value } };
-                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                                }}
-                                                                placeholder="Description (EN)..."
-                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
-                                                            />
-                                                            <textarea
-                                                                rows={2}
-                                                                dir="rtl"
-                                                                value={hl.description?.ar || ""}
-                                                                onChange={(e) => {
-                                                                    const newHl = [...(editModalItem.highlights || [])];
-                                                                    newHl[hIdx] = { ...newHl[hIdx], description: { ...newHl[hIdx].description, ar: e.target.value } };
-                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
-                                                                }}
-                                                                placeholder="الوصف التفصيلي (عربي)..."
-                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                            />
-                                                        </div>
                                                     </div>
                                                 ))
                                             )}
                                         </div>
 
-                                        {/* 3. PROCESS STEPS */}
-                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
-                                                    PROCESS STEPS
-                                                </label>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const cur = editModalItem.process || [];
-                                                        setEditModalItem({
-                                                            ...editModalItem,
-                                                            process: [
-                                                                ...cur,
-                                                                {
-                                                                    number: `0${cur.length + 1}`,
-                                                                    title: { en: "Step Title", ar: "عنوان المرحلة" },
-                                                                    description: { en: "Step description...", ar: "تفاصيل المرحلة..." },
-                                                                },
-                                                            ],
-                                                        });
-                                                    }}
-                                                    className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer"
-                                                >
-                                                    + ADD PROCESS STEP
-                                                </button>
-                                            </div>
-
-                                            {(!editModalItem.process || editModalItem.process.length === 0) ? (
-                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No process steps added.</p>
-                                            ) : (
-                                                editModalItem.process.map((step: any, pIdx: number) => (
-                                                    <div key={`step-${pIdx}`} className="p-3.5 bg-ftx-obsidian border border-ftx-surface-high rounded-lg space-y-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-[10px] font-mono text-ftx-silver uppercase">STEP #{pIdx + 1}</span>
-                                                                <input
-                                                                    type="text"
-                                                                    value={step.number || `0${pIdx + 1}`}
-                                                                    onChange={(e) => {
-                                                                        const newP = [...(editModalItem.process || [])];
-                                                                        newP[pIdx] = { ...newP[pIdx], number: e.target.value };
-                                                                        setEditModalItem({ ...editModalItem, process: newP });
-                                                                    }}
-                                                                    className="w-12 p-1 bg-ftx-surface border border-ftx-surface-high text-ftx-lime text-center text-xs font-mono rounded"
-                                                                />
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newP = [...(editModalItem.process || [])];
-                                                                    newP.splice(pIdx, 1);
-                                                                    setEditModalItem({ ...editModalItem, process: newP });
-                                                                }}
-                                                                className="text-rose-400 text-[10px] font-mono hover:underline cursor-pointer"
-                                                            >
-                                                                REMOVE
-                                                            </button>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                            <input
-                                                                type="text"
-                                                                value={step.title?.en || ""}
-                                                                onChange={(e) => {
-                                                                    const newP = [...(editModalItem.process || [])];
-                                                                    newP[pIdx] = { ...newP[pIdx], title: { ...newP[pIdx].title, en: e.target.value } };
-                                                                    setEditModalItem({ ...editModalItem, process: newP });
-                                                                }}
-                                                                placeholder="Step Title (EN)..."
-                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
-                                                            />
-                                                            <input
-                                                                type="text"
-                                                                dir="rtl"
-                                                                value={step.title?.ar || ""}
-                                                                onChange={(e) => {
-                                                                    const newP = [...(editModalItem.process || [])];
-                                                                    newP[pIdx] = { ...newP[pIdx], title: { ...newP[pIdx].title, ar: e.target.value } };
-                                                                    setEditModalItem({ ...editModalItem, process: newP });
-                                                                }}
-                                                                placeholder="عنوان المرحلة (عربي)..."
-                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                            />
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                            <textarea
-                                                                rows={2}
-                                                                value={step.description?.en || ""}
-                                                                onChange={(e) => {
-                                                                    const newP = [...(editModalItem.process || [])];
-                                                                    newP[pIdx] = { ...newP[pIdx], description: { ...newP[pIdx].description, en: e.target.value } };
-                                                                    setEditModalItem({ ...editModalItem, process: newP });
-                                                                }}
-                                                                placeholder="Step Description (EN)..."
-                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none"
-                                                            />
-                                                            <textarea
-                                                                rows={2}
-                                                                dir="rtl"
-                                                                value={step.description?.ar || ""}
-                                                                onChange={(e) => {
-                                                                    const newP = [...(editModalItem.process || [])];
-                                                                    newP[pIdx] = { ...newP[pIdx], description: { ...newP[pIdx].description, ar: e.target.value } };
-                                                                    setEditModalItem({ ...editModalItem, process: newP });
-                                                                }}
-                                                                placeholder="تفاصيل المرحلة (عربي)..."
-                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-body rounded focus:border-ftx-lime focus:outline-none text-right"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-
-                                        {/* 4. DETAIL IMAGES GALLERY */}
+                                        {/* 2. DETAIL IMAGES GALLERY */}
                                         <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">
@@ -3016,6 +2963,8 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
     const isWhyFtx = section.sectionKey === "why_ftx";
     const isContact = section.page === "contact" || section.sectionKey === "info";
 
+    const [showStatCards, setShowStatCards] = useState<boolean>(section.metadata?.showStatCards !== false);
+    const [showMetricsCards, setShowMetricsCards] = useState<boolean>(section.metadata?.showMetricsCards !== false);
     const [mapsUrl, setMapsUrl] = useState(section.metadata?.mapsUrl || "");
     const [phone, setPhone] = useState(section.metadata?.phone || "");
     const [email, setEmail] = useState(section.metadata?.email || "");
@@ -3161,93 +3110,140 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
         setAddressAr(section.metadata?.addressAr || section.metadata?.address?.ar || "");
         setWorkingHoursEn(section.metadata?.workingHoursEn || section.metadata?.workingHours?.en || "");
         setWorkingHoursAr(section.metadata?.workingHoursAr || section.metadata?.workingHours?.ar || "");
+        setShowStatCards(section.metadata?.showStatCards !== false);
+        setShowMetricsCards(section.metadata?.showMetricsCards !== false);
     }, [section?._id, section?.sectionKey, section?.page]);
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, cardKey?: "card1Image" | "card2Image" | "card3Image" | "card4Image") => {
+    const [pendingFiles, setPendingFiles] = useState<{
+        imageUrl?: File;
+        card1Image?: File;
+        card2Image?: File;
+        card3Image?: File;
+        card4Image?: File;
+    }>({});
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, cardKey?: "card1Image" | "card2Image" | "card3Image" | "card4Image") => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setUploadingImage(true);
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const res = await fetch("/api/admin/upload", {
-                method: "POST",
-                body: formData,
-            });
-            const data = await res.json();
-            if (data.url) {
-                if (cardKey === "card1Image") setCard1Image(data.url);
-                else if (cardKey === "card2Image") setCard2Image(data.url);
-                else if (cardKey === "card3Image") setCard3Image(data.url);
-                else if (cardKey === "card4Image") setCard4Image(data.url);
-                else setImageUrl(data.url);
-            }
-        } catch (err) {
-            console.error("Image upload failed:", err);
-        } finally {
-            setUploadingImage(false);
+        const previewUrl = URL.createObjectURL(file);
+        if (cardKey === "card1Image") {
+            setCard1Image(previewUrl);
+            setPendingFiles((prev) => ({ ...prev, card1Image: file }));
+        } else if (cardKey === "card2Image") {
+            setCard2Image(previewUrl);
+            setPendingFiles((prev) => ({ ...prev, card2Image: file }));
+        } else if (cardKey === "card3Image") {
+            setCard3Image(previewUrl);
+            setPendingFiles((prev) => ({ ...prev, card3Image: file }));
+        } else if (cardKey === "card4Image") {
+            setCard4Image(previewUrl);
+            setPendingFiles((prev) => ({ ...prev, card4Image: file }));
+        } else {
+            setImageUrl(previewUrl);
+            setPendingFiles((prev) => ({ ...prev, imageUrl: file }));
         }
     };
 
-    const handleSave = () => {
-        onSave({
-            ...section,
-            title: { en: titleEn, ar: titleAr },
-            subtitle: { en: subtitleEn, ar: subtitleAr },
-            content: { en: contentEn, ar: contentAr },
-            metadata: {
-                ...section.metadata,
-                ...(imageUrl ? { imageUrl } : {}),
-                ...(isPhilosophy
-                    ? {
-                        stat1Val,
-                        stat1Suffix,
-                        stat1Label: { en: stat1LabelEn, ar: stat1LabelAr },
-                        stat2Val,
-                        stat2Suffix,
-                        stat2Label: { en: stat2LabelEn, ar: stat2LabelAr },
-                    }
-                    : {}),
-                ...(isInfrastructure || isWhyFtx
-                    ? {
-                        card1Image,
-                        card1Title: { en: card1TitleEn, ar: card1TitleAr },
-                        card1Desc: { en: card1DescEn, ar: card1DescAr },
-                        card2Image,
-                        card2Title: { en: card2TitleEn, ar: card2TitleAr },
-                        card2Desc: { en: card2DescEn, ar: card2DescAr },
-                        card3Image,
-                        card3Title: { en: card3TitleEn, ar: card3TitleAr },
-                        card3Desc: { en: card3DescEn, ar: card3DescAr },
-                        ...(isWhyFtx
-                            ? {
-                                card4Image,
-                                card4Title: { en: card4TitleEn, ar: card4TitleAr },
-                                card4Desc: { en: card4DescEn, ar: card4DescAr },
-                            }
-                            : {}),
-                    }
-                    : {}),
-                ...(isMetrics
-                    ? {
-                        metric1Val,
-                        metric1Suffix,
-                        metric1Label: { en: metric1LabelEn, ar: metric1LabelAr },
-                        metric2Val,
-                        metric2Suffix,
-                        metric2Label: { en: metric2LabelEn, ar: metric2LabelAr },
-                        metric3Val,
-                        metric3Suffix,
-                        metric3Label: { en: metric3LabelEn, ar: metric3LabelAr },
-                    }
-                    : {}),
-                ...(badgeTitleEn || badgeTitleAr ? { badgeTitle: { en: badgeTitleEn, ar: badgeTitleAr } } : {}),
-                ...(badgeSubEn || badgeSubAr ? { badgeSub: { en: badgeSubEn, ar: badgeSubAr } } : {}),
-                ...(isContact ? { mapsUrl, phone, email, addressEn, addressAr, workingHoursEn, workingHoursAr } : {}),
-            },
-        });
+    const uploadSingleFile = async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        return data.url || "";
+    };
+
+    const handleSave = async () => {
+        setUploadingImage(true);
+        try {
+            let finalImageUrl = imageUrl;
+            let finalCard1Image = card1Image;
+            let finalCard2Image = card2Image;
+            let finalCard3Image = card3Image;
+            let finalCard4Image = card4Image;
+
+            if (pendingFiles.imageUrl) {
+                finalImageUrl = await uploadSingleFile(pendingFiles.imageUrl);
+            }
+            if (pendingFiles.card1Image) {
+                finalCard1Image = await uploadSingleFile(pendingFiles.card1Image);
+            }
+            if (pendingFiles.card2Image) {
+                finalCard2Image = await uploadSingleFile(pendingFiles.card2Image);
+            }
+            if (pendingFiles.card3Image) {
+                finalCard3Image = await uploadSingleFile(pendingFiles.card3Image);
+            }
+            if (pendingFiles.card4Image) {
+                finalCard4Image = await uploadSingleFile(pendingFiles.card4Image);
+            }
+
+            onSave({
+                ...section,
+                isVisible: true,
+                title: { en: titleEn, ar: titleAr },
+                subtitle: { en: subtitleEn, ar: subtitleAr },
+                content: { en: contentEn, ar: contentAr },
+                metadata: {
+                    ...section.metadata,
+                    ...(finalImageUrl ? { imageUrl: finalImageUrl } : {}),
+                    ...(isPhilosophy
+                        ? {
+                            showStatCards,
+                            stat1Val,
+                            stat1Suffix,
+                            stat1Label: { en: stat1LabelEn, ar: stat1LabelAr },
+                            stat2Val,
+                            stat2Suffix,
+                            stat2Label: { en: stat2LabelAr },
+                        }
+                        : {}),
+                    ...(isInfrastructure || isWhyFtx
+                        ? {
+                            card1Image: finalCard1Image,
+                            card1Title: { en: card1TitleEn, ar: card1TitleAr },
+                            card1Desc: { en: card1DescEn, ar: card1DescAr },
+                            card2Image: finalCard2Image,
+                            card2Title: { en: card2TitleEn, ar: card2TitleAr },
+                            card2Desc: { en: card2DescEn, ar: card2DescAr },
+                            card3Image: finalCard3Image,
+                            card3Title: { en: card3TitleEn, ar: card3TitleAr },
+                            card3Desc: { en: card3DescAr },
+                            ...(isWhyFtx
+                                ? {
+                                    card4Image: finalCard4Image,
+                                    card4Title: { en: card4TitleEn, ar: card4TitleAr },
+                                    card4Desc: { en: card4DescAr },
+                                }
+                                : {}),
+                        }
+                        : {}),
+                    ...(isMetrics
+                        ? {
+                            showMetricsCards,
+                            metric1Val,
+                            metric1Suffix,
+                            metric1Label: { en: metric1LabelEn, ar: metric1LabelAr },
+                            metric2Val,
+                            metric2Suffix,
+                            metric2Label: { en: metric2LabelEn, ar: metric2LabelAr },
+                            metric3Val,
+                            metric3Suffix,
+                            metric3Label: { en: metric3LabelAr },
+                        }
+                        : {}),
+                    ...(badgeTitleEn || badgeTitleAr ? { badgeTitle: { en: badgeTitleEn, ar: badgeTitleAr } } : {}),
+                    ...(badgeSubEn || badgeSubAr ? { badgeSub: { en: badgeSubEn, ar: badgeSubAr } } : {}),
+                    ...(isContact ? { mapsUrl, phone, email, addressEn, addressAr, workingHoursEn, workingHoursAr } : {}),
+                },
+            });
+
+            setPendingFiles({});
+        } catch (err) {
+            console.error("Save error:", err);
+        } finally {
+            setUploadingImage(false);
+        }
     };
 
     return (
@@ -3259,14 +3255,16 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                         {section.page.toUpperCase()} / {section.sectionKey.toUpperCase()}
                     </span>
                 </div>
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-4 sm:px-5 py-2 sm:py-2.5 bg-ftx-lime hover:bg-ftx-lime-bright text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow transition-all flex items-center justify-center gap-2 shrink-0"
-                >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    <span>SAVE</span>
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="px-4 sm:px-5 py-2 sm:py-2.5 bg-ftx-lime hover:bg-ftx-lime-bright text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow transition-all flex items-center justify-center gap-2 shrink-0"
+                    >
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        <span>SAVE</span>
+                    </button>
+                </div>
             </div>
 
             {/* Section Media & Image Upload Bar (Only shown for Intro section or when image metadata exists) */}
@@ -3690,9 +3688,21 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                     <div className="flex items-center justify-between border-b border-ftx-surface-high pb-3">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-ftx-lime animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-ftx-lime uppercase">PERFORMANCE METRICS COUNTERS (3 CARDS)</span>
+                            <span className="text-xs font-mono font-bold text-ftx-lime uppercase">PERFORMANCE METRICS COUNTERS</span>
                         </div>
-                        <span className="text-[10px] font-mono text-ftx-silver-muted">LIVE COUNTER ANIMATIONS</span>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowMetricsCards(!showMetricsCards)}
+                                className={`p-2 rounded-lg text-xs font-mono font-bold uppercase transition-all flex items-center justify-center border cursor-pointer ${showMetricsCards
+                                    ? "bg-ftx-lime/10 text-ftx-lime border-ftx-lime/30 hover:bg-ftx-lime/20 shadow-lime-glow/20"
+                                    : "bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500/20"
+                                    }`}
+                                title={showMetricsCards ? "Performance Metrics Enabled (Visible on public website - Click to disable)" : "Performance Metrics Disabled (Hidden on public website - Click to enable)"}
+                            >
+                                {showMetricsCards ? <Eye className="w-4 h-4 text-ftx-lime" /> : <EyeOff className="w-4 h-4 text-rose-400" />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -3882,7 +3892,20 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
             {/* Philosophy Stat Cards Inputs (100% Dust-Free Bays & 1,500+ Supercars Protected) */}
             {isPhilosophy && (
                 <div className="bg-ftx-obsidian/60 border border-ftx-surface-high/60 p-4 rounded-xl space-y-3">
-                    <span className="text-xs font-mono font-bold text-ftx-silver uppercase block">PHILOSOPHY STAT CARDS (E.G. 100% DUST-FREE BAYS & 1,500+ SUPERCARS PROTECTED)</span>
+                    <div className="flex items-center justify-between border-b border-ftx-surface-high/60 pb-2">
+                        <span className="text-xs font-mono font-bold text-ftx-silver uppercase">PHILOSOPHY STAT CARDS</span>
+                        <button
+                            type="button"
+                            onClick={() => setShowStatCards(!showStatCards)}
+                            className={`p-2 rounded-lg text-xs font-mono font-bold uppercase transition-all flex items-center justify-center border cursor-pointer ${showStatCards
+                                ? "bg-ftx-lime/10 text-ftx-lime border-ftx-lime/30 hover:bg-ftx-lime/20 shadow-lime-glow/20"
+                                : "bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500/20"
+                                }`}
+                            title={showStatCards ? "Philosophy Stat Cards Enabled (Visible on public website - Click to disable)" : "Philosophy Stat Cards Disabled (Hidden on public website - Click to enable)"}
+                        >
+                            {showStatCards ? <Eye className="w-4 h-4 text-ftx-lime" /> : <EyeOff className="w-4 h-4 text-rose-400" />}
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Stat Card 1 */}
                         <div className="space-y-3 bg-ftx-surface/50 p-3.5 rounded-lg border border-ftx-surface-high/50">

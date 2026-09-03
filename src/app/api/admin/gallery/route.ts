@@ -4,6 +4,7 @@ import { seedDatabase } from "@/lib/seed";
 import { GalleryItemModel } from "@/lib/models/GalleryItem";
 import { getAdminSession } from "@/lib/auth";
 import { galleryData } from "@/data/gallery";
+import { deleteUploadedFile } from "@/lib/deleteFile";
 import mongoose from "mongoose";
 
 export async function GET() {
@@ -91,10 +92,26 @@ export async function PUT(req: NextRequest) {
 
         let updated = null;
         if (filterConditions.length > 0) {
+            const existing: any = await GalleryItemModel.findOne({ $or: filterConditions }).lean();
+            if (existing) {
+                if (updateData.image && existing.image && updateData.image !== existing.image) {
+                    await deleteUploadedFile(existing.image);
+                }
+                if (updateData.video && existing.video && updateData.video !== existing.video) {
+                    await deleteUploadedFile(existing.video);
+                }
+                if (updateData.beforeImage && existing.beforeImage && updateData.beforeImage !== existing.beforeImage) {
+                    await deleteUploadedFile(existing.beforeImage);
+                }
+                if (updateData.afterImage && existing.afterImage && updateData.afterImage !== existing.afterImage) {
+                    await deleteUploadedFile(existing.afterImage);
+                }
+            }
+
             updated = await GalleryItemModel.findOneAndUpdate(
                 { $or: filterConditions },
                 { ...updateData, itemId: targetId },
-                { new: true, upsert: true }
+                { returnDocument: "after", upsert: true }
             );
         } else {
             updated = await GalleryItemModel.create({
@@ -133,6 +150,14 @@ export async function DELETE(req: NextRequest) {
         const filterConditions: any[] = [{ itemId: id }];
         if (mongoose.Types.ObjectId.isValid(id)) {
             filterConditions.push({ _id: id });
+        }
+
+        const existing: any = await GalleryItemModel.findOne({ $or: filterConditions }).lean();
+        if (existing) {
+            await deleteUploadedFile(existing.image);
+            await deleteUploadedFile(existing.video);
+            await deleteUploadedFile(existing.beforeImage);
+            await deleteUploadedFile(existing.afterImage);
         }
 
         await GalleryItemModel.deleteOne({ $or: filterConditions });

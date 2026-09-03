@@ -4,6 +4,7 @@ import { seedDatabase } from "@/lib/seed";
 import { PackageItemModel } from "@/lib/models/PackageItem";
 import { getAdminSession } from "@/lib/auth";
 import { packagesData } from "@/data/packages";
+import { deleteUploadedFile } from "@/lib/deleteFile";
 import mongoose from "mongoose";
 
 export async function GET() {
@@ -88,10 +89,17 @@ export async function PUT(req: NextRequest) {
 
             let updated = null;
             if (filterConditions.length > 0) {
+                const existing: any = await PackageItemModel.findOne({ $or: filterConditions }).lean();
+                if (existing) {
+                    if (updateData.image && existing.image && updateData.image !== existing.image) {
+                        await deleteUploadedFile(existing.image);
+                    }
+                }
+
                 updated = await PackageItemModel.findOneAndUpdate(
                     { $or: filterConditions },
                     { ...updateData, packageId: targetId },
-                    { new: true, upsert: true }
+                    { returnDocument: "after", upsert: true }
                 );
             } else {
                 updated = await PackageItemModel.create({
@@ -125,6 +133,11 @@ export async function DELETE(req: NextRequest) {
             const filterConditions: any[] = [{ packageId: id }];
             if (mongoose.Types.ObjectId.isValid(id)) {
                 filterConditions.push({ _id: id });
+            }
+
+            const existing: any = await PackageItemModel.findOne({ $or: filterConditions }).lean();
+            if (existing) {
+                await deleteUploadedFile(existing.image);
             }
 
             await PackageItemModel.deleteOne({ $or: filterConditions });

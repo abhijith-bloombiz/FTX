@@ -257,7 +257,7 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
             )}
 
             {/* Bottom Metrics Banner matching design specification with animated counters */}
-            {metricsSec?.isVisible !== false && (metricsSec?.metadata?.showMetricsCards !== false) && (
+            {(metricsSec?.metadata?.showMetricsCards !== false) && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12">
                     <ScrollReveal type="editorial" delay={100}>
                         <div className="bg-ftx-surface/80 ftx-squircle-xl p-8 sm:p-12 border border-ftx-surface-high shadow-2xl">

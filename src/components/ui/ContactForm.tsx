@@ -386,7 +386,12 @@ export function ContactForm({ locale, messages, initialServices }: ContactFormPr
                                     {/* Animated Glassmorphic Dropdown Panel */}
                                     {isServiceOpen && (
                                         <div className="absolute top-full left-0 right-0 mt-2 bg-ftx-obsidian border border-ftx-surface-high ftx-squircle-sm shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                            <div className="py-1.5">
+                                            <div
+                                                data-lenis-prevent
+                                                onWheel={(e) => e.stopPropagation()}
+                                                onTouchMove={(e) => e.stopPropagation()}
+                                                className="py-1.5 max-h-[155px] overflow-y-auto overscroll-contain"
+                                            >
                                                 {serviceOptions.map((opt) => {
                                                     const isSelected = formData.service === opt.value;
                                                     return (

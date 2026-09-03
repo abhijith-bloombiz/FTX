@@ -2,29 +2,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { ServiceItemModel } from "@/lib/models/ServiceItem";
 import { getAdminSession } from "@/lib/auth";
+import { servicesData } from "@/data/services";
 import mongoose from "mongoose";
 
 export async function POST(req: NextRequest) {
     try {
         const session = await getAdminSession();
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await req.json();
-        const { services } = body; // Array of { _id, serviceId, number } or full items
+        const { services } = body;
 
         if (!Array.isArray(services)) {
-            return NextResponse.json({ error: "Invalid payload format. Expected array of services." }, { status: 400 });
+            return NextResponse.json({ error: "Services array is required" }, { status: 400 });
         }
 
+        // Re-assign number based on array index (e.g. 01, 02, 03, ...)
+        const reordered = services.map((item: any, idx: number) => {
+            const numStr = String(idx + 1).padStart(2, "0");
+            return {
+                ...item,
+                number: numStr,
+            };
+        });
+
+        // 1. Update in-memory fallback array
+        reordered.forEach((item: any) => {
+            const sId = item.serviceId || item.id || item._id;
+            const fallbackIdx = servicesData.findIndex(
+                (s: any) => s.id === sId || s.serviceId === sId || (s._id && String(s._id) === String(sId))
+            );
+            if (fallbackIdx !== -1) {
+                servicesData[fallbackIdx] = {
+                    ...servicesData[fallbackIdx],
+                    number: item.number,
+                };
+            }
+        });
+
+        // Sort in-memory fallback by number
+        servicesData.sort((a: any, b: any) => parseInt(a.number || "99", 10) - parseInt(b.number || "99", 10));
+
+        // 2. Update Database if connected
         try {
             await connectToDatabase();
-
-            const updatePromises = services.map(async (item: any, index: number) => {
-                const targetNumber = String(index + 1).padStart(2, "0");
+            const bulkOps = reordered.map((item: any) => {
                 const targetId = item.serviceId || item.id || item._id;
-
                 const filterConditions: any[] = [];
                 if (item._id && mongoose.Types.ObjectId.isValid(item._id)) {
                     filterConditions.push({ _id: item._id });
@@ -33,29 +56,25 @@ export async function POST(req: NextRequest) {
                     filterConditions.push({ serviceId: targetId });
                 }
 
-                if (filterConditions.length > 0) {
-                    return ServiceItemModel.findOneAndUpdate(
-                        { $or: filterConditions },
-                        { $set: { number: targetNumber } },
-                        { new: true }
-                    );
-                }
+                return {
+                    updateOne: {
+                        filter: filterConditions.length > 0 ? { $or: filterConditions } : { serviceId: targetId },
+                        update: { $set: { number: item.number } },
+                    },
+                };
             });
 
-            await Promise.all(updatePromises);
+            if (bulkOps.length > 0) {
+                await ServiceItemModel.bulkWrite(bulkOps);
+            }
 
-            const updatedList = await ServiceItemModel.find().sort({ number: 1 }).lean();
-            return NextResponse.json({ success: true, services: updatedList });
+            return NextResponse.json({ success: true, services: reordered });
         } catch (dbErr: any) {
-            console.warn("Database offline during service reorder, returning fallback updated response.", dbErr);
-            const fallbackServices = services.map((s: any, idx: number) => ({
-                ...s,
-                number: String(idx + 1).padStart(2, "0"),
-            }));
-            return NextResponse.json({ success: true, services: fallbackServices, fallback: true });
+            console.warn("DB offline during POST /api/admin/services/reorder, fallback applied:", dbErr.message);
+            return NextResponse.json({ success: true, services: reordered, fallback: true });
         }
     } catch (error: any) {
-        console.error("Service Reorder Error:", error);
+        console.error("Reorder Services Error:", error);
         return NextResponse.json({ error: error.message || "Failed to reorder services" }, { status: 500 });
     }
 }

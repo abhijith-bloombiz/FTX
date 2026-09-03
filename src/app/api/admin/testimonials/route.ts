@@ -4,6 +4,7 @@ import { seedDatabase } from "@/lib/seed";
 import { TestimonialItemModel } from "@/lib/models/TestimonialItem";
 import { getAdminSession } from "@/lib/auth";
 import { testimonialsData } from "@/data/testimonials";
+import { deleteUploadedFile } from "@/lib/deleteFile";
 import mongoose from "mongoose";
 
 export async function GET() {
@@ -75,10 +76,20 @@ export async function PUT(req: NextRequest) {
 
             let updated = null;
             if (filterConditions.length > 0) {
+                const existing: any = await TestimonialItemModel.findOne({ $or: filterConditions }).lean();
+                if (existing) {
+                    if (updateData.avatar && existing.avatar && updateData.avatar !== existing.avatar) {
+                        await deleteUploadedFile(existing.avatar);
+                    }
+                    if (updateData.image && existing.image && updateData.image !== existing.image) {
+                        await deleteUploadedFile(existing.image);
+                    }
+                }
+
                 updated = await TestimonialItemModel.findOneAndUpdate(
                     { $or: filterConditions },
                     { ...updateData, testimonialId: targetId },
-                    { new: true, upsert: true }
+                    { returnDocument: "after", upsert: true }
                 );
             } else {
                 updated = await TestimonialItemModel.create({
@@ -112,6 +123,13 @@ export async function DELETE(req: NextRequest) {
             if (mongoose.Types.ObjectId.isValid(id)) {
                 filterConditions.push({ _id: id });
             }
+
+            const existing: any = await TestimonialItemModel.findOne({ $or: filterConditions }).lean();
+            if (existing) {
+                await deleteUploadedFile(existing.avatar);
+                await deleteUploadedFile(existing.image);
+            }
+
             await TestimonialItemModel.deleteOne({ $or: filterConditions });
             return NextResponse.json({ success: true });
         } catch (dbErr: any) {
