@@ -229,7 +229,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     {/* GROUP 1: PRECISION PROTECTION. */}
                     <div className="contents">
                         {/* LINE 1 */}
-                        <div className="absolute top-[10px] sm:top-[30px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className={`absolute top-[10px] sm:top-[30px] ${locale === "ar" ? "lg:top-[50px] xl:top-[60px]" : ""} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
                             {locale === "en" ? (
                                 <div
                                     ref={line1Ref}
@@ -258,7 +258,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         </div>
 
                         {/* LINE 2 */}
-                        <div className="absolute top-[51px] sm:top-[61px] lg:top-[77px] xl:top-[101px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className={`absolute top-[51px] sm:top-[61px] ${locale === "ar" ? "lg:top-[125px] xl:top-[150px]" : "lg:top-[77px] xl:top-[101px]"} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
                             {locale === "en" ? (
                                 <div
                                     ref={line2Ref}
@@ -290,7 +290,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     {/* GROUP 2: AUTOMOTIVE PERFECTION. */}
                     <div className="contents">
                         {/* LINE 3 */}
-                        <div className="absolute top-0 lg:top-[15px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className={`absolute top-0 ${locale === "ar" ? "lg:top-[35px] xl:top-[45px]" : "lg:top-[15px]"} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
                             {locale === "en" ? (
                                 <div
                                     ref={line3Ref}
@@ -319,7 +319,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         </div>
 
                         {/* LINE 4 */}
-                        <div className="absolute top-[51px] sm:top-[61px] lg:top-[67px] xl:top-[91px] left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5">
+                        <div className={`absolute top-[51px] sm:top-[61px] ${locale === "ar" ? "lg:top-[115px] xl:top-[140px]" : "lg:top-[67px] xl:top-[91px]"} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
                             {locale === "en" ? (
                                 <div
                                     ref={line4Ref}
