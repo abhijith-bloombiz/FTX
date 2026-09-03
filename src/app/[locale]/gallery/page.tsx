@@ -9,6 +9,7 @@ import { GalleryCategory, MediaTypeFilter } from "@/types/gallery";
 import { GalleryFilter } from "@/components/ui/GalleryFilter";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
+import { ViewportVideo } from "@/components/ui/ViewportVideo";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
@@ -98,6 +99,15 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         return "/images/gallery/ppf-studio-hero.jpg";
     };
 
+    const getItemVideo = (item: any) => {
+        if (!item) return null;
+        if (item.video) return item.video;
+        if (item.videoUrl) return item.videoUrl;
+        if (typeof item.image === "string" && (item.image.endsWith(".mp4") || item.image.endsWith(".webm"))) return item.image;
+        if (typeof item.src === "string" && (item.src.endsWith(".mp4") || item.src.endsWith(".webm"))) return item.src;
+        return null;
+    };
+
     const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
 
     return (
@@ -119,7 +129,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                 }
             />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10 sm:pb-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-10 sm:pb-12">
                 {/* Filter and Layout Switcher */}
                 <GalleryFilter
                     mediaTypes={mediaTypes}
@@ -180,13 +190,21 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             onClick={() => setActiveLightboxIndex(0)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
-                                            <Image
-                                                src={getItemImage(visibleItems[0])}
-                                                alt={visibleItems[0]?.title?.[locale] || "PROJECT: STEALTH"}
-                                                fill
-                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                                priority
-                                            />
+                                            {getItemVideo(visibleItems[0]) ? (
+                                                <ViewportVideo
+                                                    src={getItemVideo(visibleItems[0])!}
+                                                    poster={getItemImage(visibleItems[0])}
+                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={getItemImage(visibleItems[0])}
+                                                    alt={visibleItems[0]?.title?.[locale] || "PROJECT: STEALTH"}
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    priority
+                                                />
+                                            )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/40 to-transparent" />
 
                                             {/* Top Badge for Static Images */}
@@ -225,12 +243,20 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             onClick={() => setActiveLightboxIndex(1)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
-                                            <Image
-                                                src={getItemImage(visibleItems[1])}
-                                                alt={visibleItems[1]?.title?.[locale] || "Hydrophobic Mastery"}
-                                                fill
-                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                            />
+                                            {getItemVideo(visibleItems[1]) ? (
+                                                <ViewportVideo
+                                                    src={getItemVideo(visibleItems[1])!}
+                                                    poster={getItemImage(visibleItems[1])}
+                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={getItemImage(visibleItems[1])}
+                                                    alt={visibleItems[1]?.title?.[locale] || "Hydrophobic Mastery"}
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
                                             {/* Top Badge for Static Images */}
@@ -272,12 +298,20 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             onClick={() => setActiveLightboxIndex(2)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
-                                            <Image
-                                                src={getItemImage(visibleItems[2])}
-                                                alt={visibleItems[2]?.title?.[locale] || "Porsche 911 GT3 RS"}
-                                                fill
-                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                            />
+                                            {getItemVideo(visibleItems[2]) ? (
+                                                <ViewportVideo
+                                                    src={getItemVideo(visibleItems[2])!}
+                                                    poster={getItemImage(visibleItems[2])}
+                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={getItemImage(visibleItems[2])}
+                                                    alt={visibleItems[2]?.title?.[locale] || "Porsche 911 GT3 RS"}
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
                                             {/* Top Badge */}
@@ -314,12 +348,20 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             onClick={() => setActiveLightboxIndex(3)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
-                                            <Image
-                                                src={getItemImage(visibleItems[3])}
-                                                alt={visibleItems[3]?.title?.[locale] || "Hypercar Gloss Matrix"}
-                                                fill
-                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                            />
+                                            {getItemVideo(visibleItems[3]) ? (
+                                                <ViewportVideo
+                                                    src={getItemVideo(visibleItems[3])!}
+                                                    poster={getItemImage(visibleItems[3])}
+                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={getItemImage(visibleItems[3])}
+                                                    alt={visibleItems[3]?.title?.[locale] || "Hypercar Gloss Matrix"}
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                />
+                                            )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
                                             {/* Top Badge */}
@@ -368,12 +410,20 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         onClick={() => setActiveLightboxIndex(actualIndex)}
                                                         className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-all duration-300"
                                                     >
-                                                        <Image
-                                                            src={getItemImage(item)}
-                                                            alt={item.title?.[locale] || ""}
-                                                            fill
-                                                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                                        />
+                                                        {getItemVideo(item) ? (
+                                                            <ViewportVideo
+                                                                src={getItemVideo(item)!}
+                                                                poster={getItemImage(item)}
+                                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                            />
+                                                        ) : (
+                                                            <Image
+                                                                src={getItemImage(item)}
+                                                                alt={item.title?.[locale] || ""}
+                                                                fill
+                                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                            />
+                                                        )}
                                                         <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
                                                         {/* Top Badge for Static Images */}
@@ -426,12 +476,20 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface border border-ftx-surface-high hover:border-ftx-lime/40 overflow-hidden transition-colors duration-300 shadow-2xl flex flex-col sm:flex-row h-full min-h-[220px] sm:min-h-[240px]"
                                         >
                                             <div className="relative w-full sm:w-1/2 min-h-[200px] sm:min-h-full overflow-hidden">
-                                                <Image
-                                                    src={getItemImage(item)}
-                                                    alt={item.title?.[locale] || ""}
-                                                    fill
-                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                                />
+                                                {getItemVideo(item) ? (
+                                                    <ViewportVideo
+                                                        src={getItemVideo(item)!}
+                                                        poster={getItemImage(item)}
+                                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={getItemImage(item)}
+                                                        alt={item.title?.[locale] || ""}
+                                                        fill
+                                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    />
+                                                )}
                                                 <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
                                                     {getVehicleLabel(item.vehicle, locale)}
                                                 </div>

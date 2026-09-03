@@ -6,6 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { galleryData, getVehicleLabel } from "@/data/gallery";
 import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 import { Lightbox } from "@/components/ui/Lightbox";
+import { ViewportVideo } from "@/components/ui/ViewportVideo";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -86,12 +87,23 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         return item.image || item.src || item.coverImage || "/images/gallery/ppf-studio-hero.jpg";
     };
 
+    const getItemVideo = (item: any) => {
+        if (!item) return null;
+        if (item.video) return item.video;
+        if (item.videoUrl) return item.videoUrl;
+        if (typeof item.image === "string" && (item.image.endsWith(".mp4") || item.image.endsWith(".webm"))) return item.image;
+        if (typeof item.src === "string" && (item.src.endsWith(".mp4") || item.src.endsWith(".webm"))) return item.src;
+        return null;
+    };
+
     const renderCardSlot = (slotIndex: number, colSpanClass: string, direction: "left" | "right", delay: number) => {
         const itemIdx = (slotIndices[slotIndex] ?? slotIndex) % (availableItems.length || 1);
         const item = availableItems[itemIdx] || availableItems[0];
         const isFading = fadingSlot === slotIndex;
 
         if (!item) return null;
+
+        const videoSrc = getItemVideo(item);
 
         return (
             <ScrollReveal type="horizontal" direction={direction} delay={delay} duration={850} className={colSpanClass}>
@@ -100,14 +112,23 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
                 >
                     <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
-                        <img
-                            src={getItemImage(item)}
-                            alt={getTitle(item)}
-                            decoding="async"
-                            loading="lazy"
-                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
-                                }`}
-                        />
+                        {videoSrc ? (
+                            <ViewportVideo
+                                src={videoSrc}
+                                poster={getItemImage(item)}
+                                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
+                                    }`}
+                            />
+                        ) : (
+                            <img
+                                src={getItemImage(item)}
+                                alt={getTitle(item)}
+                                decoding="async"
+                                loading="lazy"
+                                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
+                                    }`}
+                            />
+                        )}
                         <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
                             <h4 className={`text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-all duration-500 leading-tight line-clamp-1 ${isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
                                 }`}>
