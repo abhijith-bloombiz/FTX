@@ -151,14 +151,37 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         updateMobileCardsFromStage(0);
     }, [isHomePage, updateMobileCardsFromStage]);
 
+    const animateStageTo = useCallback((targetStage: number, duration = 0.75, ease = "power2.inOut") => {
+        const totalPillars = pillars.length;
+        const normalizedActiveIndex = ((Math.round(targetStage) % totalPillars) + totalPillars) % totalPillars;
+
+        pauseAutoPlay();
+        gsap.killTweensOf(currentStageRef.current);
+
+        gsap.to(currentStageRef.current, {
+            stage: targetStage,
+            duration,
+            ease,
+            onUpdate: () => {
+                updateMobileCardsFromStage(currentStageRef.current.stage);
+            },
+            onComplete: () => {
+                currentStageRef.current.stage = targetStage;
+                activeCardIndexRef.current = normalizedActiveIndex;
+                setActiveCardIndex(normalizedActiveIndex);
+            },
+        });
+    }, [pillars.length, updateMobileCardsFromStage]);
+
     // Auto-scroll 3D card slideshow timer (ONLY cycles when visible, idle, and not paused by touch)
     useEffect(() => {
         if (!isHomePage || !isInView || !isIdle) return;
 
         const interval = setInterval(() => {
             if (!isPausedRef.current) {
-                const nextStage = currentStageRef.current.stage + 1;
-                animateStageTo(nextStage);
+                const currentIntegerStage = Math.round(currentStageRef.current.stage);
+                const nextStage = currentIntegerStage + 1;
+                animateStageTo(nextStage, 0.8, "power2.inOut");
             }
         }, 3500);
 
@@ -166,23 +189,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             clearInterval(interval);
             if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
         };
-    }, [isHomePage, isInView, isIdle, pillars.length, updateMobileCardsFromStage]);
-
-    const animateStageTo = (targetStage: number) => {
-        const totalPillars = pillars.length;
-        const normalizedActiveIndex = ((Math.round(targetStage) % totalPillars) + totalPillars) % totalPillars;
-        setActiveCardIndex(normalizedActiveIndex);
-        pauseAutoPlay();
-
-        gsap.to(currentStageRef.current, {
-            stage: targetStage,
-            duration: 0.5,
-            ease: "power2.out",
-            onUpdate: () => {
-                updateMobileCardsFromStage(currentStageRef.current.stage);
-            },
-        });
-    };
+    }, [isHomePage, isInView, isIdle, pillars.length, animateStageTo]);
 
     const handleTouchStart = (e: React.TouchEvent) => {
         pauseAutoPlay();
@@ -202,11 +209,11 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         const currentStage = Math.round(currentStageRef.current.stage);
 
         if (diffX > swipeThreshold) {
-            // Swiped Left -> Next Card (Infinite Forward)
-            animateStageTo(currentStage + 1);
+            // Swiped Left -> Next Card (Snappy power2.out for finger swipe release)
+            animateStageTo(currentStage + 1, 0.5, "power2.out");
         } else if (diffX < -swipeThreshold) {
-            // Swiped Right -> Previous Card (Infinite Backward)
-            animateStageTo(currentStage - 1);
+            // Swiped Right -> Previous Card
+            animateStageTo(currentStage - 1, 0.5, "power2.out");
         }
 
         touchStartXRef.current = null;
@@ -215,13 +222,13 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
     const handleDotClick = (index: number) => {
         const totalPillars = pillars.length;
-        const currentStage = currentStageRef.current.stage;
-        const currentMod = ((Math.round(currentStage) % totalPillars) + totalPillars) % totalPillars;
+        const currentStage = Math.round(currentStageRef.current.stage);
+        const currentMod = ((currentStage % totalPillars) + totalPillars) % totalPillars;
         let diff = index - currentMod;
         if (diff > totalPillars / 2) diff -= totalPillars;
         if (diff < -totalPillars / 2) diff += totalPillars;
 
-        animateStageTo(currentStage + diff);
+        animateStageTo(currentStage + diff, 0.65, "power2.inOut");
     };
 
     if (!isHomePage) {

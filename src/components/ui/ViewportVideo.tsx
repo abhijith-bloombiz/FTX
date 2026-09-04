@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ViewportVideoProps {
     src: string;
@@ -10,6 +10,7 @@ interface ViewportVideoProps {
 
 export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
+    const [shouldLoad, setShouldLoad] = useState(false);
 
     useEffect(() => {
         const el = videoRef.current;
@@ -18,17 +19,28 @@ export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    el.play().catch(() => { });
+                    setShouldLoad(true);
+                    // Defer play call to next tick for smooth mobile thread rendering
+                    requestAnimationFrame(() => {
+                        if (videoRef.current) {
+                            videoRef.current.play().catch(() => { });
+                        }
+                    });
                 } else {
-                    el.pause();
+                    if (videoRef.current) {
+                        videoRef.current.pause();
+                    }
                 }
             },
-            { threshold: 0.2 } // Play when 20% visible in viewport, pause when scrolled out
+            { threshold: 0.15, rootMargin: "50px" }
         );
 
         observer.observe(el);
 
         return () => {
+            if (el) {
+                el.pause();
+            }
             observer.disconnect();
         };
     }, [src]);
@@ -36,10 +48,11 @@ export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
     return (
         <video
             ref={videoRef}
-            src={src}
+            src={shouldLoad ? src : undefined}
             muted
             loop
             playsInline
+            preload="none"
             poster={poster}
             className={className}
         />

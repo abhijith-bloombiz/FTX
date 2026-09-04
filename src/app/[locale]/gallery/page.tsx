@@ -30,6 +30,30 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
     const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
     const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
     const [visibleCount, setVisibleCount] = useState<number>(10);
+    const [pair1Offset, setPair1Offset] = useState<number>(0);
+    const [pair2Offset, setPair2Offset] = useState<number>(0);
+
+    useEffect(() => {
+        // Pair 1 (Card 1 & Card 4) rotates every 6 seconds
+        const interval1 = setInterval(() => {
+            setPair1Offset((prev) => prev + 1);
+        }, 6000);
+
+        // Pair 2 (Card 2 & Card 3) rotates every 6 seconds, delayed by 3 seconds
+        let interval2: NodeJS.Timeout;
+        const timeout2 = setTimeout(() => {
+            setPair2Offset((prev) => prev + 1);
+            interval2 = setInterval(() => {
+                setPair2Offset((prev) => prev + 1);
+            }, 6000);
+        }, 3000);
+
+        return () => {
+            clearInterval(interval1);
+            clearTimeout(timeout2);
+            if (interval2) clearInterval(interval2);
+        };
+    }, []);
 
     useEffect(() => {
         Promise.all([
@@ -108,6 +132,22 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         return null;
     };
 
+    const getCardData = (cardIndex: 1 | 2 | 3 | 4) => {
+        if (visibleItems.length === 0) return { item: null, index: 0 };
+        let idx = 0;
+        if (cardIndex === 1) idx = (pair1Offset * 2) % visibleItems.length;
+        else if (cardIndex === 4) idx = (pair1Offset * 2 + 3) % visibleItems.length;
+        else if (cardIndex === 2) idx = (pair2Offset * 2 + 1) % visibleItems.length;
+        else if (cardIndex === 3) idx = (pair2Offset * 2 + 2) % visibleItems.length;
+        const item = visibleItems[idx] || visibleItems[(cardIndex - 1) % visibleItems.length] || visibleItems[0];
+        return { item, index: idx };
+    };
+
+    const card1 = getCardData(1);
+    const card2 = getCardData(2);
+    const card3 = getCardData(3);
+    const card4 = getCardData(4);
+
     const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
 
     return (
@@ -184,22 +224,23 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                             <div className="space-y-8">
                                 {/* Top Row: Main Feature (8 cols) + Tall Hydrophobic Card (4 cols) */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                                    {/* Top Left Main Feature Card (1st: Video Showcase) */}
+                                    {/* Top Left Main Feature Card (1st: Pair 1 - Card 1) */}
                                     <ScrollReveal type="horizontal" direction="left" delay={0} className="lg:col-span-8 flex flex-col h-full">
                                         <div
-                                            onClick={() => setActiveLightboxIndex(0)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                            key={`card-1-${pair1Offset}`}
+                                            onClick={() => setActiveLightboxIndex(card1.index)}
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
-                                            {getItemVideo(visibleItems[0]) ? (
+                                            {getItemVideo(card1.item) ? (
                                                 <ViewportVideo
-                                                    src={getItemVideo(visibleItems[0])!}
-                                                    poster={getItemImage(visibleItems[0])}
+                                                    src={getItemVideo(card1.item)!}
+                                                    poster={getItemImage(card1.item)}
                                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
                                             ) : (
                                                 <Image
-                                                    src={getItemImage(visibleItems[0])}
-                                                    alt={visibleItems[0]?.title?.[locale] || "PROJECT: STEALTH"}
+                                                    src={getItemImage(card1.item)}
+                                                    alt={card1.item?.title?.[locale] || "PROJECT: STEALTH"}
                                                     fill
                                                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                     priority
@@ -208,16 +249,16 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/40 to-transparent" />
 
                                             {/* Top Badge for Static Images */}
-                                            {!(visibleItems[0]?.isVideo || visibleItems[0]?.video) && (
+                                            {!(card1.item?.isVideo || card1.item?.video) && (
                                                 <div className="absolute top-6 right-6 z-10">
                                                     <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                        {visibleItems[0] ? getVehicleLabel(visibleItems[0].vehicle, locale) : ""}
+                                                        {card1.item ? getVehicleLabel(card1.item.vehicle, locale) : ""}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(visibleItems[0]?.isVideo || visibleItems[0]?.video) && (
+                                            {(card1.item?.isVideo || card1.item?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-16 h-16 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-7 h-7 fill-ftx-black ml-1" />
@@ -228,31 +269,32 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-2">
                                                 <h2 className="text-xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight line-clamp-2">
-                                                    {visibleItems[0]?.title?.[locale] || (locale === "ar" ? "مشروع: ستيلث" : "PROJECT: STEALTH")}
+                                                    {card1.item?.title?.[locale] || (locale === "ar" ? "مشروع: ستيلث" : "PROJECT: STEALTH")}
                                                 </h2>
                                                 <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-1">
-                                                    {visibleItems[0]?.description?.[locale] || (locale === "ar" ? "لامبورغيني أفينتادور SVJ • تغليف كامل XPEL STEALTH" : "LAMBORGHINI AVENTADOR SVJ • FULL BODY XPEL STEALTH")}
+                                                    {card1.item?.description?.[locale] || (locale === "ar" ? "لامبورغيني أفينتادور SVJ • تغليف كامل XPEL STEALTH" : "LAMBORGHINI AVENTADOR SVJ • FULL BODY XPEL STEALTH")}
                                                 </p>
                                             </div>
                                         </div>
                                     </ScrollReveal>
 
-                                    {/* Top Right Tall Hydrophobic Card (2nd: Video Showcase) */}
+                                    {/* Top Right Tall Hydrophobic Card (2nd: Pair 2 - Card 2) */}
                                     <ScrollReveal type="horizontal" direction="right" delay={120} className="lg:col-span-4 flex flex-col h-full">
                                         <div
-                                            onClick={() => setActiveLightboxIndex(1)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                            key={`card-2-${pair2Offset}`}
+                                            onClick={() => setActiveLightboxIndex(card2.index)}
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
-                                            {getItemVideo(visibleItems[1]) ? (
+                                            {getItemVideo(card2.item) ? (
                                                 <ViewportVideo
-                                                    src={getItemVideo(visibleItems[1])!}
-                                                    poster={getItemImage(visibleItems[1])}
+                                                    src={getItemVideo(card2.item)!}
+                                                    poster={getItemImage(card2.item)}
                                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
                                             ) : (
                                                 <Image
-                                                    src={getItemImage(visibleItems[1])}
-                                                    alt={visibleItems[1]?.title?.[locale] || "Hydrophobic Mastery"}
+                                                    src={getItemImage(card2.item)}
+                                                    alt={card2.item?.title?.[locale] || "Hydrophobic Mastery"}
                                                     fill
                                                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
@@ -260,16 +302,16 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
                                             {/* Top Badge for Static Images */}
-                                            {!(visibleItems[1]?.isVideo || visibleItems[1]?.video) && (
+                                            {!(card2.item?.isVideo || card2.item?.video) && (
                                                 <div className="absolute top-6 right-6 z-10">
                                                     <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                        {visibleItems[1] ? getVehicleLabel(visibleItems[1].vehicle, locale) : ""}
+                                                        {card2.item ? getVehicleLabel(card2.item.vehicle, locale) : ""}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(visibleItems[1]?.isVideo || visibleItems[1]?.video) && (
+                                            {(card2.item?.isVideo || card2.item?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-6 h-6 fill-ftx-black ml-1" />
@@ -280,10 +322,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-2">
                                                 <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {visibleItems[1]?.title?.[locale]}
+                                                    {card2.item?.title?.[locale]}
                                                 </h3>
                                                 <p className="text-xs text-ftx-silver-muted font-body leading-relaxed line-clamp-3">
-                                                    {visibleItems[1]?.description?.[locale]}
+                                                    {card2.item?.description?.[locale]}
                                                 </p>
                                             </div>
                                         </div>
@@ -292,22 +334,23 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
 
                                 {/* Bottom Row: 4 cols card + 8 cols Wide card */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                                    {/* Bottom Left Card (3rd item: Image Showcase) */}
+                                    {/* Bottom Left Card (3rd: Pair 2 - Card 3) */}
                                     <ScrollReveal type="horizontal" direction="left" delay={200} className="lg:col-span-4 flex flex-col h-full">
                                         <div
-                                            onClick={() => setActiveLightboxIndex(2)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                            key={`card-3-${pair2Offset}`}
+                                            onClick={() => setActiveLightboxIndex(card3.index)}
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
-                                            {getItemVideo(visibleItems[2]) ? (
+                                            {getItemVideo(card3.item) ? (
                                                 <ViewportVideo
-                                                    src={getItemVideo(visibleItems[2])!}
-                                                    poster={getItemImage(visibleItems[2])}
+                                                    src={getItemVideo(card3.item)!}
+                                                    poster={getItemImage(card3.item)}
                                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
                                             ) : (
                                                 <Image
-                                                    src={getItemImage(visibleItems[2])}
-                                                    alt={visibleItems[2]?.title?.[locale] || "Porsche 911 GT3 RS"}
+                                                    src={getItemImage(card3.item)}
+                                                    alt={card3.item?.title?.[locale] || "Porsche 911 GT3 RS"}
                                                     fill
                                                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
@@ -317,12 +360,12 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Top Badge */}
                                             <div className="absolute top-6 right-6 z-10">
                                                 <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                    {visibleItems[2] ? getVehicleLabel(visibleItems[2].vehicle, locale) : "PORSCHE 911 GT3 RS"}
+                                                    {card3.item ? getVehicleLabel(card3.item.vehicle, locale) : "PORSCHE 911 GT3 RS"}
                                                 </div>
                                             </div>
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(visibleItems[2]?.isVideo || visibleItems[2]?.video) && (
+                                            {(card3.item?.isVideo || card3.item?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-6 h-6 fill-ftx-black ml-1" />
@@ -333,31 +376,32 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-1">
                                                 <span className="text-[10px] font-mono font-bold text-ftx-lime uppercase tracking-widest block">
-                                                    {visibleItems[2] ? getVehicleLabel(visibleItems[2].vehicle, locale) : "PORSCHE 911 GT3 RS"}
+                                                    {card3.item ? getVehicleLabel(card3.item.vehicle, locale) : "PORSCHE 911 GT3 RS"}
                                                 </span>
                                                 <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {visibleItems[2]?.title?.[locale]}
+                                                    {card3.item?.title?.[locale]}
                                                 </h3>
                                             </div>
                                         </div>
                                     </ScrollReveal>
 
-                                    {/* Bottom Right Wide Card (4th item: Image Showcase) */}
+                                    {/* Bottom Right Wide Card (4th: Pair 1 - Card 4) */}
                                     <ScrollReveal type="horizontal" direction="right" delay={280} className="lg:col-span-8 flex flex-col h-full">
                                         <div
-                                            onClick={() => setActiveLightboxIndex(3)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                            key={`card-4-${pair1Offset}`}
+                                            onClick={() => setActiveLightboxIndex(card4.index)}
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
-                                            {getItemVideo(visibleItems[3]) ? (
+                                            {getItemVideo(card4.item) ? (
                                                 <ViewportVideo
-                                                    src={getItemVideo(visibleItems[3])!}
-                                                    poster={getItemImage(visibleItems[3])}
+                                                    src={getItemVideo(card4.item)!}
+                                                    poster={getItemImage(card4.item)}
                                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
                                             ) : (
                                                 <Image
-                                                    src={getItemImage(visibleItems[3])}
-                                                    alt={visibleItems[3]?.title?.[locale] || "Hypercar Gloss Matrix"}
+                                                    src={getItemImage(card4.item)}
+                                                    alt={card4.item?.title?.[locale] || "Hypercar Gloss Matrix"}
                                                     fill
                                                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                                 />
@@ -367,12 +411,12 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Top Badge */}
                                             <div className="absolute top-6 right-6 z-10">
                                                 <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                    {visibleItems[3] ? getVehicleLabel(visibleItems[3].vehicle, locale) : "HYPERCAR GLOSS MATRIX"}
+                                                    {card4.item ? getVehicleLabel(card4.item.vehicle, locale) : "HYPERCAR GLOSS MATRIX"}
                                                 </div>
                                             </div>
 
                                             {/* Center Play Button Overlay for Videos */}
-                                            {(visibleItems[3]?.isVideo || visibleItems[3]?.video) && (
+                                            {(card4.item?.isVideo || card4.item?.video) && (
                                                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                                     <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
                                                         <Play className="w-6 h-6 fill-ftx-black ml-1" />
@@ -383,10 +427,10 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             {/* Bottom Content */}
                                             <div className="relative z-10 space-y-2">
                                                 <h3 className="text-xl sm:text-3xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {visibleItems[3]?.title?.[locale] || (locale === "ar" ? "تصحيح الطلاء" : "PAINT CORRECTION")}
+                                                    {card4.item?.title?.[locale] || (locale === "ar" ? "تصحيح الطلاء" : "PAINT CORRECTION")}
                                                 </h3>
                                                 <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-2 max-w-2xl">
-                                                    {visibleItems[3]?.description?.[locale]}
+                                                    {card4.item?.description?.[locale]}
                                                 </p>
                                             </div>
                                         </div>
