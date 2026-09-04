@@ -31,6 +31,8 @@ import {
     User as UserIcon,
     Menu,
     X,
+    ShieldCheck,
+    KeyRound,
 } from "lucide-react";
 import { servicesData } from "@/data/services";
 import { packagesData } from "@/data/packages";
@@ -45,7 +47,7 @@ export default function AdminDashboardPage() {
     const locale = (params?.locale as string) || "en";
 
     const [activeTab, setActiveTab] = useState<
-        "home" | "about" | "services" | "gallery" | "packages" | "testimonials" | "contact" | "inquiries"
+        "home" | "about" | "services" | "gallery" | "packages" | "testimonials" | "contact" | "inquiries" | "settings"
     >("home");
     const [homeDropdownOpen, setHomeDropdownOpen] = useState<boolean>(false);
     const [selectedHomeSubSection, setSelectedHomeSubSection] = useState<string>("intro");
@@ -57,6 +59,19 @@ export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+    // Profile & Credentials State
+    const [adminEmail, setAdminEmail] = useState<string>("ABHIJITH.BLOOMBIZ@GMAIL.COM");
+    const [currentPasswordInput, setCurrentPasswordInput] = useState<string>("");
+    const [newEmailInput, setNewEmailInput] = useState<string>("");
+    const [newPasswordInput, setNewPasswordInput] = useState<string>("");
+    const [confirmPasswordInput, setConfirmPasswordInput] = useState<string>("");
+    const [savingProfile, setSavingProfile] = useState<boolean>(false);
+
+    // Password visibility toggles
+    const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState<boolean>(false);
 
     // Data States
     const [sections, setSections] = useState<any[]>([]);
@@ -102,12 +117,64 @@ export default function AdminDashboardPage() {
                 router.push(`/${locale}/admin/login`);
                 return;
             }
+            const authData = await authRes.json();
+            if (authData.user?.email) {
+                setAdminEmail(authData.user.email);
+            }
 
             await fetchAllData();
         } catch (err) {
             router.push(`/${locale}/admin/login`);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSaveProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newEmailInput.trim() && !newPasswordInput.trim()) {
+            setMessage({ type: "error", text: "Please enter a new email address or new password to update." });
+            return;
+        }
+
+        if (newPasswordInput || confirmPasswordInput) {
+            if (newPasswordInput !== confirmPasswordInput) {
+                setMessage({ type: "error", text: "New passwords do not match" });
+                return;
+            }
+            if (newPasswordInput.length < 6) {
+                setMessage({ type: "error", text: "New password must be at least 6 characters" });
+                return;
+            }
+        }
+
+        setSavingProfile(true);
+        try {
+            const res = await fetch("/api/admin/profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    newEmail: newEmailInput.trim() || undefined,
+                    newPassword: newPasswordInput.trim() || undefined,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to update profile");
+
+            if (data.user?.email) {
+                setAdminEmail(data.user.email);
+            }
+
+            setMessage({ type: "success", text: "Account credentials updated successfully!" });
+            setCurrentPasswordInput("");
+            setNewEmailInput("");
+            setNewPasswordInput("");
+            setConfirmPasswordInput("");
+        } catch (err: any) {
+            setMessage({ type: "error", text: err.message || "Failed to update profile" });
+        } finally {
+            setSavingProfile(false);
         }
     };
 
@@ -370,7 +437,7 @@ export default function AdminDashboardPage() {
                             FTX CONTENT MANAGEMENT SYSTEM
                         </h1>
                         <p className="text-[10px] font-mono text-ftx-silver-muted uppercase tracking-wider">
-                            LOGGED IN AS: <span className="text-ftx-lime font-semibold">ABHIJITH.BLOOMBIZ@GMAIL.COM</span>
+                            LOGGED IN AS: <span className="text-ftx-lime font-semibold">{adminEmail}</span>
                         </p>
                     </div>
                 </div>
@@ -539,6 +606,7 @@ export default function AdminDashboardPage() {
                                 { id: "packages", label: "Packages & Pricing", icon: PackageIcon },
                                 { id: "testimonials", label: "Testimonials", icon: MessageSquare },
                                 { id: "contact", label: "Contact Page", icon: PhoneCall, badge: inquiries.filter((i) => i.status === "new").length },
+                                { id: "settings", label: "Account Settings", icon: ShieldCheck },
                             ].map((tab) => {
                                 const Icon = tab.icon;
                                 const isActive = activeTab === tab.id;
@@ -642,9 +710,6 @@ export default function AdminDashboardPage() {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">SERVICES MANAGEMENT</h2>
-                                            <p className="text-xs text-ftx-silver-muted font-mono">
-                                                Full CRUD for PPF, Ceramic, & Detailing Services
-                                            </p>
                                         </div>
                                         <button
                                             onClick={() => {
@@ -829,9 +894,6 @@ export default function AdminDashboardPage() {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">GALLERY SHOWCASE MANAGEMENT</h2>
-                                            <p className="text-xs text-ftx-silver-muted font-mono">
-                                                Full CRUD for Videos, Showcase Images, and Before & After sliders
-                                            </p>
                                         </div>
                                         <button
                                             onClick={() => {
@@ -953,9 +1015,6 @@ export default function AdminDashboardPage() {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase">PACKAGES & PRICING MANAGEMENT</h2>
-                                            <p className="text-xs text-ftx-silver-muted font-mono">
-                                                Full CRUD for PPF, Ceramic, & Detailing Packages
-                                            </p>
                                         </div>
                                         <button
                                             onClick={() => {
@@ -1034,7 +1093,6 @@ export default function AdminDashboardPage() {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div>
                                             <h2 className="text-xl font-heading font-bold uppercase text-white">TESTIMONIALS MANAGEMENT</h2>
-                                            <p className="text-xs text-ftx-silver-muted font-mono">Full CRUD & Bilingual Content Control for Client Reviews</p>
                                         </div>
                                         <button
                                             onClick={() => {
@@ -1165,9 +1223,6 @@ export default function AdminDashboardPage() {
                                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ftx-surface-high pb-4">
                                                     <div>
                                                         <h2 className="text-xl font-heading font-bold uppercase text-white">CONTACT PAGE DATA & STUDIO DETAILS</h2>
-                                                        <p className="text-xs text-ftx-silver-muted font-mono">
-                                                            Manage real public contact metadata, studio location, operating hours, phone, email, and map link
-                                                        </p>
                                                     </div>
                                                     <button
                                                         onClick={() => handleSaveSection(contactSec)}
@@ -1536,6 +1591,125 @@ export default function AdminDashboardPage() {
                                             )}
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* TAB 8: ACCOUNT & SECURITY SETTINGS */}
+                            {activeTab === "settings" && (
+                                <div className="space-y-6">
+                                    <div>
+                                        <h2 className="text-xl font-heading font-bold uppercase text-white">
+                                            ACCOUNT & SECURITY SETTINGS
+                                        </h2>
+                                    </div>
+
+                                    <form onSubmit={handleSaveProfile} className="bg-ftx-surface border border-ftx-surface-high p-6 sm:p-8 ftx-squircle-xl space-y-6 max-w-3xl shadow-2xl">
+                                        <div className="border-b border-ftx-surface-high pb-4">
+                                            <h3 className="text-sm font-mono font-bold text-ftx-lime uppercase tracking-wider">
+                                                ADMINISTRATOR CREDENTIALS
+                                            </h3>
+                                        </div>
+
+                                        {/* Current Email Display */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono font-bold text-ftx-silver uppercase block">
+                                                CURRENT ADMIN EMAIL
+                                            </label>
+                                            <div className="p-3 bg-ftx-obsidian/80 border border-ftx-surface-high rounded-lg text-xs font-mono text-ftx-lime font-semibold">
+                                                {adminEmail}
+                                            </div>
+                                        </div>
+
+                                        {/* New Email Input */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono font-bold text-ftx-silver uppercase block">
+                                                NEW EMAIL ADDRESS
+                                            </label>
+                                            <input
+                                                type="email"
+                                                autoComplete="email"
+                                                placeholder="Enter new email address..."
+                                                value={newEmailInput}
+                                                onChange={(e) => setNewEmailInput(e.target.value)}
+                                                className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none transition-colors"
+                                            />
+                                            <p className="text-[11px] font-mono text-ftx-silver-muted">
+                                                Leave blank to keep your current email address.
+                                            </p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                            {/* New Password */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono font-bold text-ftx-silver uppercase block">
+                                                    NEW PASSWORD
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showNewPassword ? "text" : "password"}
+                                                        autoComplete="new-password"
+                                                        placeholder="Minimum 6 characters..."
+                                                        value={newPasswordInput}
+                                                        onChange={(e) => setNewPasswordInput(e.target.value)}
+                                                        className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 pr-10 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none transition-colors"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ftx-silver-muted hover:text-ftx-lime transition-colors"
+                                                        tabIndex={-1}
+                                                    >
+                                                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Confirm New Password */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono font-bold text-ftx-silver uppercase block">
+                                                    CONFIRM NEW PASSWORD
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showConfirmPassword ? "text" : "password"}
+                                                        autoComplete="new-password"
+                                                        placeholder="Re-enter new password..."
+                                                        value={confirmPasswordInput}
+                                                        onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                                                        className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 pr-10 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none transition-colors"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ftx-silver-muted hover:text-ftx-lime transition-colors"
+                                                        tabIndex={-1}
+                                                    >
+                                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 border-t border-ftx-surface-high/60">
+                                            <button
+                                                type="submit"
+                                                disabled={savingProfile}
+                                                className="w-full sm:w-auto px-6 py-3 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all disabled:opacity-50"
+                                            >
+                                                {savingProfile ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                                                        <span>SAVING CHANGES...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Save className="w-4 h-4 shrink-0" />
+                                                        <span>UPDATE CREDENTIALS</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             )}
                         </>

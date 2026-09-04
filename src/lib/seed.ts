@@ -20,12 +20,12 @@ export async function seedDatabase() {
         await connectToDatabase();
         isSeeded = true;
 
-        // 1. Seed Admin User: abhijith.bloombiz@gmail.com
+        // 1. Seed Admin User (only if no admin accounts exist in database)
         const adminEmail = (process.env.ADMIN_EMAIL || "abhijith.bloombiz@gmail.com").toLowerCase();
         const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || "AdminSecretPass2026!";
 
-        const existingAdmin = await AdminUser.findOne({ email: adminEmail });
-        if (!existingAdmin) {
+        const adminCount = await AdminUser.countDocuments();
+        if (adminCount === 0) {
             const passwordHash = await bcrypt.hash(initialPassword, 10);
             await AdminUser.create({
                 email: adminEmail,

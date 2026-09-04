@@ -18,10 +18,16 @@ export async function POST(req: NextRequest) {
 
         let isAuthenticated = false;
         let adminName = "FTX Lead Admin";
+        let hasAdminInDb = false;
 
         try {
             await connectToDatabase();
             await seedDatabase();
+
+            const adminCount = await AdminUser.countDocuments();
+            if (adminCount > 0) {
+                hasAdminInDb = true;
+            }
 
             const admin = await AdminUser.findOne({ email: email.toLowerCase().trim() });
             if (admin) {
@@ -35,7 +41,8 @@ export async function POST(req: NextRequest) {
             console.warn("MongoDB unavailable during login, checking fallback env credentials:", dbErr);
         }
 
-        if (!isAuthenticated) {
+        // Only fallback to .env credentials if NO admin account exists in DB or DB connection failed
+        if (!isAuthenticated && !hasAdminInDb) {
             if (email.toLowerCase().trim() === envEmail && password === envPassword) {
                 isAuthenticated = true;
             }
