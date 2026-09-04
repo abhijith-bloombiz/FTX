@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 
 const DEBUG_LOADER = false;
 const DISABLE_AUTO_EXIT = false;
-const DEFAULT_ANIMATION_DURATION = 1800; // 1.8 seconds production fast duration
+const DEFAULT_ANIMATION_DURATION = 3500; // 3.5 seconds cinematic animation duration
 
 // Container-relative logo component configurations (1536x1024 base ratio)
 const LOADER_CONFIGS = [
@@ -139,6 +139,8 @@ export function CinematicLoader() {
             "/images/FTX loading/bg-mob.webp",
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
+            // Preload critical initial Hero 3D car frames in parallel while loader plays
+            ...Array.from({ length: 8 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`),
         ];
 
         assetsToPreload.forEach((url) => {

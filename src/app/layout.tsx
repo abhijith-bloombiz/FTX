@@ -78,6 +78,17 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className="dark">
+            <head>
+                {/* Preload initial critical 3D Hero car frames for instant zero-lag canvas rendering */}
+                <link rel="preload" as="image" href="/video/frames/frame_0001.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0002.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0003.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0004.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0005.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0006.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0007.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/video/frames/frame_0008.webp" type="image/webp" />
+            </head>
             <body>{children}</body>
         </html>
     );
