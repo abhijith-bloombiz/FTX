@@ -2983,6 +2983,35 @@ export default function AdminDashboardPage() {
                                                                 className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
                                                             />
                                                         </div>
+
+                                                        {/* Highlight Description (EN & AR) */}
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                            <textarea
+                                                                value={hl.description?.en || ""}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    const curDesc = typeof newHl[hIdx].description === "object" ? newHl[hIdx].description : { en: "", ar: "" };
+                                                                    newHl[hIdx] = { ...newHl[hIdx], description: { ...curDesc, en: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                placeholder="Highlight Description (EN)..."
+                                                                rows={2}
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
+                                                            />
+                                                            <textarea
+                                                                dir="rtl"
+                                                                value={hl.description?.ar || ""}
+                                                                onChange={(e) => {
+                                                                    const newHl = [...(editModalItem.highlights || [])];
+                                                                    const curDesc = typeof newHl[hIdx].description === "object" ? newHl[hIdx].description : { en: "", ar: "" };
+                                                                    newHl[hIdx] = { ...newHl[hIdx], description: { ...curDesc, ar: e.target.value } };
+                                                                    setEditModalItem({ ...editModalItem, highlights: newHl });
+                                                                }}
+                                                                placeholder="وصف الميزة (عربي)..."
+                                                                rows={2}
+                                                                className="w-full p-2 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 ))
                                             )}

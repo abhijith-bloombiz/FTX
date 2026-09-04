@@ -280,4 +280,107 @@ export const servicesData: ServiceItem[] = [
             "/images/gallery/after.png",
         ],
     },
+    {
+        id: "window-films",
+        number: "04",
+        badge: {
+            en: "HEAT & UV PROTECTION",
+            ar: "حماية الحرارة والأشعة",
+        },
+        title: {
+            en: "AUTOMOTIVE WINDOW HEAT-INSULATION FILMS",
+            ar: "أفلام العزل الحراري لتظليل السيارات",
+        },
+        subtitle: {
+            en: "More Comfort. Less Heat. Lasting Protection.",
+            ar: "راحة أكثر. حرارة أقل. حماية دائمة.",
+        },
+        description: {
+            en: "FTX offers high-quality automotive window heat-insulation films designed to reduce solar heat entering the cabin, block harmful UV rays, and minimize glare—providing a more comfortable driving experience while maintaining clear visibility and a sleek, refined appearance.",
+            ar: "تقدم FTX أفلام العزل الحراري عالية الجودة للنوافذ والمصممة لتقليل الحرارة الشمسية داخل المقصورة، وحجب الأشعة فوق البنفسجية الضارة، وتقليل التوهج—مما يمنحك تجربة قيادة مريحة وأنيقة مع الحفاظ على وضوح الرؤية لمظهر متميز.",
+        },
+        benefits: {
+            en: [
+                "Blocks up to 99% of harmful UV rays preventing interior fading & skin damage",
+                "Reduces solar heat buildup by up to 70% for maximum cabin climate comfort",
+                "Minimizes glare from direct sunlight and night headlights",
+                "Enhances privacy and security without affecting signal reception",
+                "High optical clarity preserving crystal-clear driving visibility",
+                "FTX — Protection on the outside. Comfort on the inside.",
+            ],
+            ar: [
+                "حجب حتى 99% من الأشعة فوق البنفسجية الضارة لمنع بهتان الجلد وتلف البشرة",
+                "تقليل تراكم الحرارة الشمسية حتى 70% لتوفير أقصى درجات الراحة داخل السيارة",
+                "تقليل التوهج الناتج عن أشعة الشمس المباشرة وأضواء السيارات الليلية",
+                "تعزيز الخصوصية والأمان دون التأثير على إشارات الهاتف أو الملاحة",
+                "وضوح بصري نقي يحافظ على الرؤية الكريستالية أثناء القيادة",
+                "FTX — حماية من الخارج. وراحة من الداخل.",
+            ],
+        },
+        highlights: [
+            {
+                icon: "shield",
+                title: { en: "01 — Light Tint", ar: "01 — تظليل خفيف" },
+                description: {
+                    en: "High visibility with a near-factory glass appearance, while providing effective heat insulation and protection from harmful UV rays.",
+                    ar: "رؤية عالية ومظهر شبه شفاف كالمصنع مع عزل حراري وحماية ممتازة من الأشعة فوق البنفسجية.",
+                },
+            },
+            {
+                icon: "refresh",
+                title: { en: "02 — Medium Tint", ar: "02 — تظليل متوسط" },
+                description: {
+                    en: "The ideal balance of heat insulation, privacy, and visibility—perfect for everyday driving.",
+                    ar: "التوازن المثالي بين العزل الحراري، الخصوصية، والرؤية الروتينية القيادية.",
+                },
+            },
+            {
+                icon: "sparkles",
+                title: { en: "03 — Dark Tint", ar: "03 — تظليل داكن" },
+                description: {
+                    en: "Enhanced privacy and a bolder appearance, with reduced sun glare and improved comfort inside the cabin.",
+                    ar: "خصوصية متقدمة ومظهر أكثر قوة، مع تقليل توهج الشمس لأقصى درجات الراحة داخل المقصورة.",
+                },
+            },
+        ],
+        process: [
+            {
+                number: "01",
+                title: { en: "Glass Surface Decontamination", ar: "تنظيف وتعقيم سطح الزجاج" },
+                description: {
+                    en: "Surgical glass cleaning and razor scraping to ensure zero dust particles under the film.",
+                    ar: "تنظيف جراحي دقيق للزجاج مع كشط أي رواسب لضمان خلو الفلم من أي ذرات غبار.",
+                },
+            },
+            {
+                number: "02",
+                title: { en: "Precision Heat-Shrink Fitting", ar: "الكبس والتشكيل الحراري الدقيق" },
+                description: {
+                    en: "Hand heat-forming to match the exact curvature of windshield and side windows.",
+                    ar: "تشكيل وتشكيل حراري يدوي ليتطابق تماماً مع انحناءات الزجاج الأمامي والجانبي.",
+                },
+            },
+            {
+                number: "03",
+                title: { en: "Clean-Room Slip Solution Fit", ar: "التركيب في بيئة خالية من الغبار" },
+                description: {
+                    en: "Dust-free slip installation squeegeed for edge-to-edge bubble-free clarity.",
+                    ar: "تركيب بمحلول خاص في استوديو معقم لمنع الفراغات وتثبيت الحواف بدقة.",
+                },
+            },
+            {
+                number: "04",
+                title: { en: "Micro-Edge Trimming & Inspection", ar: "قص الحواف الدقيق والفحص" },
+                description: {
+                    en: "Micro-edge shaving aligned with window borders and final optical clarity review.",
+                    ar: "قص دقيق جداً متطابق مع حواف النوافذ مع فحص الوضوح البصري النهائي.",
+                },
+            },
+        ],
+        image: "/images/services/ppf-main.png",
+        detailImages: [
+            "/images/gallery/ppf-studio-hero.jpg",
+            "/images/gallery/gt3rs-ppf.jpg",
+        ],
+    },
 ];

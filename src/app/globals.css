@@ -67,10 +67,17 @@
 
 /* ============================================================
    FTX GLOBAL UNIFIED SQUIRCLE SYSTEM FOR CONTAINERS & BOXES
+   Includes WebKit GPU Mask Containment for Universal Mobile Compatibility
    ============================================================ */
 .ftx-squircle-sm {
   border-radius: var(--radius-unified-sm);
+  -webkit-border-radius: var(--radius-unified-sm);
   overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
 }
 
 .ftx-squircle-md,
@@ -78,7 +85,13 @@
 .ftx-squircle-xl,
 .ftx-squircle-hero {
   border-radius: var(--radius-unified);
+  -webkit-border-radius: var(--radius-unified);
   overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
 }
 
 @supports (corner-shape: superellipse(4)) {

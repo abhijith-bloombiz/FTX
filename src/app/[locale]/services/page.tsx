@@ -5,6 +5,7 @@ import { getCmsServices } from "@/lib/cms";
 import { Locale } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { ServiceHighlightCards } from "@/components/ui/ServiceHighlightCards";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +105,7 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                             />
 
                             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
                                     {/* Image Side - Directional Reveal Animation on Scroll */}
                                     <ScrollReveal
                                         type="horizontal"
@@ -150,24 +151,8 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
                                             </p>
                                         </div>
 
-                                        {/* Compact Feature Highlight Cards */}
-                                        {service.highlights && service.highlights.length > 0 && (
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                                                {service.highlights.map((item: any, hIdx: number) => (
-                                                    <div
-                                                        key={hIdx}
-                                                        className="bg-ftx-surface/90 hover:bg-ftx-surface ftx-squircle-md p-3.5 border border-ftx-surface-high space-y-2 transition-colors duration-200"
-                                                    >
-                                                        <div className="p-1.5 rounded bg-ftx-lime/10 w-fit">
-                                                            {getHighlightIcon(item.icon)}
-                                                        </div>
-                                                        <h3 className="text-xs sm:text-sm font-heading font-bold text-white uppercase tracking-wide leading-tight">
-                                                            {typeof item.title === "object" ? item.title[locale] || item.title.en : item.title}
-                                                        </h3>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                        {/* Compact & Expandable Feature Highlight Cards */}
+                                        <ServiceHighlightCards highlights={service.highlights} locale={locale} />
 
                                         {/* High-Visibility Tech Action Button */}
                                         <div className="pt-4">

@@ -11,7 +11,7 @@ export interface ServiceHighlight {
 }
 
 export interface ServiceItem {
-    id: "ppf" | "ceramic" | "detailing";
+    id: string;
     number: string;
     badge?: Record<"en" | "ar", string>;
     title: Record<"en" | "ar", string>;

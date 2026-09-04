@@ -35,16 +35,15 @@ export async function seedDatabase() {
             console.log(`Seeded Admin User: ${adminEmail}`);
         }
 
-        // 2. Seed Services
-        const serviceCount = await ServiceItemModel.countDocuments();
-        if (serviceCount === 0) {
-            const servicesToInsert = servicesData.map((s) => ({
-                ...s,
-                serviceId: s.id,
-            }));
-            await ServiceItemModel.insertMany(servicesToInsert);
-            console.log("Seeded Services collection");
+        // 2. Seed / Sync Services
+        for (const s of servicesData) {
+            await ServiceItemModel.updateOne(
+                { serviceId: s.id },
+                { $setOnInsert: { ...s, serviceId: s.id } },
+                { upsert: true }
+            );
         }
+        console.log("Seeded / Synced Services collection");
 
         // 3. Seed Packages
         const packageCount = await PackageItemModel.countDocuments();
