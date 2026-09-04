@@ -27,14 +27,18 @@ export function Navbar({ locale, messages }: NavbarProps) {
     const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0, opacity: 0 });
 
     const updateUnderlinePosition = useCallback((index: number) => {
-        const targetEl = navItemRefs.current[index];
-        if (targetEl) {
-            setUnderlineStyle({
-                left: targetEl.offsetLeft,
-                width: targetEl.offsetWidth,
-                opacity: 1,
-            });
-        }
+        requestAnimationFrame(() => {
+            const targetEl = navItemRefs.current[index];
+            if (targetEl) {
+                const left = targetEl.offsetLeft;
+                const width = targetEl.offsetWidth;
+                setUnderlineStyle({
+                    left,
+                    width,
+                    opacity: 1,
+                });
+            }
+        });
     }, []);
 
     const resetUnderline = useCallback(() => {

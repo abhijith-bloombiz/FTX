@@ -88,6 +88,18 @@ export default function RootLayout({
                 <link rel="preload" as="image" href="/video/frames/frame_0006.webp" type="image/webp" />
                 <link rel="preload" as="image" href="/video/frames/frame_0007.webp" type="image/webp" />
                 <link rel="preload" as="image" href="/video/frames/frame_0008.webp" type="image/webp" />
+
+                {/* Preload Navbar Menu Item SVG Text Images */}
+                <link rel="preload" as="image" href="/fonts/nav/home.svg" type="image/svg+xml" />
+                <link rel="preload" as="image" href="/fonts/nav/about.svg" type="image/svg+xml" />
+                <link rel="preload" as="image" href="/fonts/nav/services.svg" type="image/svg+xml" />
+                <link rel="preload" as="image" href="/fonts/nav/gallery.svg" type="image/svg+xml" />
+                <link rel="preload" as="image" href="/fonts/nav/packages.svg" type="image/svg+xml" />
+                <link rel="preload" as="image" href="/fonts/nav/contact.svg" type="image/svg+xml" />
+
+                {/* Preload Hero & Brand Text Assets */}
+                <link rel="preload" as="image" href="/images/FTX loading/brand name.webp" type="image/webp" />
+                <link rel="preload" as="image" href="/images/FTX loading/text.webp" type="image/webp" />
             </head>
             <body>{children}</body>
         </html>

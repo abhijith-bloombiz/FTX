@@ -134,11 +134,13 @@ export function CinematicLoader() {
 
     // 1. Instant Parallel Image Preloading on Mount
     useEffect(() => {
+        const navSvgAssets = ["home", "about", "services", "gallery", "packages", "contact"].map((k) => `/fonts/nav/${k}.svg`);
         const assetsToPreload = [
             "/images/FTX loading/bg.webp",
             "/images/FTX loading/bg-mob.webp",
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
+            ...navSvgAssets,
             // Preload critical initial Hero 3D car frames in parallel while loader plays
             ...Array.from({ length: 8 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`),
         ];
