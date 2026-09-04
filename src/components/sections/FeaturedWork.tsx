@@ -22,9 +22,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     const [allGalleryItems, setAllGalleryItems] = useState<any[]>(cachedFeaturedGallery || galleryData);
     const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
 
-    // Track current item index for each of the 4 card slots
+    // Track the 4 active item indices for slot 0, 1, 2, 3
     const [slotIndices, setSlotIndices] = useState<number[]>([0, 1, 2, 3]);
-    const [fadingSlot, setFadingSlot] = useState<number | null>(null);
+    const [fadingSlots, setFadingSlots] = useState<number[]>([]);
 
     useEffect(() => {
         fetch("/api/admin/gallery")
@@ -41,6 +41,55 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     const isBeforeAfterItem = (g: any) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage);
     const availableItems = allGalleryItems.filter((g) => !isBeforeAfterItem(g));
     const beforeAfterItem = allGalleryItems.find((g) => isBeforeAfterItem(g));
+
+    const getTitle = (item: any) => {
+        if (!item?.title) return "";
+        if (typeof item.title === "string") return item.title;
+        return item.title[locale] || item.title.en || "";
+    };
+
+    const getItemImage = (item: any) => {
+        if (!item) return "/images/gallery/ppf-studio-hero.jpg";
+        return item.image || item.src || item.coverImage || "/images/gallery/ppf-studio-hero.jpg";
+    };
+
+    const getItemVideo = (item: any) => {
+        if (!item) return null;
+        if (item.video) return item.video;
+        if (item.videoUrl) return item.videoUrl;
+        if (typeof item.image === "string" && (item.image.endsWith(".mp4") || item.image.endsWith(".webm"))) return item.image;
+        if (typeof item.src === "string" && (item.src.endsWith(".mp4") || item.src.endsWith(".webm"))) return item.src;
+        return null;
+    };
+
+    // Helper to initialize slot indices with unique items and non-duplicate assets
+    useEffect(() => {
+        if (availableItems.length === 0) return;
+
+        const selected: number[] = [];
+        const usedAssets = new Set<string>();
+
+        for (let i = 0; i < availableItems.length && selected.length < 4; i++) {
+            const item = availableItems[i];
+            const assetKey = getItemVideo(item) || getItemImage(item);
+            if (!usedAssets.has(assetKey)) {
+                usedAssets.add(assetKey);
+                selected.push(i);
+            }
+        }
+
+        for (let i = 0; i < availableItems.length && selected.length < 4; i++) {
+            if (!selected.includes(i)) {
+                selected.push(i);
+            }
+        }
+
+        while (selected.length < 4) {
+            selected.push(0);
+        }
+
+        setSlotIndices(selected);
+    }, [availableItems.length]);
 
     const [isIdle, setIsIdle] = useState(true);
     const sectionRef = useRef<HTMLElement>(null);
@@ -84,63 +133,126 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         };
     }, []);
 
-    // 3. Image Auto-Switch: ONLY rotates card images when visible AND user is idle
+    // Helper to find the next item index for a slot that avoids index and asset collisions with active slots
+    const getNextUniqueIndex = (
+        slotIndex: number,
+        currentSlots: number[],
+        items: any[],
+        excludedAssetKeys: Set<string>
+    ): number => {
+        if (items.length <= 1) return 0;
+        const currentIdx = currentSlots[slotIndex] ?? slotIndex;
+
+        for (let step = 1; step <= items.length; step++) {
+            const candidateIdx = (currentIdx + step) % items.length;
+            const candidateItem = items[candidateIdx];
+            const assetKey = getItemVideo(candidateItem) || getItemImage(candidateItem);
+
+            const isUsedInOtherSlot = currentSlots.some((idx, sIdx) => sIdx !== slotIndex && idx === candidateIdx);
+            const isAssetDuplicate = excludedAssetKeys.has(assetKey);
+
+            if (!isUsedInOtherSlot && !isAssetDuplicate) {
+                return candidateIdx;
+            }
+        }
+
+        // Fallback: pick next index not currently used in another slot
+        for (let step = 1; step <= items.length; step++) {
+            const candidateIdx = (currentIdx + step) % items.length;
+            if (!currentSlots.some((idx, sIdx) => sIdx !== slotIndex && idx === candidateIdx)) {
+                return candidateIdx;
+            }
+        }
+
+        return (currentIdx + 1) % items.length;
+    };
+
+    // 3. Paired Image Auto-Switch:
+    // Pair 1 (Card 1 & Card 4: slots 0 & 3) rotates every 6s
+    // Pair 2 (Card 2 & Card 3: slots 1 & 2) rotates every 6s, delayed by 3s
     useEffect(() => {
         if (availableItems.length <= 4 || !isInView || !isIdle) return;
 
-        let currentSlot = 0;
-        let fadeTimeout: NodeJS.Timeout | null = null;
+        let interval1: NodeJS.Timeout;
+        let interval2: NodeJS.Timeout;
+        let timeout2: NodeJS.Timeout;
+        let fadeTimeout1: NodeJS.Timeout;
+        let fadeTimeout2: NodeJS.Timeout;
 
-        const interval = setInterval(() => {
-            const slotToUpdate = currentSlot % 4;
-            setFadingSlot(slotToUpdate);
-
-            fadeTimeout = setTimeout(() => {
+        const triggerPair1 = () => {
+            setFadingSlots([0, 3]);
+            fadeTimeout1 = setTimeout(() => {
                 setSlotIndices((prev) => {
                     const next = [...prev];
-                    let candidate = (next[slotToUpdate] + 1) % availableItems.length;
-                    while (next.some((idx, sIdx) => sIdx !== slotToUpdate && idx === candidate)) {
-                        candidate = (candidate + 1) % availableItems.length;
-                    }
-                    next[slotToUpdate] = candidate;
+
+                    const otherAssets = new Set<string>();
+                    [1, 2].forEach((s) => {
+                        const item = availableItems[next[s]];
+                        if (item) otherAssets.add(getItemVideo(item) || getItemImage(item));
+                    });
+
+                    const next0 = getNextUniqueIndex(0, next, availableItems, otherAssets);
+                    next[0] = next0;
+
+                    const item0 = availableItems[next0];
+                    if (item0) otherAssets.add(getItemVideo(item0) || getItemImage(item0));
+
+                    const next3 = getNextUniqueIndex(3, next, availableItems, otherAssets);
+                    next[3] = next3;
+
                     return next;
                 });
-                setFadingSlot(null);
+                setFadingSlots([]);
             }, 400);
+        };
 
-            currentSlot++;
-        }, 3500);
+        const triggerPair2 = () => {
+            setFadingSlots([1, 2]);
+            fadeTimeout2 = setTimeout(() => {
+                setSlotIndices((prev) => {
+                    const next = [...prev];
+
+                    const otherAssets = new Set<string>();
+                    [0, 3].forEach((s) => {
+                        const item = availableItems[next[s]];
+                        if (item) otherAssets.add(getItemVideo(item) || getItemImage(item));
+                    });
+
+                    const next1 = getNextUniqueIndex(1, next, availableItems, otherAssets);
+                    next[1] = next1;
+
+                    const item1 = availableItems[next1];
+                    if (item1) otherAssets.add(getItemVideo(item1) || getItemImage(item1));
+
+                    const next2 = getNextUniqueIndex(2, next, availableItems, otherAssets);
+                    next[2] = next2;
+
+                    return next;
+                });
+                setFadingSlots([]);
+            }, 400);
+        };
+
+        interval1 = setInterval(triggerPair1, 6000);
+
+        timeout2 = setTimeout(() => {
+            triggerPair2();
+            interval2 = setInterval(triggerPair2, 6000);
+        }, 3000);
 
         return () => {
-            clearInterval(interval);
-            if (fadeTimeout) clearTimeout(fadeTimeout);
+            clearInterval(interval1);
+            clearTimeout(timeout2);
+            if (interval2) clearInterval(interval2);
+            if (fadeTimeout1) clearTimeout(fadeTimeout1);
+            if (fadeTimeout2) clearTimeout(fadeTimeout2);
         };
     }, [availableItems.length, isInView, isIdle]);
-
-    const getTitle = (item: any) => {
-        if (!item?.title) return "";
-        if (typeof item.title === "string") return item.title;
-        return item.title[locale] || item.title.en || "";
-    };
-
-    const getItemImage = (item: any) => {
-        if (!item) return "/images/gallery/ppf-studio-hero.jpg";
-        return item.image || item.src || item.coverImage || "/images/gallery/ppf-studio-hero.jpg";
-    };
-
-    const getItemVideo = (item: any) => {
-        if (!item) return null;
-        if (item.video) return item.video;
-        if (item.videoUrl) return item.videoUrl;
-        if (typeof item.image === "string" && (item.image.endsWith(".mp4") || item.image.endsWith(".webm"))) return item.image;
-        if (typeof item.src === "string" && (item.src.endsWith(".mp4") || item.src.endsWith(".webm"))) return item.src;
-        return null;
-    };
 
     const renderCardSlot = (slotIndex: number, colSpanClass: string, direction: "left" | "right", delay: number) => {
         const itemIdx = (slotIndices[slotIndex] ?? slotIndex) % (availableItems.length || 1);
         const item = availableItems[itemIdx] || availableItems[0];
-        const isFading = fadingSlot === slotIndex;
+        const isFading = fadingSlots.includes(slotIndex);
 
         if (!item) return null;
 

@@ -30,30 +30,6 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
     const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
     const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
     const [visibleCount, setVisibleCount] = useState<number>(10);
-    const [pair1Offset, setPair1Offset] = useState<number>(0);
-    const [pair2Offset, setPair2Offset] = useState<number>(0);
-
-    useEffect(() => {
-        // Pair 1 (Card 1 & Card 4) rotates every 6 seconds
-        const interval1 = setInterval(() => {
-            setPair1Offset((prev) => prev + 1);
-        }, 6000);
-
-        // Pair 2 (Card 2 & Card 3) rotates every 6 seconds, delayed by 3 seconds
-        let interval2: NodeJS.Timeout;
-        const timeout2 = setTimeout(() => {
-            setPair2Offset((prev) => prev + 1);
-            interval2 = setInterval(() => {
-                setPair2Offset((prev) => prev + 1);
-            }, 6000);
-        }, 3000);
-
-        return () => {
-            clearInterval(interval1);
-            clearTimeout(timeout2);
-            if (interval2) clearInterval(interval2);
-        };
-    }, []);
 
     useEffect(() => {
         Promise.all([
@@ -132,21 +108,37 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         return null;
     };
 
-    const getCardData = (cardIndex: 1 | 2 | 3 | 4) => {
-        if (visibleItems.length === 0) return { item: null, index: 0 };
-        let idx = 0;
-        if (cardIndex === 1) idx = (pair1Offset * 2) % visibleItems.length;
-        else if (cardIndex === 4) idx = (pair1Offset * 2 + 3) % visibleItems.length;
-        else if (cardIndex === 2) idx = (pair2Offset * 2 + 1) % visibleItems.length;
-        else if (cardIndex === 3) idx = (pair2Offset * 2 + 2) % visibleItems.length;
-        const item = visibleItems[idx] || visibleItems[(cardIndex - 1) % visibleItems.length] || visibleItems[0];
-        return { item, index: idx };
+    const getUniqueInitialCards = (items: any[]) => {
+        const selected: { item: any; index: number }[] = [];
+        const usedAssets = new Set<string>();
+
+        for (let i = 0; i < items.length && selected.length < 4; i++) {
+            const item = items[i];
+            const assetKey = getItemVideo(item) || getItemImage(item);
+            if (!usedAssets.has(assetKey)) {
+                usedAssets.add(assetKey);
+                selected.push({ item, index: i });
+            }
+        }
+
+        for (let i = 0; i < items.length && selected.length < 4; i++) {
+            if (!selected.some((s) => s.index === i)) {
+                selected.push({ item: items[i], index: i });
+            }
+        }
+
+        while (selected.length < 4) {
+            selected.push({ item: items[0] || null, index: 0 });
+        }
+
+        return selected;
     };
 
-    const card1 = getCardData(1);
-    const card2 = getCardData(2);
-    const card3 = getCardData(3);
-    const card4 = getCardData(4);
+    const uniqueCards = getUniqueInitialCards(visibleItems);
+    const card1 = uniqueCards[0];
+    const card2 = uniqueCards[1];
+    const card3 = uniqueCards[2];
+    const card4 = uniqueCards[3];
 
     const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
 
@@ -227,7 +219,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Top Left Main Feature Card (1st: Pair 1 - Card 1) */}
                                     <ScrollReveal type="horizontal" direction="left" delay={0} className="lg:col-span-8 flex flex-col h-full">
                                         <div
-                                            key={`card-1-${pair1Offset}`}
+                                            key="gallery-card-1"
                                             onClick={() => setActiveLightboxIndex(card1.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
@@ -281,7 +273,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Top Right Tall Hydrophobic Card (2nd: Pair 2 - Card 2) */}
                                     <ScrollReveal type="horizontal" direction="right" delay={120} className="lg:col-span-4 flex flex-col h-full">
                                         <div
-                                            key={`card-2-${pair2Offset}`}
+                                            key="gallery-card-2"
                                             onClick={() => setActiveLightboxIndex(card2.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
@@ -337,7 +329,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Bottom Left Card (3rd: Pair 2 - Card 3) */}
                                     <ScrollReveal type="horizontal" direction="left" delay={200} className="lg:col-span-4 flex flex-col h-full">
                                         <div
-                                            key={`card-3-${pair2Offset}`}
+                                            key="gallery-card-3"
                                             onClick={() => setActiveLightboxIndex(card3.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >
@@ -388,7 +380,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Bottom Right Wide Card (4th: Pair 1 - Card 4) */}
                                     <ScrollReveal type="horizontal" direction="right" delay={280} className="lg:col-span-8 flex flex-col h-full">
                                         <div
-                                            key={`card-4-${pair1Offset}`}
+                                            key="gallery-card-4"
                                             onClick={() => setActiveLightboxIndex(card4.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
                                         >

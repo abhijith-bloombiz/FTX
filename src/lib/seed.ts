@@ -210,8 +210,8 @@ export async function seedDatabase() {
                     ar: "دقة جراحية. حماية لا تضاهى.",
                 },
                 content: {
-                    en: "Founded in Dubai, FTX stands as an elite studio dedicated exclusively to the preservation and aesthetic perfection of high-value automotive masterworks.",
-                    ar: "تأسست FTX في دبي كاستوديو نخبة مخصص حصرياً للحفاظ على تحف السيارات الفاخرة وإتقان مظهرها الجمالي.",
+                    en: "FTX stands as an elite studio dedicated exclusively to the preservation and aesthetic perfection of high-value automotive masterworks.",
+                    ar: "FTX استوديو نخبة مخصص حصرياً للحفاظ على تحف السيارات الفاخرة وإتقان مظهرها الجمالي.",
                 },
             },
             {
@@ -333,6 +333,15 @@ export async function seedDatabase() {
         await PageSection.updateOne(
             { page: "home", sectionKey: "services" },
             { $set: { "title.en": "PROTECTION & DETAILING SERVICES", "title.ar": "خدمات الحماية والتفصيل الدقيق", "subtitle.en": "AUTOMOTIVE DEFENSE", "subtitle.ar": "حماية السيارات الفائقة" } }
+        );
+        await PageSection.updateOne(
+            { page: "about", sectionKey: "hero" },
+            {
+                $set: {
+                    "content.en": "FTX stands as an elite studio dedicated exclusively to the preservation and aesthetic perfection of high-value automotive masterworks.",
+                    "content.ar": "FTX استوديو نخبة مخصص حصرياً للحفاظ على تحف السيارات الفاخرة وإتقان مظهرها الجمالي."
+                }
+            }
         );
 
         console.log("Seeded Page Sections successfully!");
