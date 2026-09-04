@@ -349,11 +349,11 @@ export default function AdminDashboardPage() {
             )}
 
             {/* Top Bar Header */}
-            <header className="bg-ftx-surface border-b border-ftx-surface-high px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-30 shrink-0 backdrop-blur-md">
-                <div className="flex items-center gap-2 sm:gap-4">
-                    {/* Logo Section */}
-                    <div className="shrink-0 flex items-center">
-                        <div className="relative w-44 h-11 sm:w-60 sm:h-15">
+            <header className="bg-ftx-surface border-b border-ftx-surface-high flex items-center justify-between z-30 shrink-0 backdrop-blur-md">
+                <div className="flex items-center">
+                    {/* Logo Section - Perfectly aligned with md:w-64 Sidebar border on desktop, hidden on mobile */}
+                    <div className="w-auto md:w-64 border-r-0 md:border-r border-ftx-surface-high px-3 sm:px-6 py-3 sm:py-4 flex items-center shrink-0">
+                        <div className="relative w-40 h-10 sm:w-48 sm:h-12">
                             <Image
                                 src="/brand/ftx-3d-logo.webp"
                                 alt="FTX – First Torque X"
@@ -364,11 +364,8 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
 
-                    {/* Vertical Divider */}
-                    <div className="h-10 w-[1px] bg-ftx-surface-high shrink-0 hidden md:block mr-6" />
-
                     {/* CMS Title Block */}
-                    <div className="hidden sm:flex flex-col justify-center">
+                    <div className="hidden sm:flex flex-col justify-center px-4 sm:px-6 py-3 sm:py-4">
                         <h1 className="text-xs sm:text-base font-heading font-bold uppercase tracking-wider text-white leading-snug">
                             FTX CONTENT MANAGEMENT SYSTEM
                         </h1>
@@ -378,7 +375,7 @@ export default function AdminDashboardPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-3 sm:py-4">
                     <button
                         onClick={async () => {
                             setLoading(true);

@@ -19,7 +19,7 @@ interface HeroSectionProps {
 }
 
 const TOTAL_FRAMES = 130;
-const CRITICAL_LOAD_COUNT = 26; // 26 frames (130 / 5) required for loader completion
+const CRITICAL_LOAD_COUNT = 8; // 8 critical frames required for instant loader completion and zero-lag initial reveal
 
 export function HeroSection({ locale, messages }: HeroSectionProps) {
     const sectionRef = useRef<HTMLDivElement>(null);

@@ -53,6 +53,13 @@ export function Navbar({ locale, messages }: NavbarProps) {
     }, [pathname, locale, updateUnderlinePosition]);
 
     useEffect(() => {
+        // Preload mobile navigation SVG masks in browser cache on mount for 0ms hamburger menu load
+        const navKeys = ["home", "about", "services", "gallery", "packages", "contact"];
+        navKeys.forEach((key) => {
+            const img = new window.Image();
+            img.src = `/fonts/nav/${key}.svg`;
+        });
+
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
         };
@@ -110,7 +117,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
             >
                 {/* Glowing Bottom Border Light Line */}
                 <div
-                    className={`absolute bottom-0 left-0 right-0 h-[1px] transition-all duration-500 ${scrolled
+                    className={`hidden md:block absolute bottom-0 left-0 right-0 h-[1px] transition-all duration-500 ${scrolled
                         ? "bg-gradient-to-r from-transparent via-ftx-lime/60 to-transparent shadow-[0_0_10px_#a4d65e]"
                         : "bg-gradient-to-r from-transparent via-white/10 to-transparent"
                         }`}

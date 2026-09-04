@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 
 const DEBUG_LOADER = false;
 const DISABLE_AUTO_EXIT = false;
-const DEFAULT_ANIMATION_DURATION = 5000; // 5.0 seconds default duration
+const DEFAULT_ANIMATION_DURATION = 1800; // 1.8 seconds production fast duration
 
 // Container-relative logo component configurations (1536x1024 base ratio)
 const LOADER_CONFIGS = [
@@ -196,7 +196,7 @@ export function CinematicLoader() {
             setTimeout(() => {
                 setShouldRender(false);
                 document.body.style.overflow = originalOverflow;
-            }, 700);
+            }, 400);
         };
 
         // 60fps RAF Animation Loop
