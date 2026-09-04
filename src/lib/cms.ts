@@ -10,6 +10,7 @@ import { servicesData as fallbackServices } from "@/data/services";
 import { packagesData as fallbackPackages } from "@/data/packages";
 import { galleryData as fallbackGallery } from "@/data/gallery";
 import { testimonialsData as fallbackTestimonials } from "@/data/testimonials";
+import { getSectionsForPage } from "./sections";
 
 export async function getCmsServices() {
     try {
@@ -90,10 +91,9 @@ export async function getCmsTestimonials() {
 
 export async function getCmsPageSection(page: string, sectionKey: string) {
     try {
-        await connectToDatabase();
-        await seedDatabase();
-        const sec = await PageSection.findOne({ page, sectionKey }).lean();
-        if (sec) return JSON.parse(JSON.stringify(sec));
+        const sections = await getSectionsForPage(page);
+        const sec = sections.find((s: any) => s.sectionKey === sectionKey);
+        if (sec) return sec;
     } catch (e) {
         console.error("getCmsPageSection error:", e);
     }

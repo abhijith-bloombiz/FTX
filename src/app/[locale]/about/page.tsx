@@ -8,6 +8,8 @@ import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 import { getSectionsForPage } from "@/lib/sections";
 
+export const dynamic = "force-dynamic";
+
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
 }

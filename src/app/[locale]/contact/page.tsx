@@ -10,6 +10,8 @@ import { ScrollReveal } from "@/components/motion/ScrollReveal";
 
 import { getCmsPageSection, getCmsServices } from "@/lib/cms";
 
+export const dynamic = "force-dynamic";
+
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
 }
