@@ -4,14 +4,29 @@ import { ContactInquiryModel } from "@/lib/models/ContactInquiry";
 
 export async function POST(req: NextRequest) {
     try {
-        await connectToDatabase();
         const body = await req.json();
 
-        const { name, email, phone, vehicleModel, serviceCategory, service, package: pkg, preferredDate, message } = body;
+        const name = typeof body.name === "string" ? body.name.trim() : "";
+        const email = typeof body.email === "string" ? body.email.trim() : "";
+        const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+        const vehicleModel = typeof body.vehicleModel === "string" ? body.vehicleModel.trim() : "";
+        const serviceCategory = typeof body.serviceCategory === "string" ? body.serviceCategory.trim() : "";
+        const service = typeof body.service === "string" ? body.service.trim() : "";
+        const pkg = typeof body.package === "string" ? body.package.trim() : "";
+        const preferredDate = typeof body.preferredDate === "string" ? body.preferredDate.trim() : "";
+        const message = typeof body.message === "string" ? body.message.trim() : "";
 
         if (!name || !email || !phone) {
             return NextResponse.json(
                 { error: "Name, email, and phone are required." },
+                { status: 400 }
+            );
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return NextResponse.json(
+                { error: "Please provide a valid email address." },
                 { status: 400 }
             );
         }
@@ -33,10 +48,10 @@ export async function POST(req: NextRequest) {
                 name,
                 email,
                 phone,
-                vehicleModel: vehicleModel || "",
+                vehicleModel,
                 serviceCategory: finalService,
                 preferredDate: finalDate,
-                message: message || "",
+                message,
                 status: "new",
             });
 

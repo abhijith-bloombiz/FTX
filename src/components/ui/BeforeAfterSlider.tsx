@@ -84,16 +84,7 @@ export function BeforeAfterSlider({
             tabIndex={0}
             dir="ltr"
             onKeyDown={handleKeyDown}
-            onMouseDown={(e) => {
-                e.preventDefault();
-                setIsDragging(true);
-                handleMove(e.clientX);
-            }}
-            onTouchStart={(e) => {
-                setIsDragging(true);
-                handleMove(e.touches[0].clientX);
-            }}
-            className={`relative w-full aspect-[16/8.5] cursor-ew-resize select-none touch-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime ftx-squircle-xl border border-ftx-surface-high ${className || "min-h-[340px] sm:min-h-[460px] max-h-[520px]"}`}
+            className={`relative w-full aspect-[16/8.5] select-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime ftx-squircle-xl border border-ftx-surface-high ${className || "min-h-[340px] sm:min-h-[460px] max-h-[520px]"}`}
             aria-label="Before and after transformation slider. Use left and right arrow keys to adjust."
         >
             {/* After Image (Background) */}
@@ -129,12 +120,28 @@ export function BeforeAfterSlider({
                 </div>
             </div>
 
-            {/* Divider Bar & Handle */}
+            {/* Divider Bar & Handle: ONLY this element triggers dragging. The rest of the container permits smooth vertical scrolling */}
             <div
-                className="absolute top-0 bottom-0 w-1 bg-ftx-lime shadow-lime-glow z-10 -translate-x-1/2 pointer-events-none"
+                className="absolute top-0 bottom-0 z-20 -translate-x-1/2 cursor-ew-resize touch-none select-none flex items-center justify-center w-12 sm:w-14"
                 style={{ left: `${sliderPos}%` }}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
+                    handleMove(e.clientX);
+                }}
+                onTouchStart={(e) => {
+                    e.stopPropagation();
+                    setIsDragging(true);
+                    handleMove(e.touches[0].clientX);
+                }}
+                aria-label="Drag slider handle"
             >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 bg-ftx-obsidian/95 border-2 border-ftx-lime rounded-full shadow-lime-glow flex items-center justify-center gap-0.5 text-ftx-lime backdrop-blur-md">
+                {/* Visual Vertical Glowing Lime Line */}
+                <div className="w-1 h-full bg-ftx-lime shadow-lime-glow pointer-events-none" />
+
+                {/* Circular Center Handle */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 bg-ftx-obsidian/95 border-2 border-ftx-lime rounded-full shadow-lime-glow flex items-center justify-center gap-0.5 text-ftx-lime backdrop-blur-md pointer-events-none">
                     <ChevronLeft className={`w-4 h-4 -mr-1 transition-transform ${!isDragging ? "animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] sm:animate-none" : ""}`} style={{ animation: !isDragging ? "bounceLeft 1.4s ease-in-out infinite" : "none" }} />
                     <ChevronRight className={`w-4 h-4 -ml-1 transition-transform`} style={{ animation: !isDragging ? "bounceRight 1.4s ease-in-out infinite" : "none" }} />
                 </div>

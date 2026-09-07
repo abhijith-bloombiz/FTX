@@ -189,7 +189,7 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
 
                                         <div className="relative z-10">
                                             <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic pr-6">
-                                                "{contentText}"
+                                                &ldquo;{contentText}&rdquo;
                                             </p>
                                         </div>
 

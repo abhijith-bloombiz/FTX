@@ -75,12 +75,6 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         const totalPillars = pillars.length;
         if (totalPillars === 0) return;
 
-        const activeIdx = ((Math.round(stage) % totalPillars) + totalPillars) % totalPillars;
-        if (activeIdx !== activeCardIndexRef.current) {
-            activeCardIndexRef.current = activeIdx;
-            setActiveCardIndex(activeIdx);
-        }
-
         pillars.forEach((_, idx) => {
             const cardEl = cardRefs.current[idx];
             if (!cardEl) return;
@@ -91,20 +85,18 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
             const absDist = Math.abs(dist);
 
-            // Translate side cards by ±130px so their sides peek out behind center card
-            const tx = dist * 130;
-            // Push side cards backward into Z-depth so they sit strictly BEHIND the active center card
-            const tz = 30 - absDist * 90;
-            // Elegant 25-degree 3D inward tilt angle
-            const rotY = dist * -25;
+            // Translate side cards by ±115px with smoother Z-depth
+            const tx = dist * 115;
+            const tz = 20 - absDist * 70;
+            const rotY = dist * -18;
 
-            const scale = Math.max(0.76, 1 - absDist * 0.16);
+            const scale = Math.max(0.8, 1 - absDist * 0.15);
             const opacity = absDist > 1.8 ? 0 : Math.max(0, 1 - absDist * 0.3);
             const zIndex = Math.max(1, Math.round(50 - absDist * 20));
 
             cardEl.style.transformOrigin = "50% 50%";
-            cardEl.style.transform = `perspective(1000px) translate3d(${tx.toFixed(2)}px, 0px, ${tz.toFixed(2)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
-            cardEl.style.opacity = opacity.toFixed(3);
+            cardEl.style.transform = `translate3d(${tx.toFixed(1)}px, 0px, ${tz.toFixed(1)}px) rotateY(${rotY.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+            cardEl.style.opacity = opacity.toFixed(2);
             cardEl.style.zIndex = String(zIndex);
             cardEl.style.pointerEvents = absDist < 0.3 ? "auto" : "none";
         });
@@ -121,26 +113,21 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         }, 4000);
     };
 
-    const [isIdle, setIsIdle] = useState(true);
     const isIdleRef = useRef(true);
 
-    // Scroll Detector: Pause 3D card deck auto-play while scrolling, set idle state after 2.5s of no scroll
+    // Lightweight Ref-based Scroll Detector: Pauses auto-play while user scrolls without triggering React re-renders
     useEffect(() => {
         if (typeof window === "undefined") return;
 
         let scrollTimer: NodeJS.Timeout | null = null;
 
         const handleScroll = () => {
-            if (isIdleRef.current) {
-                isIdleRef.current = false;
-                setIsIdle(false);
-            }
+            isIdleRef.current = false;
             if (scrollTimer) clearTimeout(scrollTimer);
 
             scrollTimer = setTimeout(() => {
                 isIdleRef.current = true;
-                setIsIdle(true);
-            }, 2500);
+            }, 1800);
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });
@@ -156,7 +143,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         updateMobileCardsFromStage(0);
     }, [isHomePage, updateMobileCardsFromStage]);
 
-    const animateStageTo = useCallback((targetStage: number, duration = 0.75, ease = "power2.inOut") => {
+    const animateStageTo = useCallback((targetStage: number, duration = 0.55, ease = "power2.out") => {
         const totalPillars = pillars.length;
         const normalizedActiveIndex = ((Math.round(targetStage) % totalPillars) + totalPillars) % totalPillars;
 
@@ -172,29 +159,31 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             },
             onComplete: () => {
                 currentStageRef.current.stage = targetStage;
-                activeCardIndexRef.current = normalizedActiveIndex;
-                setActiveCardIndex(normalizedActiveIndex);
+                if (activeCardIndexRef.current !== normalizedActiveIndex) {
+                    activeCardIndexRef.current = normalizedActiveIndex;
+                    setActiveCardIndex(normalizedActiveIndex);
+                }
             },
         });
     }, [pillars.length, updateMobileCardsFromStage]);
 
-    // Auto-scroll 3D card slideshow timer (ONLY cycles when visible, idle, and not paused by touch)
+    // Auto-scroll 3D card slideshow timer (ONLY cycles when in view, idle, and not paused)
     useEffect(() => {
-        if (!isHomePage || !isInView || !isIdle) return;
+        if (!isHomePage || !isInView) return;
 
         const interval = setInterval(() => {
-            if (!isPausedRef.current) {
+            if (!isPausedRef.current && isIdleRef.current) {
                 const currentIntegerStage = Math.round(currentStageRef.current.stage);
                 const nextStage = currentIntegerStage + 1;
-                animateStageTo(nextStage, 0.8, "power2.inOut");
+                animateStageTo(nextStage, 0.7, "power2.inOut");
             }
-        }, 3500);
+        }, 4000);
 
         return () => {
             clearInterval(interval);
             if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
         };
-    }, [isHomePage, isInView, isIdle, pillars.length, animateStageTo]);
+    }, [isHomePage, isInView, pillars.length, animateStageTo]);
 
     const handleTouchStart = (e: React.TouchEvent) => {
         pauseAutoPlay();
@@ -323,89 +312,87 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                         </TextReveal>
                     </div>
 
-                    {/* 3D Card Deck Carousel Stage with Touch Swipe Gestures & Scroll Reveal */}
-                    <ScrollReveal type="rise-from-floor" duration={850}>
-                        <div
-                            onTouchStart={handleTouchStart}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            className="relative w-full h-[370px] xs:h-[400px] max-w-[280px] xs:max-w-[310px] mx-auto mt-4 flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] touch-pan-y"
-                        >
-                            {pillars.map((item, idx) => {
-                                const IconComponent = item.icon;
+                    {/* 3D Card Deck Carousel Stage with Touch Swipe Gestures */}
+                    <div
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        className="relative w-full h-[370px] xs:h-[400px] max-w-[280px] xs:max-w-[310px] mx-auto mt-4 flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] touch-pan-y"
+                    >
+                        {pillars.map((item, idx) => {
+                            const IconComponent = item.icon;
 
-                                return (
-                                    <div
-                                        key={idx}
-                                        ref={(el) => { cardRefs.current[idx] = el; }}
-                                        className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-gradient-to-b from-neutral-900/90 via-black to-neutral-950 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] overflow-hidden cursor-pointer"
-                                        style={{
-                                            transformOrigin: "50% 50% -140px",
-                                            backfaceVisibility: "hidden",
-                                            transformStyle: "preserve-3d",
-                                        }}
-                                    >
-                                        {/* Card Frame Content */}
-                                        <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
-                                            {/* Background Image */}
-                                            <Image
-                                                src={item.image}
-                                                alt={item.title}
-                                                fill
-                                                sizes="(max-width: 768px) 310px, 25vw"
-                                                quality={85}
-                                                decoding="async"
-                                                loading="lazy"
-                                                className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-100"
-                                            />
+                            return (
+                                <div
+                                    key={idx}
+                                    ref={(el) => { cardRefs.current[idx] = el; }}
+                                    className="absolute inset-0 w-full h-full will-change-transform ftx-squircle-lg border border-white/15 bg-neutral-950 shadow-xl shadow-black/80 overflow-hidden cursor-pointer"
+                                    style={{
+                                        transformOrigin: "50% 50% -140px",
+                                        backfaceVisibility: "hidden",
+                                        transformStyle: "preserve-3d",
+                                    }}
+                                >
+                                    {/* Card Frame Content */}
+                                    <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
+                                        {/* Background Image */}
+                                        <Image
+                                            src={item.image}
+                                            alt={item.title}
+                                            fill
+                                            sizes="(max-width: 768px) 310px, 25vw"
+                                            quality={75}
+                                            decoding="async"
+                                            loading="lazy"
+                                            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-100"
+                                        />
 
-                                            {/* Light Bottom Vignette Gradient Overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
+                                        {/* Light Bottom Vignette Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
 
-                                            {/* Top Bar: Icon Badge & Watermark Index */}
-                                            <div className="relative z-10 p-5 xs:p-6 flex items-start justify-between">
-                                                <div className="inline-flex items-center gap-2 p-2.5 xs:p-3 ftx-squircle-sm bg-black/80 backdrop-blur-xl border border-ftx-lime/40 text-ftx-lime shadow-lg">
-                                                    <IconComponent className="w-5 h-5" />
-                                                </div>
-
-                                                <div className="text-4xl xs:text-5xl font-mono font-black text-black/70 select-none tracking-tighter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                                                    0{idx + 1}
-                                                </div>
+                                        {/* Top Bar: Icon Badge & Watermark Index */}
+                                        <div className="relative z-10 p-5 xs:p-6 flex items-start justify-between">
+                                            <div className="inline-flex items-center gap-2 p-2.5 xs:p-3 ftx-squircle-sm bg-black/90 border border-ftx-lime/40 text-ftx-lime shadow-md">
+                                                <IconComponent className="w-5 h-5" />
                                             </div>
 
-                                            {/* Bottom Overlay: Title & Description */}
-                                            <div className="relative z-10 p-6 xs:p-7 flex flex-col justify-end text-left space-y-2">
-                                                <h3 className="text-xl xs:text-2xl font-heading font-black text-white uppercase tracking-wider leading-tight drop-shadow-lg">
-                                                    {item.title}
-                                                </h3>
-                                                <p className="text-xs xs:text-sm text-ftx-silver font-body leading-relaxed line-clamp-3">
-                                                    {item.desc}
-                                                </p>
+                                            <div className="text-4xl xs:text-5xl font-mono font-black text-white/20 select-none tracking-tighter">
+                                                0{idx + 1}
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
 
-                        {/* Pagination Dots */}
-                        <div className="flex items-center justify-center gap-2.5 mt-6 z-20">
-                            {pillars.map((_, dotIdx) => {
-                                const isActive = dotIdx === activeCardIndex;
-                                return (
-                                    <button
-                                        key={dotIdx}
-                                        onClick={() => handleDotClick(dotIdx)}
-                                        aria-label={`Go to slide ${dotIdx + 1}`}
-                                        className={`h-2 rounded-full transition-all duration-300 ${isActive
-                                            ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
-                                            : "w-2 bg-white/20 hover:bg-white/40"
-                                            }`}
-                                    />
-                                );
-                            })}
-                        </div>
-                    </ScrollReveal>
+                                        {/* Bottom Overlay: Title & Description */}
+                                        <div className="relative z-10 p-6 xs:p-7 flex flex-col justify-end text-left space-y-2">
+                                            <h3 className="text-xl xs:text-2xl font-heading font-black text-white uppercase tracking-wider leading-tight">
+                                                {item.title}
+                                            </h3>
+                                            <p className="text-xs xs:text-sm text-ftx-silver font-body leading-relaxed line-clamp-3">
+                                                {item.desc}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination Dots */}
+                    <div className="flex items-center justify-center gap-2.5 mt-6 z-20">
+                        {pillars.map((_, dotIdx) => {
+                            const isActive = dotIdx === activeCardIndex;
+                            return (
+                                <button
+                                    key={dotIdx}
+                                    onClick={() => handleDotClick(dotIdx)}
+                                    aria-label={`Go to slide ${dotIdx + 1}`}
+                                    className={`h-2 rounded-full transition-all duration-300 ${isActive
+                                        ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
+                                        : "w-2 bg-white/20 hover:bg-white/40"
+                                        }`}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </section>
         </>

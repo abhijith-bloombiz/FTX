@@ -91,7 +91,6 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         setSlotIndices(selected);
     }, [availableItems.length]);
 
-    const [isIdle, setIsIdle] = useState(true);
     const isIdleRef = useRef(true);
     const sectionRef = useRef<HTMLElement>(null);
     const [isInView, setIsInView] = useState(true);
@@ -111,23 +110,19 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         return () => observer.disconnect();
     }, []);
 
-    // 2. Scroll Detector: Pause image rotation while scrolling, set idle after 2.5s of no scroll
+    // 2. Lightweight Scroll Detector: Pauses image rotation while user scrolls without triggering React re-renders
     useEffect(() => {
         if (typeof window === "undefined") return;
 
         let scrollTimer: NodeJS.Timeout | null = null;
 
         const handleScroll = () => {
-            if (isIdleRef.current) {
-                isIdleRef.current = false;
-                setIsIdle(false);
-            }
+            isIdleRef.current = false;
             if (scrollTimer) clearTimeout(scrollTimer);
 
             scrollTimer = setTimeout(() => {
                 isIdleRef.current = true;
-                setIsIdle(true);
-            }, 2500);
+            }, 1800);
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });
@@ -176,7 +171,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     // Pair 1 (Card 1 & Card 4: slots 0 & 3) rotates every 6s
     // Pair 2 (Card 2 & Card 3: slots 1 & 2) rotates every 6s, delayed by 3s
     useEffect(() => {
-        if (availableItems.length <= 4 || !isInView || !isIdle) return;
+        if (availableItems.length <= 4 || !isInView) return;
 
         let interval1: NodeJS.Timeout;
         let interval2: NodeJS.Timeout;
@@ -185,6 +180,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         let fadeTimeout2: NodeJS.Timeout;
 
         const triggerPair1 = () => {
+            if (!isIdleRef.current) return;
             setFadingSlots([0, 3]);
             fadeTimeout1 = setTimeout(() => {
                 setSlotIndices((prev) => {
@@ -208,10 +204,11 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     return next;
                 });
                 setFadingSlots([]);
-            }, 400);
+            }, 350);
         };
 
         const triggerPair2 = () => {
+            if (!isIdleRef.current) return;
             setFadingSlots([1, 2]);
             fadeTimeout2 = setTimeout(() => {
                 setSlotIndices((prev) => {
@@ -235,7 +232,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     return next;
                 });
                 setFadingSlots([]);
-            }, 400);
+            }, 350);
         };
 
         interval1 = setInterval(triggerPair1, 6000);
@@ -252,19 +249,17 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
             if (fadeTimeout1) clearTimeout(fadeTimeout1);
             if (fadeTimeout2) clearTimeout(fadeTimeout2);
         };
-    }, [availableItems.length, isInView, isIdle]);
+    }, [availableItems.length, isInView]);
 
-    const renderCardSlot = (slotIndex: number, colSpanClass: string, direction: "left" | "right", delay: number) => {
+    const renderCardSlot = (slotIndex: number, colSpanClass: string, _direction: "left" | "right", delay: number) => {
         const itemIdx = (slotIndices[slotIndex] ?? slotIndex) % (availableItems.length || 1);
         const item = availableItems[itemIdx] || availableItems[0];
         const isFading = fadingSlots.includes(slotIndex);
 
         if (!item) return null;
 
-        const videoSrc = getItemVideo(item);
-
         return (
-            <ScrollReveal type="horizontal" direction={direction} delay={delay} duration={850} className={colSpanClass}>
+            <ScrollReveal type="card" delay={delay} duration={700} className={colSpanClass}>
                 <div
                     onClick={() => setActiveLightboxIndex(itemIdx)}
                     className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
@@ -275,7 +270,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                             alt={getTitle(item)}
                             decoding="async"
                             loading="lazy"
-                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
+                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 will-change-transform ${isFading ? "opacity-30" : "opacity-100"
                                 }`}
                         />
                         <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">

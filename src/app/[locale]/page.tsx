@@ -198,6 +198,8 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
     return (
         <>
+            {/* Fast high-priority preload strictly for the Hero canvas on the homepage */}
+            <link rel="preload" as="image" href="/video/frames/frame_0001.webp" type="image/webp" />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

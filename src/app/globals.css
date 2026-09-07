@@ -13,46 +13,33 @@
   --color-lime-bright: #bff377;
   --color-silver: #c6c6c6;
 
-  /* FTX Precision Automotive Container Radius System
+  /* FTX Precision Automotive Container Radius System (2x Curvature Scale)
      Calibrated for identical visual curvature across all devices:
-     - Safari/WebKit (iOS): Sleek 10px-14px precision curvature (no giant bubbles)
+     - Safari/WebKit (iOS): Sleek precision curvature (no clipping)
      - Chromium (Android): Hardware-accelerated superellipse squircle with flat shoulders
   */
-  --radius-unified: 14px;
-  --radius-unified-sm: 6px;
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 14px;
-  --radius-hero: 16px;
+  --radius-unified: 28px;
+  --radius-unified-sm: 12px;
+  --radius-sm: 12px;
+  --radius-md: 24px;
+  --radius-lg: 28px;
+  --radius-xl: 28px;
+  --radius-hero: 32px;
 }
 
 @media (max-width: 1024px) {
   :root {
-    --radius-unified: 12px;
-    --radius-unified-sm: 5px;
-    --radius-sm: 5px;
-    --radius-md: 11px;
-    --radius-lg: 12px;
-    --radius-xl: 12px;
-    --radius-hero: 14px;
+    --radius-unified: 24px;
+    --radius-unified-sm: 10px;
+    --radius-sm: 10px;
+    --radius-md: 22px;
+    --radius-lg: 24px;
+    --radius-xl: 24px;
+    --radius-hero: 28px;
   }
 }
 
 @media (max-width: 640px) {
-  :root {
-    --radius-unified: 10px;
-    --radius-unified-sm: 4px;
-    --radius-sm: 4px;
-    --radius-md: 9px;
-    --radius-lg: 10px;
-    --radius-xl: 10px;
-    --radius-hero: 12px;
-  }
-}
-
-/* Progressive enhancement: when Chromium natively supports superellipse squircle */
-@supports (corner-shape: superellipse(4)) {
   :root {
     --radius-unified: 20px;
     --radius-unified-sm: 8px;
@@ -60,30 +47,43 @@
     --radius-md: 18px;
     --radius-lg: 20px;
     --radius-xl: 20px;
-    --radius-hero: 22px;
+    --radius-hero: 24px;
+  }
+}
+
+/* Progressive enhancement: when Chromium natively supports superellipse squircle */
+@supports (corner-shape: superellipse(4)) {
+  :root {
+    --radius-unified: 40px;
+    --radius-unified-sm: 16px;
+    --radius-sm: 16px;
+    --radius-md: 36px;
+    --radius-lg: 40px;
+    --radius-xl: 40px;
+    --radius-hero: 44px;
   }
 
   @media (max-width: 1024px) {
     :root {
-      --radius-unified: 18px;
-      --radius-unified-sm: 7px;
-      --radius-sm: 7px;
-      --radius-md: 16px;
-      --radius-lg: 18px;
-      --radius-xl: 18px;
-      --radius-hero: 20px;
+      --radius-unified: 36px;
+      --radius-unified-sm: 14px;
+      --radius-sm: 14px;
+      --radius-md: 32px;
+      --radius-lg: 36px;
+      --radius-xl: 36px;
+      --radius-hero: 40px;
     }
   }
 
   @media (max-width: 640px) {
     :root {
-      --radius-unified: 16px;
-      --radius-unified-sm: 6px;
-      --radius-sm: 6px;
-      --radius-md: 14px;
-      --radius-lg: 16px;
-      --radius-xl: 16px;
-      --radius-hero: 18px;
+      --radius-unified: 32px;
+      --radius-unified-sm: 12px;
+      --radius-sm: 12px;
+      --radius-md: 28px;
+      --radius-lg: 32px;
+      --radius-xl: 32px;
+      --radius-hero: 36px;
     }
   }
 }

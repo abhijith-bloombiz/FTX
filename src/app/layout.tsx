@@ -4,21 +4,18 @@ import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
     subsets: ["latin"],
-    weight: ["400", "500", "600", "700"],
     variable: "--font-space-grotesk",
     display: "swap",
 });
 
 const hankenGrotesk = Hanken_Grotesk({
     subsets: ["latin"],
-    weight: ["300", "400", "500", "600", "700"],
     variable: "--font-hanken-grotesk",
     display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],
-    weight: ["400", "600", "700"],
     variable: "--font-jetbrains-mono",
     display: "swap",
 });
@@ -28,6 +25,7 @@ const notoSansArabic = Noto_Sans_Arabic({
     weight: ["400", "500", "700", "900"],
     variable: "--font-noto-sans-arabic",
     display: "swap",
+    preload: false,
 });
 
 export const metadata: Metadata = {
@@ -110,10 +108,6 @@ export default function RootLayout({
             lang="en"
             className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable}`}
         >
-            <head>
-                {/* Fast high-priority preloads: only critical initial visible canvas frame */}
-                <link rel="preload" as="image" href="/video/frames/frame_0001.webp" type="image/webp" />
-            </head>
             <body className="bg-ftx-black text-ftx-silver antialiased overflow-x-hidden">
                 {children}
             </body>

@@ -427,7 +427,6 @@ export default function AdminDashboardPage() {
                                 fill
                                 sizes="(max-width: 640px) 160px, 192px"
                                 className="object-contain object-left"
-                                priority
                             />
                         </div>
                     </div>
@@ -1155,7 +1154,7 @@ export default function AdminDashboardPage() {
                                                         <div className="bg-ftx-obsidian/60 border border-ftx-surface-high/60 p-3 rounded-lg space-y-1">
                                                             <div className="text-[10px] font-mono font-bold text-ftx-lime uppercase">ENGLISH QUOTE</div>
                                                             <p className="text-xs text-ftx-silver font-body italic leading-relaxed">
-                                                                "{typeof test.content === "object" ? test.content?.en : test.content}"
+                                                                &ldquo;{typeof test.content === "object" ? test.content?.en : test.content}&rdquo;
                                                             </p>
                                                         </div>
 
@@ -1164,7 +1163,7 @@ export default function AdminDashboardPage() {
                                                             <div className="bg-ftx-obsidian/60 border border-ftx-surface-high/60 p-3 rounded-lg space-y-1 text-right">
                                                                 <div className="text-[10px] font-mono font-bold text-ftx-lime uppercase text-left">ARABIC QUOTE - التقييم بالعربية</div>
                                                                 <p className="text-xs text-ftx-silver font-body italic leading-relaxed dir-rtl">
-                                                                    "{test.content.ar}"
+                                                                    &ldquo;{test.content.ar}&rdquo;
                                                                 </p>
                                                             </div>
                                                         )}
@@ -1624,7 +1623,7 @@ export default function AdminDashboardPage() {
                                                         </div>
 
                                                         <div className="p-3 bg-ftx-obsidian border border-ftx-surface-high/60 rounded-lg text-xs text-ftx-silver font-body">
-                                                            "{inq.message}"
+                                                            &ldquo;{inq.message}&rdquo;
                                                         </div>
                                                     </div>
                                                 ))
@@ -2445,7 +2444,7 @@ export default function AdminDashboardPage() {
                                                         <ImageIcon className="w-6 h-6 text-ftx-silver-muted/60" />
                                                         <span className="text-[11px] font-mono">No Image Selected</span>
                                                         <span className="text-[10px] font-mono text-ftx-silver-muted/60">
-                                                            Click "+ UPLOAD IMAGE FILE" above or paste an image URL below
+                                                            Click &ldquo;+ UPLOAD IMAGE FILE&rdquo; above or paste an image URL below
                                                         </span>
                                                     </div>
                                                 )}
@@ -2852,7 +2851,7 @@ export default function AdminDashboardPage() {
                                             </div>
 
                                             {(!editModalItem.features?.en || editModalItem.features.en.length === 0) ? (
-                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No package features added yet. Click "+ ADD FEATURE ITEM" above.</p>
+                                                <p className="text-xs text-ftx-silver-muted font-mono italic">No package features added yet. Click &ldquo;+ ADD FEATURE ITEM&rdquo; above.</p>
                                             ) : (
                                                 <div className="space-y-2.5">
                                                     {editModalItem.features.en.map((fEn: string, fIdx: number) => {
@@ -3588,7 +3587,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                 className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                             />
                             <span className="text-[10px] font-mono text-ftx-silver-muted block">
-                                Tip: You can paste the whole &lt;iframe ...&gt; tag OR just the URL. Click "CLEAR LINK" above to empty the field anytime.
+                                Tip: You can paste the whole &lt;iframe ...&gt; tag OR just the URL. Click &ldquo;CLEAR LINK&rdquo; above to empty the field anytime.
                             </span>
                         </div>
 
