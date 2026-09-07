@@ -50,15 +50,15 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
 
     const getItemImage = (item: any) => {
         if (!item) return "/images/gallery/ppf-studio-hero.jpg";
-        return item.image || item.src || item.coverImage || "/images/gallery/ppf-studio-hero.jpg";
+        const candidate = item.poster || item.coverImage || item.image || item.src;
+        if (candidate && typeof candidate === "string" && !candidate.endsWith(".mp4") && !candidate.endsWith(".webm")) {
+            return candidate;
+        }
+        return item.poster || item.coverImage || "/images/gallery/ppf-studio-hero.jpg";
     };
 
-    const getItemVideo = (item: any) => {
-        if (!item) return null;
-        if (item.video) return item.video;
-        if (item.videoUrl) return item.videoUrl;
-        if (typeof item.image === "string" && (item.image.endsWith(".mp4") || item.image.endsWith(".webm"))) return item.image;
-        if (typeof item.src === "string" && (item.src.endsWith(".mp4") || item.src.endsWith(".webm"))) return item.src;
+    // Homepage Gallery should strictly render images only (videos are disabled on homepage for performance)
+    const getItemVideo = (_item: any) => {
         return null;
     };
 
@@ -92,6 +92,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     }, [availableItems.length]);
 
     const [isIdle, setIsIdle] = useState(true);
+    const isIdleRef = useRef(true);
     const sectionRef = useRef<HTMLElement>(null);
     const [isInView, setIsInView] = useState(true);
 
@@ -117,10 +118,14 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         let scrollTimer: NodeJS.Timeout | null = null;
 
         const handleScroll = () => {
-            setIsIdle(false);
+            if (isIdleRef.current) {
+                isIdleRef.current = false;
+                setIsIdle(false);
+            }
             if (scrollTimer) clearTimeout(scrollTimer);
 
             scrollTimer = setTimeout(() => {
+                isIdleRef.current = true;
                 setIsIdle(true);
             }, 2500);
         };
@@ -265,23 +270,14 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
                 >
                     <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
-                        {videoSrc ? (
-                            <ViewportVideo
-                                src={videoSrc}
-                                poster={getItemImage(item)}
-                                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
-                                    }`}
-                            />
-                        ) : (
-                            <img
-                                src={getItemImage(item)}
-                                alt={getTitle(item)}
-                                decoding="async"
-                                loading="lazy"
-                                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
-                                    }`}
-                            />
-                        )}
+                        <img
+                            src={getItemImage(item)}
+                            alt={getTitle(item)}
+                            decoding="async"
+                            loading="lazy"
+                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isFading ? "opacity-20 scale-95 blur-[2px]" : "opacity-100 scale-100 blur-0"
+                                }`}
+                        />
                         <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
                             <h4 className={`text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-all duration-500 leading-tight line-clamp-1 ${isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
                                 }`}>

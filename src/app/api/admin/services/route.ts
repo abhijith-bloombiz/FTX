@@ -5,16 +5,20 @@ import { ServiceItemModel } from "@/lib/models/ServiceItem";
 import { getAdminSession } from "@/lib/auth";
 import { servicesData } from "@/data/services";
 import { deleteUploadedFile } from "@/lib/deleteFile";
+import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
 
 // GET all services
 export async function GET() {
     try {
         await connectToDatabase();
-        await seedDatabase();
         let services = await ServiceItemModel.find().sort({ number: 1 }).lean();
         if (!services || services.length === 0) {
-            services = servicesData.map((s) => ({ ...s, serviceId: s.id })) as any;
+            await seedDatabase();
+            services = await ServiceItemModel.find().sort({ number: 1 }).lean();
+            if (!services || services.length === 0) {
+                services = servicesData.map((s) => ({ ...s, serviceId: s.id })) as any;
+            }
         }
         return NextResponse.json({ services, connected: true });
     } catch (error) {
@@ -62,6 +66,7 @@ export async function POST(req: NextRequest) {
                 servicesData.push(fallbackItem as any);
             }
 
+            invalidateCmsCache("services");
             return NextResponse.json({ success: true, service }, { status: 201 });
         } catch (dbErr: any) {
             const isConnErr = dbErr?.message?.includes("ECONNREFUSED") || dbErr?.name === "MongooseServerSelectionError" || dbErr?.name === "MongooseError" || dbErr?.message?.includes("connect") || dbErr?.message?.includes("timed out");
@@ -137,6 +142,7 @@ export async function PUT(req: NextRequest) {
                 }
             }
 
+            invalidateCmsCache("services");
             return NextResponse.json({ success: true, service: updated });
         } catch (dbErr: any) {
             const isConnErr = dbErr?.message?.includes("ECONNREFUSED") || dbErr?.name === "MongooseServerSelectionError" || dbErr?.name === "MongooseError" || dbErr?.message?.includes("connect") || dbErr?.message?.includes("timed out");
@@ -182,6 +188,7 @@ export async function DELETE(req: NextRequest) {
             }
 
             await ServiceItemModel.deleteOne({ $or: filterConditions });
+            invalidateCmsCache("services");
             return NextResponse.json({ success: true });
         } catch (dbErr: any) {
             console.warn("DB connection offline during DELETE /api/admin/services, applying fallback response.");

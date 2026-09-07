@@ -180,7 +180,28 @@ export const DEFAULT_SECTIONS = [
 
 export let inMemoryStore: any[] = JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
 
+const SECTION_CACHE_TTL_MS = 60 * 1000;
+interface SectionCacheEntry {
+    data: any[];
+    timestamp: number;
+}
+const pageSectionsCache: Record<string, SectionCacheEntry> = {};
+
+export function invalidatePageSectionsCache(page?: string) {
+    if (page) {
+        delete pageSectionsCache[page];
+    } else {
+        Object.keys(pageSectionsCache).forEach((k) => delete pageSectionsCache[k]);
+    }
+}
+
 export async function getSectionsForPage(page: string) {
+    const now = Date.now();
+    const cached = pageSectionsCache[page];
+    if (cached && now - cached.timestamp < SECTION_CACHE_TTL_MS) {
+        return cached.data;
+    }
+
     const targetDefaults = DEFAULT_SECTIONS.filter((s) => s.page === page);
     let dbSections: any[] = [];
 
@@ -192,7 +213,7 @@ export async function getSectionsForPage(page: string) {
         dbSections = inMemoryStore.filter((s) => s.page === page);
     }
 
-    return targetDefaults.map((def) => {
+    const result = targetDefaults.map((def) => {
         const dbSec = dbSections.find((s: any) => s.page === def.page && s.sectionKey === def.sectionKey);
         const memSec = inMemoryStore.find((s: any) => s.page === def.page && s.sectionKey === def.sectionKey);
 
@@ -210,9 +231,13 @@ export async function getSectionsForPage(page: string) {
             metadata: { ...def.metadata, ...(source.metadata || {}) },
         };
     });
+
+    pageSectionsCache[page] = { data: result, timestamp: now };
+    return result;
 }
 
 export function updateInMemorySection(page: string, sectionKey: string, updateData: any) {
+    invalidatePageSectionsCache(page);
     const idx = inMemoryStore.findIndex((s) => s.page === page && s.sectionKey === sectionKey);
     if (idx >= 0) {
         inMemoryStore[idx] = {

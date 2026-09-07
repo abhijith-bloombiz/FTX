@@ -81,10 +81,10 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         instance.on("scroll", ScrollTrigger.update);
 
         // Use gsap.ticker for proper ScrollTrigger synchronization
-        // This ensures ScrollTrigger pin calculations are in sync with Lenis
-        gsap.ticker.add((time) => {
+        const tickerCallback = (time: number) => {
             instance.raf(time * 1000);
-        });
+        };
+        gsap.ticker.add(tickerCallback);
         gsap.ticker.lagSmoothing(0);
 
         // Smooth scroll for anchor clicks (#services, #gallery, etc.)
@@ -103,7 +103,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         document.addEventListener("click", handleAnchorClick);
 
         return () => {
-            gsap.ticker.remove(instance.raf as any);
+            gsap.ticker.remove(tickerCallback);
             document.removeEventListener("click", handleAnchorClick);
             instance.destroy();
             lenisRef.current = null;

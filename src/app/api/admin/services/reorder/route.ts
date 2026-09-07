@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db";
 import { ServiceItemModel } from "@/lib/models/ServiceItem";
 import { getAdminSession } from "@/lib/auth";
 import { servicesData } from "@/data/services";
+import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
 
 export async function POST(req: NextRequest) {
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
                 await ServiceItemModel.bulkWrite(bulkOps);
             }
 
+            invalidateCmsCache("services");
             return NextResponse.json({ success: true, services: reordered });
         } catch (dbErr: any) {
             console.warn("DB offline during POST /api/admin/services/reorder, fallback applied:", dbErr.message);

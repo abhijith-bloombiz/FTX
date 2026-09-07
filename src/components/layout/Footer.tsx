@@ -80,6 +80,7 @@ export function Footer({ locale, messages }: FooterProps) {
                                         src="/brand/ftx-3d-logo.webp"
                                         alt="FTX – First Torque X"
                                         fill
+                                        sizes="176px"
                                         className="object-contain ltr:object-left rtl:object-right"
                                     />
                                 </div>

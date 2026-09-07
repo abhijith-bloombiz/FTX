@@ -50,6 +50,8 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             }
         }, [revealed]);
 
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
         const updateDOM = useCallback((p: number) => {
             // Helper function for individual line staggered enter & exit (used for Group 2)
             const animateLine = (
@@ -64,7 +66,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 if (p < inStart) {
                     el.style.opacity = "0";
                     el.style.transform = "translate3d(0, 28px, 0)";
-                    el.style.filter = "blur(7px)";
+                    el.style.filter = isMobile ? "none" : "blur(7px)";
                     el.style.pointerEvents = "none";
                 } else if (p <= inEnd) {
                     const inP = (p - inStart) / (inEnd - inStart);
@@ -74,12 +76,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
 
                     el.style.opacity = op;
                     el.style.transform = `translate3d(0, ${translateY}px, 0)`;
-                    el.style.filter = `blur(${blurVal}px)`;
+                    el.style.filter = isMobile ? "none" : `blur(${blurVal}px)`;
                     el.style.pointerEvents = "auto";
                 } else if (p <= outStart) {
                     el.style.opacity = "1";
                     el.style.transform = "translate3d(0, 0, 0)";
-                    el.style.filter = "blur(0px)";
+                    el.style.filter = isMobile ? "none" : "blur(0px)";
                     el.style.pointerEvents = "auto";
                 } else if (p <= outEnd) {
                     const outP = (p - outStart) / (outEnd - outStart);
@@ -90,10 +92,10 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         const translateX = (-outP * 140).toFixed(1);
                         el.style.opacity = op;
                         el.style.transform = `translate3d(${translateX}px, 0, 0)`;
-                        el.style.filter = `blur(${blurVal}px)`;
+                        el.style.filter = isMobile ? "none" : `blur(${blurVal}px)`;
                     } else {
                         el.style.opacity = op;
-                        el.style.filter = `blur(${blurVal}px)`;
+                        el.style.filter = isMobile ? "none" : `blur(${blurVal}px)`;
                     }
                     el.style.pointerEvents = "none";
                 } else {
@@ -101,7 +103,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     if (exitDirection === "left") {
                         el.style.transform = "translate3d(-140px, 0, 0)";
                     }
-                    el.style.filter = "blur(10px)";
+                    el.style.filter = isMobile ? "none" : "blur(10px)";
                     el.style.pointerEvents = "none";
                 }
             };
@@ -119,7 +121,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 if (p <= outStart) {
                     el.style.opacity = entryRevealed ? "1" : "0";
                     el.style.transform = entryRevealed ? "translate3d(0, 0, 0)" : "translate3d(0, 24px, 0)";
-                    el.style.filter = entryRevealed ? "blur(0px)" : "blur(6px)";
+                    el.style.filter = isMobile ? "none" : (entryRevealed ? "blur(0px)" : "blur(6px)");
                     el.style.pointerEvents = "auto";
                 } else if (p <= outEnd) {
                     const outP = (p - outStart) / (outEnd - outStart);
@@ -129,12 +131,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
 
                     el.style.opacity = op;
                     el.style.transform = `translate3d(${translateX}px, 0, 0)`;
-                    el.style.filter = `blur(${blurVal}px)`;
+                    el.style.filter = isMobile ? "none" : `blur(${blurVal}px)`;
                     el.style.pointerEvents = "none";
                 } else {
                     el.style.opacity = "0";
                     el.style.transform = "translate3d(-140px, 0, 0)";
-                    el.style.filter = "blur(10px)";
+                    el.style.filter = isMobile ? "none" : "blur(10px)";
                     el.style.pointerEvents = "none";
                 }
             };
@@ -160,13 +162,13 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 if (btn1Ref.current) {
                     btn1Ref.current.style.opacity = entryRevealed ? "1" : "0";
                     btn1Ref.current.style.transform = entryRevealed ? "translate3d(0, 0, 0)" : "translate3d(-50px, 0, 0)";
-                    btn1Ref.current.style.filter = entryRevealed ? "blur(0px)" : "blur(6px)";
+                    btn1Ref.current.style.filter = isMobile ? "none" : (entryRevealed ? "blur(0px)" : "blur(6px)");
                     btn1Ref.current.style.pointerEvents = "auto";
                 }
                 if (btn2Ref.current) {
                     btn2Ref.current.style.opacity = entryRevealed ? "1" : "0";
                     btn2Ref.current.style.transform = entryRevealed ? "translate3d(0, 0, 0)" : "translate3d(50px, 0, 0)";
-                    btn2Ref.current.style.filter = entryRevealed ? "blur(0px)" : "blur(6px)";
+                    btn2Ref.current.style.filter = isMobile ? "none" : (entryRevealed ? "blur(0px)" : "blur(6px)");
                     btn2Ref.current.style.pointerEvents = "auto";
                 }
             } else if (p <= btnOutEnd) {
@@ -179,13 +181,13 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 if (btn1Ref.current) {
                     btn1Ref.current.style.opacity = op;
                     btn1Ref.current.style.transform = `translate3d(${tx1}vw, 0, 0)`;
-                    btn1Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn1Ref.current.style.filter = isMobile ? "none" : `blur(${blurVal}px)`;
                     btn1Ref.current.style.pointerEvents = "none";
                 }
                 if (btn2Ref.current) {
                     btn2Ref.current.style.opacity = op;
                     btn2Ref.current.style.transform = `translate3d(${tx2}vw, 0, 0)`;
-                    btn2Ref.current.style.filter = `blur(${blurVal}px)`;
+                    btn2Ref.current.style.filter = isMobile ? "none" : `blur(${blurVal}px)`;
                     btn2Ref.current.style.pointerEvents = "none";
                 }
             } else {

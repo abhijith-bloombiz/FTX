@@ -5,15 +5,19 @@ import { PackageItemModel } from "@/lib/models/PackageItem";
 import { getAdminSession } from "@/lib/auth";
 import { packagesData } from "@/data/packages";
 import { deleteUploadedFile } from "@/lib/deleteFile";
+import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
 
 export async function GET() {
     try {
         await connectToDatabase();
-        await seedDatabase();
         let packages = await PackageItemModel.find().sort({ category: 1 }).lean();
         if (!packages || packages.length === 0) {
-            packages = packagesData.map((p) => ({ ...p, packageId: p.id })) as any;
+            await seedDatabase();
+            packages = await PackageItemModel.find().sort({ category: 1 }).lean();
+            if (!packages || packages.length === 0) {
+                packages = packagesData.map((p) => ({ ...p, packageId: p.id })) as any;
+            }
         }
         return NextResponse.json(
             { packages, connected: true },
@@ -54,6 +58,7 @@ export async function POST(req: NextRequest) {
         try {
             await connectToDatabase();
             const pkg = await PackageItemModel.create(cleanBody);
+            invalidateCmsCache("packages");
             return NextResponse.json({ success: true, package: pkg }, { status: 201 });
         } catch (dbErr: any) {
             console.warn("DB connection error/offline during POST /api/admin/packages, updating fallback memory:", dbErr.message);
@@ -108,6 +113,7 @@ export async function PUT(req: NextRequest) {
                 });
             }
 
+            invalidateCmsCache("packages");
             return NextResponse.json({ success: true, package: updated });
         } catch (dbErr: any) {
             console.warn("DB connection offline during PUT /api/admin/packages, applying fallback response.");
@@ -141,6 +147,7 @@ export async function DELETE(req: NextRequest) {
             }
 
             await PackageItemModel.deleteOne({ $or: filterConditions });
+            invalidateCmsCache("packages");
             return NextResponse.json({ success: true });
         } catch (dbErr: any) {
             console.warn("DB connection offline during DELETE /api/admin/packages, applying fallback response.");

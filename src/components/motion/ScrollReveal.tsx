@@ -62,7 +62,7 @@ export function ScrollReveal({
                     setIsVisible(false);
                 }
             },
-            { threshold: mobileCheck ? 0.05 : threshold }
+            { threshold: mobileCheck ? 0.08 : threshold }
         );
 
         if (ref.current) {

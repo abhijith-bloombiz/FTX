@@ -13,6 +13,7 @@ import { ViewportVideo } from "@/components/ui/ViewportVideo";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { useLenis } from "@/components/motion/SmoothScrollProvider";
 
 interface GalleryPageProps {
     params: { locale: Locale };
@@ -22,6 +23,7 @@ let cachedGalleryItems: any[] | null = null;
 let cachedServicesItems: any[] | null = null;
 
 export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
+    const { lenis } = useLenis();
     const [allGalleryItems, setAllGalleryItems] = useState<any[]>(cachedGalleryItems || galleryData);
     const [allServices, setAllServices] = useState<any[]>(cachedServicesItems || []);
     const [loading, setLoading] = useState(!cachedGalleryItems && galleryData.length === 0);
@@ -91,6 +93,26 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
 
     const visibleItems = filteredItems.slice(0, visibleCount);
     const hasMore = visibleCount < filteredItems.length;
+
+    const handleLoadMore = () => {
+        const nextIndex = visibleItems.length;
+        setVisibleCount((prev) => prev + 10);
+
+        // Smoothly navigate to the newly loaded assets
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                const targetEl = document.getElementById(`gallery-item-${nextIndex}`);
+                if (targetEl) {
+                    if (lenis) {
+                        lenis.scrollTo(targetEl, { offset: -100, duration: 1.2 });
+                    } else {
+                        const top = targetEl.getBoundingClientRect().top + window.scrollY - 100;
+                        window.scrollTo({ top, behavior: "smooth" });
+                    }
+                }
+            }, 120);
+        });
+    };
 
     const getItemImage = (item: any) => {
         if (item?.image && typeof item.image === "string" && !item.image.endsWith(".mp4") && !item.image.endsWith(".webm") && item.image.trim().length > 0) {
@@ -219,6 +241,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Top Left Main Feature Card (1st: Pair 1 - Card 1) */}
                                     <ScrollReveal type="horizontal" direction="left" delay={0} className="lg:col-span-8 flex flex-col h-full">
                                         <div
+                                            id="gallery-item-0"
                                             key="gallery-card-1"
                                             onClick={() => setActiveLightboxIndex(card1.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
@@ -273,6 +296,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Top Right Tall Hydrophobic Card (2nd: Pair 2 - Card 2) */}
                                     <ScrollReveal type="horizontal" direction="right" delay={120} className="lg:col-span-4 flex flex-col h-full">
                                         <div
+                                            id="gallery-item-1"
                                             key="gallery-card-2"
                                             onClick={() => setActiveLightboxIndex(card2.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
@@ -329,6 +353,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Bottom Left Card (3rd: Pair 2 - Card 3) */}
                                     <ScrollReveal type="horizontal" direction="left" delay={200} className="lg:col-span-4 flex flex-col h-full">
                                         <div
+                                            id="gallery-item-2"
                                             key="gallery-card-3"
                                             onClick={() => setActiveLightboxIndex(card3.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
@@ -380,6 +405,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     {/* Bottom Right Wide Card (4th: Pair 1 - Card 4) */}
                                     <ScrollReveal type="horizontal" direction="right" delay={280} className="lg:col-span-8 flex flex-col h-full">
                                         <div
+                                            id="gallery-item-3"
                                             key="gallery-card-4"
                                             onClick={() => setActiveLightboxIndex(card4.index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
@@ -443,6 +469,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     className="h-full flex flex-col"
                                                 >
                                                     <div
+                                                        id={`gallery-item-${actualIndex}`}
                                                         onClick={() => setActiveLightboxIndex(actualIndex)}
                                                         className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-all duration-300"
                                                     >
@@ -508,6 +535,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                         className="h-full flex flex-col"
                                     >
                                         <div
+                                            id={`gallery-item-${index}`}
                                             onClick={() => setActiveLightboxIndex(index)}
                                             className="ftx-squircle-xl group cursor-pointer bg-ftx-surface border border-ftx-surface-high hover:border-ftx-lime/40 overflow-hidden transition-colors duration-300 shadow-2xl flex flex-col sm:flex-row h-full min-h-[220px] sm:min-h-[240px]"
                                         >
@@ -558,6 +586,19 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                             </div>
                         )}
 
+                        {/* Stitch Load More Button: • LOAD MORE (Positioned above Before & After) */}
+                        {hasMore && (
+                            <div className="mt-12 sm:mt-16 text-center">
+                                <button
+                                    onClick={handleLoadMore}
+                                    className="ftx-btn-tech inline-flex items-center gap-2 px-8 py-4 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-obsidian hover:bg-ftx-surface border border-ftx-surface-high transition-all duration-300 group hover:border-ftx-lime/50 cursor-pointer"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-ftx-lime shadow-lime-glow animate-pulse group-hover:scale-125 transition-transform" />
+                                    <span>{locale === "ar" ? "تحميل المزيد" : "LOAD MORE"}</span>
+                                </button>
+                            </div>
+                        )}
+
                         {/* Before & After Interactive Showcase Section if present */}
                         {beforeAfterItem && beforeAfterItem.beforeImage && beforeAfterItem.afterImage && (
                             <ScrollReveal type="card" delay={0} duration={850} className="mt-16">
@@ -585,19 +626,6 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                     />
                                 </div>
                             </ScrollReveal>
-                        )}
-
-                        {/* Stitch Bottom Button: • LOAD MORE */}
-                        {hasMore && (
-                            <div className="mt-16 text-center">
-                                <button
-                                    onClick={() => setVisibleCount((prev) => prev + 10)}
-                                    className="ftx-btn-tech inline-flex items-center gap-2 px-8 py-4 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-obsidian hover:bg-ftx-surface border border-ftx-surface-high transition-all duration-300 group hover:border-ftx-lime/50 cursor-pointer"
-                                >
-                                    <span className="w-2 h-2 rounded-full bg-ftx-lime shadow-lime-glow animate-pulse group-hover:scale-125 transition-transform" />
-                                    <span>{locale === "ar" ? "تحميل المزيد" : "LOAD MORE"}</span>
-                                </button>
-                            </div>
                         )}
                     </div>
                 )}

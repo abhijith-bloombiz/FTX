@@ -1,5 +1,34 @@
 import type { Metadata, Viewport } from "next";
+import { Space_Grotesk, Hanken_Grotesk, JetBrains_Mono, Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
+
+const spaceGrotesk = Space_Grotesk({
+    subsets: ["latin"],
+    weight: ["400", "500", "600", "700"],
+    variable: "--font-space-grotesk",
+    display: "swap",
+});
+
+const hankenGrotesk = Hanken_Grotesk({
+    subsets: ["latin"],
+    weight: ["300", "400", "500", "600", "700"],
+    variable: "--font-hanken-grotesk",
+    display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+    subsets: ["latin"],
+    weight: ["400", "600", "700"],
+    variable: "--font-jetbrains-mono",
+    display: "swap",
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+    subsets: ["arabic"],
+    weight: ["400", "500", "700", "900"],
+    variable: "--font-noto-sans-arabic",
+    display: "swap",
+});
 
 export const metadata: Metadata = {
     title: "First Torque X",
@@ -57,7 +86,7 @@ export const metadata: Metadata = {
     },
     icons: {
         icon: [
-            { url: "/brand/ftx-3d-logo.webp", type: "image/png" },
+            { url: "/brand/ftx-3d-logo.webp", type: "image/webp" },
         ],
         shortcut: "/brand/ftx-3d-logo.webp",
         apple: "/brand/ftx-3d-logo.webp",
@@ -77,31 +106,17 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className="dark">
+        <html
+            lang="en"
+            className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable}`}
+        >
             <head>
-                {/* Preload initial critical 3D Hero car frames for instant zero-lag canvas rendering */}
+                {/* Fast high-priority preloads: only critical initial visible canvas frame */}
                 <link rel="preload" as="image" href="/video/frames/frame_0001.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0002.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0003.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0004.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0005.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0006.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0007.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/video/frames/frame_0008.webp" type="image/webp" />
-
-                {/* Preload Navbar Menu Item SVG Text Images */}
-                <link rel="preload" as="image" href="/fonts/nav/home.svg" type="image/svg+xml" />
-                <link rel="preload" as="image" href="/fonts/nav/about.svg" type="image/svg+xml" />
-                <link rel="preload" as="image" href="/fonts/nav/services.svg" type="image/svg+xml" />
-                <link rel="preload" as="image" href="/fonts/nav/gallery.svg" type="image/svg+xml" />
-                <link rel="preload" as="image" href="/fonts/nav/packages.svg" type="image/svg+xml" />
-                <link rel="preload" as="image" href="/fonts/nav/contact.svg" type="image/svg+xml" />
-
-                {/* Preload Hero & Brand Text Assets */}
-                <link rel="preload" as="image" href="/images/FTX loading/brand name.webp" type="image/webp" />
-                <link rel="preload" as="image" href="/images/FTX loading/text.webp" type="image/webp" />
             </head>
-            <body>{children}</body>
+            <body className="bg-ftx-black text-ftx-silver antialiased overflow-x-hidden">
+                {children}
+            </body>
         </html>
     );
 }

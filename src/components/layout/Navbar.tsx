@@ -64,11 +64,22 @@ export function Navbar({ locale, messages }: NavbarProps) {
             img.src = `/fonts/nav/${key}.svg`;
         });
 
+        let wasScrolled = false;
         const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
+            const isScrolled = window.scrollY > 20;
+            if (isScrolled !== wasScrolled) {
+                wasScrolled = isScrolled;
+                setScrolled(isScrolled);
+            }
         };
 
-        if (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__) {
+        const isSubpage = pathname !== "/" && pathname !== `/${locale}` && pathname !== `/${locale}/`;
+        let alreadyShown = false;
+        try {
+            alreadyShown = sessionStorage.getItem("ftx_loader_shown") === "1";
+        } catch {}
+
+        if (isSubpage || alreadyShown || (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__)) {
             setRevealed(true);
         }
 
@@ -84,17 +95,17 @@ export function Navbar({ locale, messages }: NavbarProps) {
                 (window as any).__FTX_LOADER_DONE__ = true;
             }
             setRevealed(true);
-        }, 1800);
+        }, isSubpage ? 100 : 1200);
 
         if (typeof window !== "undefined") {
-            window.addEventListener("ftx-loader-complete", handleLoaderComplete);
+            window.addEventListener("ftx_loader_complete", handleLoaderComplete);
         }
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => {
             clearTimeout(fallbackTimer);
             if (typeof window !== "undefined") {
-                window.removeEventListener("ftx-loader-complete", handleLoaderComplete);
+                window.removeEventListener("ftx_loader_complete", handleLoaderComplete);
             }
             window.removeEventListener("scroll", handleScroll);
         };
@@ -145,6 +156,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                     src="/brand/ftx-3d-logo.webp"
                                     alt="FTX – First Torque X"
                                     fill
+                                    sizes="(max-width: 640px) 176px, 224px"
                                     className="object-contain ltr:object-left rtl:object-right transition-all duration-300 group-hover:scale-102"
                                     priority
                                 />

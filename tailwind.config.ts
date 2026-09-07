@@ -26,10 +26,10 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                heading: ["Space Grotesk", "sans-serif"],
-                body: ["Hanken Grotesk", "Inter", "sans-serif"],
-                mono: ["JetBrains Mono", "monospace"],
-                arabic: ["Noto Sans Arabic", "sans-serif"],
+                heading: ["var(--font-space-grotesk)", "Space Grotesk", "sans-serif"],
+                body: ["var(--font-hanken-grotesk)", "Hanken Grotesk", "Inter", "sans-serif"],
+                mono: ["var(--font-jetbrains-mono)", "JetBrains Mono", "monospace"],
+                arabic: ["var(--font-noto-sans-arabic)", "Noto Sans Arabic", "sans-serif"],
             },
             backgroundImage: {
                 "honeycomb-pattern": "url('/images/honeycomb.svg')",

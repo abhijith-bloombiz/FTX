@@ -12,38 +12,46 @@ import { packagesData } from "@/data/packages";
 import { galleryData } from "@/data/gallery";
 import { testimonialsData } from "@/data/testimonials";
 
-let isSeeded = false;
+declare global {
+    var isDatabaseSeeded: boolean | undefined;
+    var databaseSeedPromise: Promise<void> | undefined;
+}
 
 export async function seedDatabase() {
-    if (isSeeded) return;
-    try {
-        await connectToDatabase();
-        isSeeded = true;
+    if (global.isDatabaseSeeded) return;
+    if (global.databaseSeedPromise) {
+        return global.databaseSeedPromise;
+    }
 
-        // 1. Seed Admin User (only if no admin accounts exist in database)
-        const adminEmail = (process.env.ADMIN_EMAIL || "abhijith.bloombiz@gmail.com").toLowerCase();
-        const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || "AdminSecretPass2026!";
+    global.databaseSeedPromise = (async () => {
+        try {
+            await connectToDatabase();
 
-        const adminCount = await AdminUser.countDocuments();
-        if (adminCount === 0) {
-            const passwordHash = await bcrypt.hash(initialPassword, 10);
-            await AdminUser.create({
-                email: adminEmail,
-                passwordHash,
-                name: "FTX Lead Admin",
-            });
-            console.log(`Seeded Admin User: ${adminEmail}`);
-        }
+            // 1. Seed Admin User (only if no admin accounts exist in database)
+            const adminEmail = (process.env.ADMIN_EMAIL || "abhijith.bloombiz@gmail.com").toLowerCase();
+            const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || "AdminSecretPass2026!";
 
-        // 2. Seed / Sync Services
-        for (const s of servicesData) {
-            await ServiceItemModel.updateOne(
-                { serviceId: s.id },
-                { $setOnInsert: { ...s, serviceId: s.id } },
-                { upsert: true }
-            );
-        }
-        console.log("Seeded / Synced Services collection");
+            const adminCount = await AdminUser.countDocuments();
+            if (adminCount === 0) {
+                const passwordHash = await bcrypt.hash(initialPassword, 10);
+                await AdminUser.create({
+                    email: adminEmail,
+                    passwordHash,
+                    name: "FTX Lead Admin",
+                });
+                console.log(`Seeded Admin User: ${adminEmail}`);
+            }
+
+            // 2. Seed / Sync Services (Batch check to eliminate 20+ sequential remote DB roundtrips)
+            const serviceCount = await ServiceItemModel.countDocuments();
+            if (serviceCount === 0) {
+                const servicesToInsert = servicesData.map((s) => ({
+                    ...s,
+                    serviceId: s.id,
+                }));
+                await ServiceItemModel.insertMany(servicesToInsert);
+                console.log("Seeded Services collection");
+            }
 
         // 3. Seed Packages
         const packageCount = await PackageItemModel.countDocuments();
@@ -316,35 +324,37 @@ export async function seedDatabase() {
             },
         ];
 
-        for (const ps of initialPageSections) {
-            await PageSection.findOneAndUpdate(
-                { page: ps.page, sectionKey: ps.sectionKey },
-                { $setOnInsert: ps },
-                { upsert: true, returnDocument: 'after' }
-            );
-        }
-
-        // Force update contact and services section titles and subtitles to shorter versions
-        await PageSection.updateOne(
-            { page: "home", sectionKey: "contact" },
-            { $set: { "title.en": "BOOK CONSULTATION", "title.ar": "حجز استشارة", "subtitle.en": "UNYIELDING PRECISION", "subtitle.ar": "دقة فائقة" } }
-        );
-        await PageSection.updateOne(
-            { page: "home", sectionKey: "services" },
-            { $set: { "title.en": "PROTECTION & DETAILING SERVICES", "title.ar": "خدمات الحماية والتفصيل الدقيق", "subtitle.en": "AUTOMOTIVE DEFENSE", "subtitle.ar": "حماية السيارات الفائقة" } }
-        );
-        await PageSection.updateOne(
-            { page: "about", sectionKey: "hero" },
-            {
-                $set: {
-                    "content.en": "FTX stands as an elite studio dedicated exclusively to the preservation and aesthetic perfection of high-value automotive masterworks.",
-                    "content.ar": "FTX استوديو نخبة مخصص حصرياً للحفاظ على تحف السيارات الفاخرة وإتقان مظهرها الجمالي."
-                }
+            const pageSectionCount = await PageSection.countDocuments();
+            if (pageSectionCount === 0) {
+                await PageSection.insertMany(initialPageSections);
+                // Apply specific overrides on initial seed
+                await PageSection.updateOne(
+                    { page: "home", sectionKey: "contact" },
+                    { $set: { "title.en": "BOOK CONSULTATION", "title.ar": "حجز استشارة", "subtitle.en": "UNYIELDING PRECISION", "subtitle.ar": "دقة فائقة" } }
+                );
+                await PageSection.updateOne(
+                    { page: "home", sectionKey: "services" },
+                    { $set: { "title.en": "PROTECTION & DETAILING SERVICES", "title.ar": "خدمات الحماية والتفصيل الدقيق", "subtitle.en": "AUTOMOTIVE DEFENSE", "subtitle.ar": "حماية السيارات الفائقة" } }
+                );
+                await PageSection.updateOne(
+                    { page: "about", sectionKey: "hero" },
+                    {
+                        $set: {
+                            "content.en": "FTX stands as an elite studio dedicated exclusively to the preservation and aesthetic perfection of high-value automotive masterworks.",
+                            "content.ar": "FTX استوديو نخبة مخصص حصرياً للحفاظ على تحف السيارات الفاخرة وإتقان مظهرها الجمالي."
+                        }
+                    }
+                );
+                console.log("Seeded Page Sections successfully!");
             }
-        );
 
-        console.log("Seeded Page Sections successfully!");
-    } catch (error) {
-        console.error("Database Seeding Error:", error);
-    }
+            global.isDatabaseSeeded = true;
+        } catch (error) {
+            console.error("Database Seeding Error:", error);
+        } finally {
+            global.databaseSeedPromise = undefined;
+        }
+    })();
+
+    return global.databaseSeedPromise;
 }

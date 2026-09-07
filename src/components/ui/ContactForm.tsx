@@ -19,12 +19,18 @@ export function ContactForm({ locale, messages, initialServices }: ContactFormPr
     const [servicesList, setServicesList] = useState<any[]>(initialServices || []);
 
     useEffect(() => {
+        if (initialServices && initialServices.length > 0) {
+            setServicesList(initialServices);
+            return;
+        }
+
+        let isMounted = true;
         const fetchCmsServices = async () => {
             try {
                 const res = await fetch("/api/admin/services");
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.services && Array.isArray(data.services) && data.services.length > 0) {
+                    if (isMounted && data.services && Array.isArray(data.services) && data.services.length > 0) {
                         setServicesList(data.services);
                     }
                 }
@@ -33,9 +39,10 @@ export function ContactForm({ locale, messages, initialServices }: ContactFormPr
             }
         };
 
-        if (!initialServices || initialServices.length === 0) {
-            fetchCmsServices();
-        }
+        fetchCmsServices();
+        return () => {
+            isMounted = false;
+        };
     }, [initialServices]);
 
     const serviceOptions = [

@@ -5,15 +5,25 @@ import { TestimonialItemModel } from "@/lib/models/TestimonialItem";
 import { getAdminSession } from "@/lib/auth";
 import { testimonialsData } from "@/data/testimonials";
 import { deleteUploadedFile } from "@/lib/deleteFile";
+import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
 
 export async function GET() {
     try {
         await connectToDatabase();
-        await seedDatabase();
         let testimonials = await TestimonialItemModel.find().sort({ createdAt: -1 }).lean();
         if (!testimonials || testimonials.length === 0) {
-            testimonials = testimonialsData.map((t) => ({ ...t, testimonialId: t.id, id: t.id })) as any;
+            await seedDatabase();
+            testimonials = await TestimonialItemModel.find().sort({ createdAt: -1 }).lean();
+            if (!testimonials || testimonials.length === 0) {
+                testimonials = testimonialsData.map((t) => ({ ...t, testimonialId: t.id, id: t.id })) as any;
+            } else {
+                testimonials = testimonials.map((t) => ({
+                    ...t,
+                    id: t.testimonialId || (t._id as any).toString(),
+                    testimonialId: t.testimonialId || (t._id as any).toString(),
+                })) as any;
+            }
         } else {
             testimonials = testimonials.map((t) => ({
                 ...t,
@@ -44,6 +54,7 @@ export async function POST(req: NextRequest) {
         try {
             await connectToDatabase();
             const testimonial = await TestimonialItemModel.create(newTestimonial);
+            invalidateCmsCache("testimonials");
             return NextResponse.json({ success: true, testimonial }, { status: 201 });
         } catch (dbErr: any) {
             console.warn("DB Connection failed in POST /api/admin/testimonials, using fallback mode:", dbErr.message);
@@ -97,6 +108,7 @@ export async function PUT(req: NextRequest) {
                     testimonialId: targetId,
                 });
             }
+            invalidateCmsCache("testimonials");
             return NextResponse.json({ success: true, testimonial: updated });
         } catch (dbErr: any) {
             console.warn("DB Connection failed in PUT /api/admin/testimonials, using fallback mode:", dbErr.message);
@@ -131,6 +143,7 @@ export async function DELETE(req: NextRequest) {
             }
 
             await TestimonialItemModel.deleteOne({ $or: filterConditions });
+            invalidateCmsCache("testimonials");
             return NextResponse.json({ success: true });
         } catch (dbErr: any) {
             console.warn("DB Connection failed in DELETE /api/admin/testimonials, using fallback mode:", dbErr.message);

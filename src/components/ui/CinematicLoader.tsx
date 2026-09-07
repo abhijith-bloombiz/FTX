@@ -116,7 +116,9 @@ function cubicBezierEaseInOut(t: number): number {
 
 export function CinematicLoader() {
     const pathname = usePathname();
-    const [shouldRender, setShouldRender] = useState(true);
+    const isAdmin = pathname?.includes("/admin");
+    
+    const [shouldRender, setShouldRender] = useState(!isAdmin);
     const [isExiting, setIsExiting] = useState(false);
     const [progressPct, setProgressPct] = useState(0);
     const [statusText, setStatusText] = useState("INITIALIZING");
@@ -130,10 +132,13 @@ export function CinematicLoader() {
 
     const minAnimationDoneRef = useRef(false);
     const framesLoadedRef = useRef(false);
+    const hasExitedRef = useRef(false);
     const animationFrameIdRef = useRef<number | null>(null);
 
     // 1. Instant Parallel Image Preloading on Mount
     useEffect(() => {
+        if (!shouldRender || isAdmin) return;
+
         const navSvgAssets = ["home", "about", "services", "gallery", "packages", "contact"].map((k) => `/fonts/nav/${k}.svg`);
         const assetsToPreload = [
             "/images/FTX loading/bg.webp",
@@ -141,8 +146,7 @@ export function CinematicLoader() {
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
             ...navSvgAssets,
-            // Preload critical initial Hero 3D car frames in parallel while loader plays
-            ...Array.from({ length: 8 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`),
+            ...Array.from({ length: 6 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`),
         ];
 
         assetsToPreload.forEach((url) => {
@@ -152,11 +156,13 @@ export function CinematicLoader() {
                 img.decode().catch(() => { });
             }
         });
-    }, []);
+    }, [shouldRender, isAdmin]);
 
     // 2. High-Performance 60fps Animation Engine with Dynamic Frame Lock
     useEffect(() => {
-        if (DEBUG_LOADER) return;
+        if (DEBUG_LOADER || !shouldRender || isAdmin) return;
+
+        const animationDuration = DEFAULT_ANIMATION_DURATION; // 3.5s luxury timeline
 
         const originalOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
@@ -166,6 +172,29 @@ export function CinematicLoader() {
         const checkFramesLoaded = () => {
             if (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__) {
                 framesLoadedRef.current = true;
+            }
+        };
+
+        const triggerExitTransition = () => {
+            if (hasExitedRef.current) return;
+            hasExitedRef.current = true;
+
+            setStatusText("SYSTEM READY");
+            setIsExiting(true);
+            if (typeof window !== "undefined") {
+                (window as any).__FTX_SPLASH_DONE__ = true;
+                window.dispatchEvent(new CustomEvent("ftx_splash_done"));
+            }
+            setTimeout(() => {
+                setShouldRender(false);
+                document.body.style.overflow = originalOverflow;
+            }, 400);
+        };
+
+        const checkReadyToExit = () => {
+            if (DISABLE_AUTO_EXIT) return;
+            if (minAnimationDoneRef.current && framesLoadedRef.current) {
+                triggerExitTransition();
             }
         };
 
@@ -181,38 +210,24 @@ export function CinematicLoader() {
             window.addEventListener("ftx_loader_complete", handleFramesReady);
         }
 
+        // Safety fallback so it never hangs if frames take unusually long
+        const safetyTimer = setTimeout(() => {
+            framesLoadedRef.current = true;
+            triggerExitTransition();
+        }, animationDuration + 1500);
+
         const startTime = performance.now();
-
-        const checkReadyToExit = () => {
-            if (DISABLE_AUTO_EXIT) return;
-            if (minAnimationDoneRef.current && framesLoadedRef.current) {
-                triggerExitTransition();
-            }
-        };
-
-        const triggerExitTransition = () => {
-            setStatusText("SYSTEM READY");
-            setIsExiting(true);
-            if (typeof window !== "undefined") {
-                (window as any).__FTX_SPLASH_DONE__ = true;
-                window.dispatchEvent(new CustomEvent("ftx_splash_done"));
-            }
-            setTimeout(() => {
-                setShouldRender(false);
-                document.body.style.overflow = originalOverflow;
-            }, 400);
-        };
 
         // 60fps RAF Animation Loop
         const updateAnimation = (now: number) => {
+            if (hasExitedRef.current) return;
             checkFramesLoaded();
 
             const elapsed = now - startTime;
-            let rawProgress = elapsed / DEFAULT_ANIMATION_DURATION;
+            let rawProgress = elapsed / animationDuration;
 
-            // If 5s duration has finished but critical hero frames are still decoding, hold at 99%
             if (rawProgress >= 1.0) {
-                if (framesLoadedRef.current || prefersReducedMotion) {
+                if (framesLoadedRef.current || prefersReducedMotion || elapsed > (animationDuration + 300)) {
                     rawProgress = 1.0;
                     if (!minAnimationDoneRef.current) {
                         minAnimationDoneRef.current = true;
@@ -322,6 +337,7 @@ export function CinematicLoader() {
         animationFrameIdRef.current = requestAnimationFrame(updateAnimation);
 
         return () => {
+            clearTimeout(safetyTimer);
             if (animationFrameIdRef.current) {
                 cancelAnimationFrame(animationFrameIdRef.current);
             }
@@ -329,9 +345,9 @@ export function CinematicLoader() {
             window.removeEventListener("ftx_loader_complete", handleFramesReady);
             document.body.style.overflow = originalOverflow;
         };
-    }, []);
+    }, [shouldRender, isAdmin]);
 
-    if (!shouldRender || pathname?.includes("/admin")) return null;
+    if (!shouldRender || isAdmin) return null;
 
     return (
         <div

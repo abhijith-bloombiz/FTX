@@ -122,6 +122,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     };
 
     const [isIdle, setIsIdle] = useState(true);
+    const isIdleRef = useRef(true);
 
     // Scroll Detector: Pause 3D card deck auto-play while scrolling, set idle state after 2.5s of no scroll
     useEffect(() => {
@@ -130,10 +131,14 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         let scrollTimer: NodeJS.Timeout | null = null;
 
         const handleScroll = () => {
-            setIsIdle(false);
+            if (isIdleRef.current) {
+                isIdleRef.current = false;
+                setIsIdle(false);
+            }
             if (scrollTimer) clearTimeout(scrollTimer);
 
             scrollTimer = setTimeout(() => {
+                isIdleRef.current = true;
                 setIsIdle(true);
             }, 2500);
         };

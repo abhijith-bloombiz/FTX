@@ -425,6 +425,7 @@ export default function AdminDashboardPage() {
                                 src="/brand/ftx-3d-logo.webp"
                                 alt="FTX – First Torque X"
                                 fill
+                                sizes="(max-width: 640px) 160px, 192px"
                                 className="object-contain object-left"
                                 priority
                             />
@@ -1204,18 +1205,34 @@ export default function AdminDashboardPage() {
                                         const contactSec = sections.find((s) => s.page === "contact") || {
                                             page: "contact",
                                             sectionKey: "info",
-                                            title: { en: "CONTACT & STUDIO LOCATION", ar: "معلومات التواصل وموقع الاستوديو" },
-                                            subtitle: { en: "AL QUOZ INDUSTRIAL AREA, DUBAI", ar: "منطقة القوز الصناعية، دبي" },
-                                            content: { en: "Visit our state-of-the-art studio bay or send an inquiry to book your vehicle consultation.", ar: "تفضل بزيارة استوديو FTX أو أرسل استفسارك لحجز موعد استشارة سيارتك." },
+                                            title: { en: "", ar: "" },
+                                            subtitle: { en: "", ar: "" },
+                                            content: { en: "", ar: "" },
                                             metadata: {
-                                                phone: "+971 50 123 4567",
-                                                email: "info@ftxdetailing.ae",
-                                                addressEn: "Automotive Precision District, Bay 14, Al Quoz, Dubai, UAE",
-                                                addressAr: "منطقة تميز السيارات، المجمع 14، القوز، دبي، الإمارات العربية المتحدة",
-                                                workingHoursEn: "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)",
-                                                workingHoursAr: "الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)",
-                                                mapsUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14446.857640277353!2d55.2287957!3d25.1453086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f6a27e366f019%3A0xb3ff76c24389df94!2sAl%20Quoz%20Industrial%20Area%203%20-%20Dubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae"
+                                                phone: "",
+                                                email: "",
+                                                addressEn: "",
+                                                addressAr: "",
+                                                workingHoursEn: "",
+                                                workingHoursAr: "",
+                                                mapsUrl: "",
+                                                social: {
+                                                    instagram: "",
+                                                    youtube: "",
+                                                    facebook: ""
+                                                }
                                             }
+                                        };
+
+                                        const updateContactSec = (updater: (s: any) => any) => {
+                                            setSections((prev) => {
+                                                const exists = prev.some((s) => s.page === "contact");
+                                                if (exists) {
+                                                    return prev.map((s) => s.page === "contact" ? updater(s) : s);
+                                                } else {
+                                                    return [...prev, updater(contactSec)];
+                                                }
+                                            });
                                         };
 
                                         return (
@@ -1240,14 +1257,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">SECTION TITLE (ENGLISH)</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.title?.en || ""}
+                                                            value={contactSec.title?.en ?? ""}
+                                                            placeholder="e.g. CONTACT & STUDIO LOCATION"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, title: { ...s.title, en: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    title: { ...(s.title || {}), en: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1256,14 +1275,16 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             dir="rtl"
-                                                            value={contactSec.title?.ar || ""}
+                                                            value={contactSec.title?.ar ?? ""}
+                                                            placeholder="مثال: معلومات التواصل وموقع الاستوديو"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, title: { ...s.title, ar: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    title: { ...(s.title || {}), ar: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1272,14 +1293,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">SUBTITLE / BADGE (ENGLISH)</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.subtitle?.en || ""}
+                                                            value={contactSec.subtitle?.en ?? ""}
+                                                            placeholder="e.g. AL QUOZ INDUSTRIAL AREA, DUBAI"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, subtitle: { ...s.subtitle, en: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    subtitle: { ...(s.subtitle || {}), en: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1288,14 +1311,16 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             dir="rtl"
-                                                            value={contactSec.subtitle?.ar || ""}
+                                                            value={contactSec.subtitle?.ar ?? ""}
+                                                            placeholder="مثال: منطقة القوز الصناعية، دبي"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, subtitle: { ...s.subtitle, ar: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    subtitle: { ...(s.subtitle || {}), ar: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1304,14 +1329,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">DESCRIPTION / INTRO (ENGLISH)</label>
                                                         <textarea
                                                             rows={2}
-                                                            value={contactSec.content?.en || ""}
+                                                            value={contactSec.content?.en ?? ""}
+                                                            placeholder="e.g. Visit our state-of-the-art studio bay or send an inquiry to book your vehicle consultation."
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, content: { ...s.content, en: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    content: { ...(s.content || {}), en: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1320,14 +1347,16 @@ export default function AdminDashboardPage() {
                                                         <textarea
                                                             rows={2}
                                                             dir="rtl"
-                                                            value={contactSec.content?.ar || ""}
+                                                            value={contactSec.content?.ar ?? ""}
+                                                            placeholder="مثال: تفضل بزيارة استوديو FTX أو أرسل استفسارك لحجز موعد استشارة سيارتك."
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, content: { ...s.content, ar: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    content: { ...(s.content || {}), ar: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1336,14 +1365,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">TELEPHONE NUMBER</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.phone || "+971 50 123 4567"}
+                                                            value={contactSec.metadata?.phone ?? ""}
+                                                            placeholder="+971 50 123 4567"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, phone: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), phone: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1351,14 +1382,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">EMAIL ADDRESS</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.email || "info@ftxdetailing.ae"}
+                                                            value={contactSec.metadata?.email ?? ""}
+                                                            placeholder="info@ftxdetailing.ae"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, email: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), email: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1367,14 +1400,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">STUDIO ADDRESS (ENGLISH)</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.addressEn || "Automotive Precision District, Bay 14, Al Quoz, Dubai, UAE"}
+                                                            value={contactSec.metadata?.addressEn ?? ""}
+                                                            placeholder="Automotive Precision District, Bay 14, Al Quoz, Dubai, UAE"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, addressEn: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), addressEn: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1383,14 +1418,16 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             dir="rtl"
-                                                            value={contactSec.metadata?.addressAr || "منطقة تميز السيارات، المجمع 14، القوز، دبي، الإمارات العربية المتحدة"}
+                                                            value={contactSec.metadata?.addressAr ?? ""}
+                                                            placeholder="منطقة تميز السيارات، المجمع 14، القوز، دبي، الإمارات العربية المتحدة"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, addressAr: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), addressAr: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1399,14 +1436,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">OPERATING HOURS (ENGLISH)</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.workingHoursEn || "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)"}
+                                                            value={contactSec.metadata?.workingHoursEn ?? ""}
+                                                            placeholder="Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, workingHoursEn: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), workingHoursEn: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1415,14 +1454,16 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             dir="rtl"
-                                                            value={contactSec.metadata?.workingHoursAr || "الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)"}
+                                                            value={contactSec.metadata?.workingHoursAr ?? ""}
+                                                            placeholder="الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, workingHoursAr: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), workingHoursAr: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-body focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1431,14 +1472,16 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">GOOGLE MAPS EMBED IFRAME URL</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.mapsUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14446.857640277353!2d55.2287957!3d25.1453086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f6a27e366f019%3A0xb3ff76c24389df94!2sAl%20Quoz%20Industrial%20Area%203%20-%20Dubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae"}
+                                                            value={contactSec.metadata?.mapsUrl ?? ""}
+                                                            placeholder="https://www.google.com/maps/embed?pb=..."
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? { ...s, metadata: { ...s.metadata, mapsUrl: val } } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: { ...(s.metadata || {}), mapsUrl: val }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1447,20 +1490,19 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">INSTAGRAM PROFILE URL</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.social?.instagram ?? "https://instagram.com/ftxdetailing"}
+                                                            value={contactSec.metadata?.social?.instagram ?? ""}
+                                                            placeholder="https://instagram.com/ftxdetailing"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? {
-                                                                        ...s,
-                                                                        metadata: {
-                                                                            ...s.metadata,
-                                                                            social: { ...(s.metadata?.social || {}), instagram: val }
-                                                                        }
-                                                                    } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: {
+                                                                        ...(s.metadata || {}),
+                                                                        social: { ...(s.metadata?.social || {}), instagram: val }
+                                                                    }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1468,20 +1510,19 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">YOUTUBE CHANNEL URL</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.social?.youtube ?? "https://youtube.com/@ftxdetailing"}
+                                                            value={contactSec.metadata?.social?.youtube ?? ""}
+                                                            placeholder="https://youtube.com/@ftxdetailing"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? {
-                                                                        ...s,
-                                                                        metadata: {
-                                                                            ...s.metadata,
-                                                                            social: { ...(s.metadata?.social || {}), youtube: val }
-                                                                        }
-                                                                    } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: {
+                                                                        ...(s.metadata || {}),
+                                                                        social: { ...(s.metadata?.social || {}), youtube: val }
+                                                                    }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
 
@@ -1489,20 +1530,19 @@ export default function AdminDashboardPage() {
                                                         <label className="text-ftx-lime font-bold uppercase block">FACEBOOK PAGE URL</label>
                                                         <input
                                                             type="text"
-                                                            value={contactSec.metadata?.social?.facebook ?? "https://facebook.com/ftxdetailing"}
+                                                            value={contactSec.metadata?.social?.facebook ?? ""}
+                                                            placeholder="https://facebook.com/ftxdetailing"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setSections((prev) =>
-                                                                    prev.map((s) => s.page === "contact" ? {
-                                                                        ...s,
-                                                                        metadata: {
-                                                                            ...s.metadata,
-                                                                            social: { ...(s.metadata?.social || {}), facebook: val }
-                                                                        }
-                                                                    } : s)
-                                                                );
+                                                                updateContactSec((s) => ({
+                                                                    ...s,
+                                                                    metadata: {
+                                                                        ...(s.metadata || {}),
+                                                                        social: { ...(s.metadata?.social || {}), facebook: val }
+                                                                    }
+                                                                }));
                                                             }}
-                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none"
+                                                            className="w-full bg-ftx-obsidian border border-ftx-surface-high p-3 rounded-lg text-white text-xs font-mono focus:border-ftx-lime focus:outline-none placeholder:text-ftx-silver/40"
                                                         />
                                                     </div>
                                                 </div>

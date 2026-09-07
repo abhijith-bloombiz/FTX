@@ -59,17 +59,20 @@ export function MobileMenu({ isOpen, onClose, locale, messages }: MobileMenuProp
 
     return (
         <div className="fixed top-[74px] sm:top-[86px] left-0 right-0 bottom-0 z-40 md:hidden flex flex-col justify-between select-none overflow-y-auto">
-            {/* 1. Backdrop Glass Blur Layer */}
+            {/* 1. Backdrop Layer */}
             <div
-                className={`fixed inset-0 top-[74px] sm:top-[86px] bg-[#060606]/95 backdrop-blur-2xl transition-opacity duration-500 ease-in-out ${animateIn ? "opacity-100" : "opacity-0 pointer-events-none"
+                className={`fixed inset-0 top-[74px] sm:top-[86px] bg-[#060606]/98 backdrop-blur-md transition-opacity duration-300 ease-in-out ${animateIn ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
                 onClick={onClose}
             />
 
             {/* Ambient Lime Accent Lighting Orb */}
             <div
-                className={`fixed top-1/3 right-0 w-[400px] h-[400px] bg-ftx-lime/10 rounded-full blur-[140px] pointer-events-none transition-all duration-700 ${animateIn ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                className={`fixed top-1/3 right-0 w-[280px] h-[280px] rounded-full pointer-events-none transition-all duration-500 ${animateIn ? "opacity-100 scale-100" : "opacity-0 scale-50"
                     }`}
+                style={{
+                    background: "radial-gradient(circle, rgba(164, 214, 94, 0.14) 0%, transparent 70%)",
+                }}
             />
 
             {/* 2. Main Navigation Links directly under top navbar */}

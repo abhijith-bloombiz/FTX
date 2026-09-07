@@ -38,6 +38,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const currentFrameRef = useRef<number>(0);
     const animFrameIdRef = useRef<number | null>(null);
     const isHeroInViewRef = useRef<boolean>(true);
+    const isRafRunningRef = useRef<boolean>(false);
+    const startRafLoopRef = useRef<() => void>(() => {});
 
     const lastDrawnFrameIndexRef = useRef<number>(-1);
     const lastDrawnBlendRatioRef = useRef<number>(-1);
@@ -52,6 +54,9 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 isHeroInViewRef.current = entry.isIntersecting;
+                if (entry.isIntersecting && startRafLoopRef.current) {
+                    startRafLoopRef.current();
+                }
             },
             { threshold: 0 }
         );
@@ -66,8 +71,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
-        // Hardware DPR Capping (Native devicePixelRatio capped at 1.5x on Mobile & 2x on Desktop)
-        const maxDpr = isMobile ? 1.5 : 2;
+        // Hardware DPR Capping (Native devicePixelRatio capped at 1.0x on Low-End & 1.25x on Mobile & 2x on Desktop)
+        const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
         const dpr = typeof window !== "undefined"
             ? Math.min(window.devicePixelRatio || 1, maxDpr)
             : 1;
@@ -245,14 +250,15 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, []);
 
-    // 26-Frame Sequential Batch Preloader (130 / 5 = 5 batches of 26 frames)
+    // Adaptive Batch Preloader: Only load initial critical frames on mount; load rest on demand
     useEffect(() => {
         let isCancelled = false;
 
-        const loadSequentialBatches = async () => {
-            // Batch 1: Load initial 26 frames (0-25) - Required for loading screen completion
+        const loadInitialAndDeferred = async () => {
+            // Batch 1: Load initial critical frames for instant hero entry (4 on mobile, 8 on desktop)
+            const initialCount = isMobile ? 4 : CRITICAL_LOAD_COUNT;
             const batch1Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 0; i < CRITICAL_LOAD_COUNT; i++) {
+            for (let i = 0; i < initialCount; i++) {
                 batch1Promises.push(loadFrame(i));
             }
             await Promise.all(batch1Promises);
@@ -263,121 +269,132 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             const firstImg = imagesRef.current[0];
             if (firstImg) drawFrame(firstImg);
 
-            // Signal loader readiness strictly after 26 frames are ready
+            // Signal loader readiness
             if (typeof window !== "undefined") {
                 (window as any).__FTX_LOADER_DONE__ = true;
                 window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
             }
 
-            // Batch 2: Load frames 26-51
-            const batch2Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 26; i < 52; i++) {
-                batch2Promises.push(loadFrame(i));
-            }
-            await Promise.all(batch2Promises);
+            // On mobile / low-end, do NOT eagerly download remaining frames 26-129 upfront!
+            // manageMemoryAndQueue will dynamically load frames as user scrolls into the section.
+            if (isMobile || isLowEnd) return;
 
-            if (isCancelled) return;
+            // On desktop: gently buffer remaining frames during idle time
+            const scheduleIdle = (fn: () => void) => {
+                if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+                    (window as any).requestIdleCallback(fn, { timeout: 2500 });
+                } else {
+                    setTimeout(fn, 1500);
+                }
+            };
 
-            // Batch 3: Load frames 52-77
-            const batch3Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 52; i < 78; i++) {
-                batch3Promises.push(loadFrame(i));
-            }
-            await Promise.all(batch3Promises);
-
-            if (isCancelled) return;
-
-            // Batch 4: Load frames 78-103
-            const batch4Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 78; i < 104; i++) {
-                batch4Promises.push(loadFrame(i));
-            }
-            await Promise.all(batch4Promises);
-
-            if (isCancelled) return;
-
-            // Batch 5: Load final frames 104-129
-            const batch5Promises: Promise<HTMLImageElement | null>[] = [];
-            for (let i = 104; i < TOTAL_FRAMES; i++) {
-                batch5Promises.push(loadFrame(i));
-            }
-            await Promise.all(batch5Promises);
+            scheduleIdle(async () => {
+                if (isCancelled) return;
+                for (let b = 1; b < 5; b++) {
+                    if (isCancelled) return;
+                    const start = b * 26;
+                    const end = Math.min(TOTAL_FRAMES, start + 26);
+                    const batch: Promise<HTMLImageElement | null>[] = [];
+                    for (let i = start; i < end; i++) {
+                        batch.push(loadFrame(i));
+                    }
+                    await Promise.all(batch);
+                }
+            });
         };
 
-        loadSequentialBatches();
+        loadInitialAndDeferred();
 
         return () => {
             isCancelled = true;
         };
-    }, [drawFrame, loadFrame]);
+    }, [drawFrame, loadFrame, isMobile, isLowEnd]);
 
-    // Single rAF Render & Animation Loop with Idle Guard & Adaptive Velocity Smoothing
+    // Single rAF Render & Animation Loop with Idle Sleep & Adaptive Velocity Smoothing
     useEffect(() => {
         let lastFrameIdx = -1;
 
         const renderLoop = () => {
-            if (isHeroInViewRef.current) {
-                const target = targetFrameRef.current;
-                const current = currentFrameRef.current;
+            if (!isHeroInViewRef.current) {
+                isRafRunningRef.current = false;
+                return;
+            }
 
-                const diff = target - current;
-                const absDiff = Math.abs(diff);
+            const target = targetFrameRef.current;
+            const current = currentFrameRef.current;
 
-                if (absDiff < 0.015) {
-                    currentFrameRef.current = target;
-                } else {
-                    // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
-                    const lerpFactor = isMobile
-                        ? (absDiff > 15 ? 0.55 : absDiff > 6 ? 0.45 : 0.38)
-                        : (absDiff > 15 ? 0.48 : absDiff > 6 ? 0.38 : 0.30);
-                    currentFrameRef.current += diff * lerpFactor;
-                }
+            const diff = target - current;
+            const absDiff = Math.abs(diff);
 
-                const val = Math.min(TOTAL_FRAMES - 1, Math.max(0, currentFrameRef.current));
-                const floorIdx = Math.floor(val);
-                const ceilIdx = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
-                const blendRatio = val - floorIdx;
+            if (absDiff < 0.015) {
+                currentFrameRef.current = target;
+            } else {
+                // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
+                const lerpFactor = isMobile
+                    ? (absDiff > 15 ? 0.55 : absDiff > 6 ? 0.45 : 0.38)
+                    : (absDiff > 15 ? 0.48 : absDiff > 6 ? 0.38 : 0.30);
+                currentFrameRef.current += diff * lerpFactor;
+            }
 
-                // Idle Canvas Redraw Guard: Skip 60fps canvas fillrate redraws when frame position is static
-                const isFrameIdle = absDiff < 0.001 && floorIdx === lastDrawnFrameIndexRef.current && (isMobile || Math.abs(blendRatio - lastDrawnBlendRatioRef.current) < 0.01);
+            const val = Math.min(TOTAL_FRAMES - 1, Math.max(0, currentFrameRef.current));
+            const floorIdx = Math.floor(val);
+            const ceilIdx = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
+            const blendRatio = val - floorIdx;
 
-                if (!isFrameIdle) {
-                    let img1 = imagesRef.current[floorIdx];
-                    let img2 = imagesRef.current[ceilIdx];
+            // Idle Canvas Redraw Guard: Skip canvas fillrate redraws when frame position is static
+            const isFrameIdle = absDiff < 0.001 && floorIdx === lastDrawnFrameIndexRef.current && (isMobile || Math.abs(blendRatio - lastDrawnBlendRatioRef.current) < 0.01);
 
-                    // Fallback decoding lookup if target frame is still decoding during extreme fast scroll
-                    if (!img1) {
-                        for (let offset = 1; offset < 25; offset++) {
-                            const prev = imagesRef.current[Math.max(0, floorIdx - offset)];
-                            if (prev) { img1 = prev; break; }
-                            const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, floorIdx + offset)];
-                            if (next) { img1 = next; break; }
-                        }
-                        loadFrame(floorIdx);
+            if (!isFrameIdle) {
+                let img1 = imagesRef.current[floorIdx];
+                let img2 = imagesRef.current[ceilIdx];
+
+                // Fallback decoding lookup if target frame is still decoding during extreme fast scroll
+                if (!img1) {
+                    for (let offset = 1; offset < 25; offset++) {
+                        const prev = imagesRef.current[Math.max(0, floorIdx - offset)];
+                        if (prev) { img1 = prev; break; }
+                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, floorIdx + offset)];
+                        if (next) { img1 = next; break; }
                     }
-
-                    if (img1) {
-                        drawFrame(img1, img2, blendRatio);
-                        lastDrawnFrameIndexRef.current = floorIdx;
-                        lastDrawnBlendRatioRef.current = blendRatio;
-                    }
+                    loadFrame(floorIdx);
                 }
 
-                if (floorIdx !== lastFrameIdx) {
-                    const isForward = target >= current;
-                    manageMemoryAndQueue(floorIdx, isForward);
-                    lastFrameIdx = floorIdx;
+                if (img1) {
+                    drawFrame(img1, img2, blendRatio);
+                    lastDrawnFrameIndexRef.current = floorIdx;
+                    lastDrawnBlendRatioRef.current = blendRatio;
                 }
+            }
+
+            if (floorIdx !== lastFrameIdx) {
+                const isForward = target >= current;
+                manageMemoryAndQueue(floorIdx, isForward);
+                lastFrameIdx = floorIdx;
+            }
+
+            // If settled and completely idle, put RAF to sleep to save 100% CPU/GPU and mobile battery!
+            if (absDiff < 0.001) {
+                isRafRunningRef.current = false;
+                return;
             }
 
             animFrameIdRef.current = requestAnimationFrame(renderLoop);
         };
 
-        animFrameIdRef.current = requestAnimationFrame(renderLoop);
+        startRafLoopRef.current = () => {
+            if (isRafRunningRef.current) return;
+            isRafRunningRef.current = true;
+            animFrameIdRef.current = requestAnimationFrame(renderLoop);
+        };
+
+        // Initial launch to render initial frame
+        startRafLoopRef.current();
+
         return () => {
             if (animFrameIdRef.current !== null) {
                 cancelAnimationFrame(animFrameIdRef.current);
             }
+            isRafRunningRef.current = false;
         };
     }, [drawFrame, loadFrame, manageMemoryAndQueue, isMobile]);
 
@@ -402,6 +419,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 onUpdate: (self) => {
                     const progress = self.progress; // 0.0 -> 1.0
                     targetFrameRef.current = progress * (TOTAL_FRAMES - 1);
+                    startRafLoopRef.current();
                     if (typographyRef.current) {
                         typographyRef.current.setProgress(progress);
                     }
@@ -416,7 +434,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 const img = imagesRef.current[frameIndex] || imagesRef.current[0];
 
                 if (img && canvasRef.current) {
-                    const maxDpr = isMobile ? 1.5 : 2;
+                    const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
                     const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
                     const w = canvasRef.current.clientWidth;
                     const h = canvasRef.current.clientHeight;
@@ -427,6 +445,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     }
                     drawFrame(img);
                 }
+                startRafLoopRef.current();
             };
 
             window.addEventListener("resize", handleResizeRedraw);
@@ -434,7 +453,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         }, section);
 
         return () => ctx.revert();
-    }, [drawFrame, isMobile]);
+    }, [drawFrame, isMobile, isLowEnd]);
 
     return (
         <section

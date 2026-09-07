@@ -10,7 +10,7 @@ import { ScrollReveal } from "@/components/motion/ScrollReveal";
 
 import { getCmsPageSection, getCmsServices } from "@/lib/cms";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -38,9 +38,11 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
 }
 
 export default async function ContactPage({ params: { locale } }: ContactPageProps) {
-    const messages = await getMessages(locale);
-    const contactSection = await getCmsPageSection("contact", "info");
-    const services = await getCmsServices();
+    const [messages, contactSection, services] = await Promise.all([
+        getMessages(locale),
+        getCmsPageSection("contact", "info"),
+        getCmsServices(),
+    ]);
 
     const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "تواصل معنا" : "CONTACT US");
     const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.";

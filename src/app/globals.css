@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700;900&display=swap');
 @import 'lenis/dist/lenis.css';
 
 @tailwind base;
@@ -14,37 +13,78 @@
   --color-lime-bright: #bff377;
   --color-silver: #c6c6c6;
 
-  /* FTX Unified Container Radius System */
-  --radius-unified: 40px;
-  --radius-unified-sm: 16px;
-  --radius-sm: 16px;
-  --radius-md: 40px;
-  --radius-lg: 40px;
-  --radius-xl: 40px;
-  --radius-hero: 40px;
+  /* FTX Precision Automotive Container Radius System
+     Calibrated for identical visual curvature across all devices:
+     - Safari/WebKit (iOS): Sleek 10px-14px precision curvature (no giant bubbles)
+     - Chromium (Android): Hardware-accelerated superellipse squircle with flat shoulders
+  */
+  --radius-unified: 14px;
+  --radius-unified-sm: 6px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 14px;
+  --radius-hero: 16px;
 }
 
 @media (max-width: 1024px) {
   :root {
-    --radius-unified: 30px;
-    --radius-unified-sm: 12px;
-    --radius-sm: 12px;
-    --radius-md: 30px;
-    --radius-lg: 30px;
-    --radius-xl: 30px;
-    --radius-hero: 30px;
+    --radius-unified: 12px;
+    --radius-unified-sm: 5px;
+    --radius-sm: 5px;
+    --radius-md: 11px;
+    --radius-lg: 12px;
+    --radius-xl: 12px;
+    --radius-hero: 14px;
   }
 }
 
 @media (max-width: 640px) {
   :root {
-    --radius-unified: 24px;
-    --radius-unified-sm: 10px;
-    --radius-sm: 10px;
-    --radius-md: 24px;
-    --radius-lg: 24px;
-    --radius-xl: 24px;
-    --radius-hero: 24px;
+    --radius-unified: 10px;
+    --radius-unified-sm: 4px;
+    --radius-sm: 4px;
+    --radius-md: 9px;
+    --radius-lg: 10px;
+    --radius-xl: 10px;
+    --radius-hero: 12px;
+  }
+}
+
+/* Progressive enhancement: when Chromium natively supports superellipse squircle */
+@supports (corner-shape: superellipse(4)) {
+  :root {
+    --radius-unified: 20px;
+    --radius-unified-sm: 8px;
+    --radius-sm: 8px;
+    --radius-md: 18px;
+    --radius-lg: 20px;
+    --radius-xl: 20px;
+    --radius-hero: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    :root {
+      --radius-unified: 18px;
+      --radius-unified-sm: 7px;
+      --radius-sm: 7px;
+      --radius-md: 16px;
+      --radius-lg: 18px;
+      --radius-xl: 18px;
+      --radius-hero: 20px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    :root {
+      --radius-unified: 16px;
+      --radius-unified-sm: 6px;
+      --radius-sm: 6px;
+      --radius-md: 14px;
+      --radius-lg: 16px;
+      --radius-xl: 16px;
+      --radius-hero: 18px;
+    }
   }
 }
 
@@ -112,7 +152,7 @@ body {
   scroll-behavior: smooth;
   background-color: var(--color-black);
   color: #e2e2e2;
-  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-family: var(--font-hanken-grotesk), 'Hanken Grotesk', system-ui, sans-serif;
   overflow-x: hidden !important;
   max-width: 100vw;
 }
@@ -182,7 +222,7 @@ html.lenis-smooth {
 }
 
 html[dir="rtl"] {
-  font-family: 'Noto Sans Arabic', 'Hanken Grotesk', system-ui, sans-serif;
+  font-family: var(--font-noto-sans-arabic), 'Noto Sans Arabic', var(--font-hanken-grotesk), system-ui, sans-serif;
 }
 
 /* Custom Metallic Scrollbar */
@@ -351,9 +391,15 @@ html[dir="rtl"] {
 .ftx-border-card {
   position: relative;
   border-radius: var(--radius-lg);
+  -webkit-border-radius: var(--radius-lg);
   overflow: hidden;
   padding: 2px;
   background-color: var(--color-surface);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -386,6 +432,7 @@ html[dir="rtl"] {
   inset: 2px;
   background-color: var(--color-surface);
   border-radius: calc(var(--radius-lg) - 2px);
+  -webkit-border-radius: calc(var(--radius-lg) - 2px);
   z-index: 1;
   pointer-events: none;
 }
@@ -400,7 +447,10 @@ html[dir="rtl"] {
   position: relative;
   z-index: 2;
   border-radius: calc(var(--radius-lg) - 2px);
+  -webkit-border-radius: calc(var(--radius-lg) - 2px);
   overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 @supports (corner-shape: superellipse(4)) {

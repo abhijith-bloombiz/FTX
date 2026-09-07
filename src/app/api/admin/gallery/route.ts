@@ -5,15 +5,19 @@ import { GalleryItemModel } from "@/lib/models/GalleryItem";
 import { getAdminSession } from "@/lib/auth";
 import { galleryData } from "@/data/gallery";
 import { deleteUploadedFile } from "@/lib/deleteFile";
+import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
 
 export async function GET() {
     try {
         await connectToDatabase();
-        await seedDatabase();
         let gallery = await GalleryItemModel.find().sort({ createdAt: -1 }).lean();
         if (!gallery || gallery.length === 0) {
-            gallery = galleryData.map((g) => ({ ...g, itemId: g.id })) as any;
+            await seedDatabase();
+            gallery = await GalleryItemModel.find().sort({ createdAt: -1 }).lean();
+            if (!gallery || gallery.length === 0) {
+                gallery = galleryData.map((g) => ({ ...g, itemId: g.id })) as any;
+            }
         }
         return NextResponse.json(
             { gallery, connected: true },
@@ -54,6 +58,7 @@ export async function POST(req: NextRequest) {
             ...rest,
             itemId: finalItemId,
         });
+        invalidateCmsCache("gallery");
         return NextResponse.json({ success: true, galleryItem: item }, { status: 201 });
     } catch (error: any) {
         const isConnErr = error?.message?.includes("ECONNREFUSED") || error?.name === "MongooseServerSelectionError" || error?.name === "MongooseError" || error?.message?.includes("connect") || error?.message?.includes("timed out");
@@ -120,6 +125,7 @@ export async function PUT(req: NextRequest) {
             });
         }
 
+        invalidateCmsCache("gallery");
         return NextResponse.json({ success: true, galleryItem: updated });
     } catch (error: any) {
         const isConnErr = error?.message?.includes("ECONNREFUSED") || error?.name === "MongooseServerSelectionError" || error?.name === "MongooseError" || error?.message?.includes("connect") || error?.message?.includes("timed out");
@@ -161,6 +167,7 @@ export async function DELETE(req: NextRequest) {
         }
 
         await GalleryItemModel.deleteOne({ $or: filterConditions });
+        invalidateCmsCache("gallery");
         return NextResponse.json({ success: true });
     } catch (error: any) {
         const isConnErr = error?.message?.includes("ECONNREFUSED") || error?.name === "MongooseServerSelectionError" || error?.name === "MongooseError" || error?.message?.includes("connect") || error?.message?.includes("timed out");

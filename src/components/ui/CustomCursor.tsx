@@ -18,17 +18,15 @@ export function CustomCursor() {
     const rafId = useRef<number | null>(null);
     const isRafRunning = useRef(false);
 
+    const [isFinePointer, setIsFinePointer] = useState(false);
+
     useEffect(() => {
         setMounted(true);
+        setIsFinePointer(typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches);
     }, []);
 
     useEffect(() => {
-        if (!mounted) return;
-
-        // Only run on fine-pointer devices (desktop)
-        if (window.matchMedia("(pointer: coarse)").matches) {
-            return;
-        }
+        if (!mounted || !isFinePointer) return;
 
         const startRafIfNeeded = () => {
             if (isRafRunning.current) return;
@@ -104,10 +102,10 @@ export function CustomCursor() {
             if (rafId.current) cancelAnimationFrame(rafId.current);
             isRafRunning.current = false;
         };
-    }, [mounted]);
+    }, [mounted, isFinePointer]);
 
-    // Ensure initial hydration pass matches server (null) 100%, and hide cursor on admin pages
-    if (!mounted || pathname?.includes("/admin")) return null;
+    // Ensure initial hydration pass matches server (null) 100%, and hide cursor on touch devices or admin pages
+    if (!mounted || !isFinePointer || pathname?.includes("/admin")) return null;
 
     return (
         <div

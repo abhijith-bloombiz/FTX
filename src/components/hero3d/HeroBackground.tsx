@@ -11,7 +11,7 @@ export function HeroBackground({
     revealed = true,
     canvasRef,
 }: HeroBackgroundProps) {
-    // Canvas Resize Handler to maintain sharp crisp resolution
+    // Canvas Resize Handler to maintain sharp crisp resolution (only if canvasRef is provided)
     const handleResize = useCallback(() => {
         if (!canvasRef?.current) return;
         const canvas = canvasRef.current;
@@ -29,25 +29,28 @@ export function HeroBackground({
     }, [canvasRef]);
 
     useEffect(() => {
+        if (!canvasRef?.current) return;
         handleResize();
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
-    }, [handleResize]);
+    }, [handleResize, canvasRef]);
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 bg-ftx-black">
-            {/* 1. Scroll-Controlled HTML Canvas Layer */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
-                <canvas
-                    ref={canvasRef}
-                    className="block w-full h-full object-cover transition-opacity duration-1000"
-                    style={{
-                        opacity: revealed ? 1 : 0,
-                        pointerEvents: "none",
-                        imageRendering: "-webkit-optimize-contrast",
-                    }}
-                />
-            </div>
+            {/* 1. Scroll-Controlled HTML Canvas Layer (only if canvasRef provided) */}
+            {canvasRef && (
+                <div className="absolute inset-0 w-full h-full overflow-hidden">
+                    <canvas
+                        ref={canvasRef}
+                        className="block w-full h-full object-cover transition-opacity duration-1000"
+                        style={{
+                            opacity: revealed ? 1 : 0,
+                            pointerEvents: "none",
+                            imageRendering: "-webkit-optimize-contrast",
+                        }}
+                    />
+                </div>
+            )}
 
             {/* 2. Static Green Ambient Glow (High performance radial gradient without 160px GPU blur pass) */}
             <div
