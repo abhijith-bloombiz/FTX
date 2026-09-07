@@ -388,6 +388,49 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const navigateToField = (elementId: string, focusSelector?: string) => {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            const target = document.getElementById(elementId);
+            if (target) {
+                clearInterval(interval);
+
+                // 1. Native smooth scroll
+                target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+
+                // 2. Explicit parent container scroll calculation
+                const scrollParent = target.closest("form") || target.closest(".overflow-y-auto");
+                if (scrollParent) {
+                    const parentRect = scrollParent.getBoundingClientRect();
+                    const targetRect = target.getBoundingClientRect();
+                    const currentScroll = scrollParent.scrollTop;
+                    const targetScroll = currentScroll + (targetRect.top - parentRect.top) - (parentRect.height / 2) + (targetRect.height / 2);
+                    scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: "smooth" });
+                }
+
+                // 3. Focus target input/textarea field without interrupting smooth scroll
+                const focusTarget = focusSelector
+                    ? (target.querySelector(focusSelector) as HTMLElement | null)
+                    : (target as HTMLElement);
+
+                if (focusTarget) {
+                    setTimeout(() => {
+                        focusTarget.focus({ preventScroll: true });
+                    }, 200);
+                }
+
+                // 4. Accent visual ring pulse to clearly highlight newly navigated field
+                target.classList.add("ring-2", "ring-ftx-lime", "ring-offset-2", "ring-offset-ftx-obsidian");
+                setTimeout(() => {
+                    target.classList.remove("ring-2", "ring-ftx-lime", "ring-offset-2", "ring-offset-ftx-obsidian");
+                }, 1200);
+            } else if (attempts > 35) {
+                clearInterval(interval);
+            }
+        }, 30);
+    };
+
 
 
     return (
@@ -722,6 +765,7 @@ export default function AdminDashboardPage() {
                                                     title: { en: "NEW SERVICE TITLE", ar: "عنوان الخدمة الجديدة" },
                                                     subtitle: { en: "Service Subtitle", ar: "وصف فرعي للخدمة" },
                                                     description: { en: "Service description text", ar: "نص تفصيلي للخدمة" },
+                                                    buttonText: { en: "EXPLORE DETAILING PACKAGES", ar: "استكشف باقات التلميع" },
                                                     benefits: { en: ["Benefit 1"], ar: ["ميزة 1"] },
                                                     image: "/images/services/ppf-main.png",
                                                     detailImages: [],
@@ -866,7 +910,22 @@ export default function AdminDashboardPage() {
                                                             onClick={() => {
                                                                 setIsCreateNew(false);
                                                                 setEditModalType("service");
-                                                                setEditModalItem(serv);
+                                                                const defaultBtnText =
+                                                                    serv.serviceId === "ppf" || serv.id === "ppf"
+                                                                        ? { en: "EXPLORE PPF PACKAGES", ar: "استكشف باقات الـ PPF" }
+                                                                        : serv.serviceId === "ceramic" || serv.id === "ceramic"
+                                                                            ? { en: "VIEW CERAMIC OPTIONS", ar: "عرض خيارات السيراميك" }
+                                                                            : serv.serviceId === "underbody-rust-proof" || serv.id === "underbody-rust-proof"
+                                                                                ? { en: "BOOK UNDERBODY TREATMENT", ar: "احجز حماية أسفل الهيكل" }
+                                                                                : serv.serviceId === "window-films" || serv.id === "window-films"
+                                                                                    ? { en: "BOOK WINDOW TINTING", ar: "احجز خدمة التظليل الحراري" }
+                                                                                    : { en: "EXPLORE DETAILING PACKAGES", ar: "استكشف باقات التلميع" };
+
+                                                                const itemWithBtn = {
+                                                                    ...serv,
+                                                                    buttonText: serv.buttonText && (serv.buttonText.en || serv.buttonText.ar) ? serv.buttonText : defaultBtnText,
+                                                                };
+                                                                setEditModalItem(itemWithBtn);
                                                             }}
                                                             className="px-3 py-2 bg-ftx-obsidian hover:bg-ftx-surface-high border border-ftx-surface-high text-ftx-silver hover:text-ftx-lime text-xs font-mono font-bold uppercase rounded-lg transition-colors flex items-center gap-1.5"
                                                         >
@@ -2836,12 +2895,14 @@ export default function AdminDashboardPage() {
                                                     onClick={() => {
                                                         const enFeat = Array.isArray(editModalItem.features?.en) ? [...editModalItem.features.en] : [];
                                                         const arFeat = Array.isArray(editModalItem.features?.ar) ? [...editModalItem.features.ar] : [];
+                                                        const newIdx = enFeat.length;
                                                         enFeat.push("");
                                                         arFeat.push("");
                                                         setEditModalItem({
                                                             ...editModalItem,
                                                             features: { en: enFeat, ar: arFeat },
                                                         });
+                                                        navigateToField(`package-feature-${newIdx}`, "input");
                                                     }}
                                                     className="text-ftx-lime text-[10px] font-mono hover:underline cursor-pointer flex items-center gap-1 font-bold"
                                                 >
@@ -2857,7 +2918,7 @@ export default function AdminDashboardPage() {
                                                     {editModalItem.features.en.map((fEn: string, fIdx: number) => {
                                                         const fAr = editModalItem.features?.ar?.[fIdx] || "";
                                                         return (
-                                                            <div key={`feat-${fIdx}`} className="p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-xl space-y-2">
+                                                            <div id={`package-feature-${fIdx}`} key={`feat-${fIdx}`} className="p-3 bg-ftx-obsidian border border-ftx-surface-high rounded-xl space-y-2 transition-all duration-300">
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-[10px] font-mono text-ftx-silver uppercase">FEATURE #{fIdx + 1}</span>
                                                                     <button
@@ -2941,14 +3002,7 @@ export default function AdminDashboardPage() {
                                                                 },
                                                             ],
                                                         });
-                                                        setTimeout(() => {
-                                                            const el = document.getElementById(`highlight-card-${newIdx}`);
-                                                            if (el) {
-                                                                el.scrollIntoView({ behavior: "smooth", block: "center" });
-                                                                const input = el.querySelector("input") as HTMLInputElement | null;
-                                                                if (input) input.focus();
-                                                            }
-                                                        }, 100);
+                                                        navigateToField(`highlight-card-${newIdx}`, "input");
                                                     }}
                                                     className="text-[10px] font-mono text-ftx-lime hover:underline cursor-pointer font-bold flex items-center gap-1"
                                                 >
@@ -3056,7 +3110,259 @@ export default function AdminDashboardPage() {
                                             )}
                                         </div>
 
-                                        {/* 2. DETAIL IMAGES GALLERY */}
+                                        {/* 2. PROCESS STEPS */}
+                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
+                                            <div className="flex items-center justify-between pb-2 border-b border-ftx-surface-high/60">
+                                                <div>
+                                                    <label className="text-[11px] font-mono text-ftx-lime uppercase font-bold tracking-wider">
+                                                        PROCESS STEPS
+                                                    </label>
+                                                    <p className="text-[10px] font-mono text-ftx-silver-muted">
+                                                        Numbered execution workflow headings shown in the Service Details modal
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const cur = Array.isArray(editModalItem.process) ? [...editModalItem.process] : [];
+                                                        const nextNum = cur.length + 1 < 10 ? `0${cur.length + 1}` : `${cur.length + 1}`;
+                                                        const newIdx = cur.length;
+                                                        cur.push({
+                                                            number: nextNum,
+                                                            title: { en: "", ar: "" }
+                                                        });
+                                                        setEditModalItem({ ...editModalItem, process: cur });
+                                                        navigateToField(`service-step-card-${newIdx}`, `#service-step-input-${newIdx}`);
+                                                    }}
+                                                    className="px-2.5 py-1 bg-ftx-lime/10 hover:bg-ftx-lime/20 border border-ftx-lime/40 text-ftx-lime text-[11px] font-mono font-bold uppercase rounded transition-colors flex items-center gap-1 cursor-pointer"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" />
+                                                    <span>ADD STEP</span>
+                                                </button>
+                                            </div>
+
+                                            {(!editModalItem.process || editModalItem.process.length === 0) ? (
+                                                <div className="text-center py-4 text-xs font-mono text-ftx-silver-muted border border-dashed border-ftx-surface-high/60 rounded-lg">
+                                                    No process steps added yet. Click &quot;+ ADD STEP&quot; to add execution stages.
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {editModalItem.process.map((step: any, sIdx: number) => (
+                                                        <div id={`service-step-card-${sIdx}`} key={sIdx} className="p-3 bg-ftx-surface border border-ftx-surface-high rounded-lg space-y-2 transition-all duration-300">
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] font-mono text-ftx-silver uppercase">STEP #</span>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={step.number || `0${sIdx + 1}`}
+                                                                        onChange={(e) => {
+                                                                            const updated = [...editModalItem.process];
+                                                                            updated[sIdx] = { ...updated[sIdx], number: e.target.value };
+                                                                            setEditModalItem({ ...editModalItem, process: updated });
+                                                                        }}
+                                                                        className="w-16 p-1.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded text-center focus:border-ftx-lime focus:outline-none"
+                                                                        placeholder="01"
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const updated = editModalItem.process.filter((_: any, i: number) => i !== sIdx);
+                                                                        setEditModalItem({ ...editModalItem, process: updated });
+                                                                    }}
+                                                                    className="p-1 text-rose-400 hover:text-rose-300 hover:bg-rose-950/50 rounded transition-colors cursor-pointer"
+                                                                    title="Remove step"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                <input
+                                                                    id={`service-step-input-${sIdx}`}
+                                                                    type="text"
+                                                                    value={typeof step.title === "object" ? step.title?.en || "" : step.title || ""}
+                                                                    onChange={(e) => {
+                                                                        const updated = [...editModalItem.process];
+                                                                        const curTitle = typeof updated[sIdx].title === "object" ? updated[sIdx].title : { en: "", ar: "" };
+                                                                        updated[sIdx] = { ...updated[sIdx], title: { ...curTitle, en: e.target.value } };
+                                                                        setEditModalItem({ ...editModalItem, process: updated });
+                                                                    }}
+                                                                    placeholder="Step Heading (EN)"
+                                                                    className="w-full p-2 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none"
+                                                                />
+                                                                <input
+                                                                    type="text"
+                                                                    value={typeof step.title === "object" ? step.title?.ar || "" : ""}
+                                                                    onChange={(e) => {
+                                                                        const updated = [...editModalItem.process];
+                                                                        const curTitle = typeof updated[sIdx].title === "object" ? updated[sIdx].title : { en: "", ar: "" };
+                                                                        updated[sIdx] = { ...updated[sIdx], title: { ...curTitle, ar: e.target.value } };
+                                                                        setEditModalItem({ ...editModalItem, process: updated });
+                                                                    }}
+                                                                    placeholder="Step Heading (AR)"
+                                                                    dir="rtl"
+                                                                    className="w-full p-2 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded focus:border-ftx-lime focus:outline-none text-right"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 3. BENEFITS */}
+                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-ftx-surface-high/60">
+                                                <div>
+                                                    <label className="text-[11px] font-mono text-ftx-lime uppercase font-bold tracking-wider">
+                                                        BENEFITS
+                                                    </label>
+                                                    <p className="text-[10px] font-mono text-ftx-silver-muted">
+                                                        Bullet points with checkmarks shown in the Service Details modal
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const curBenefits = editModalItem.benefits && typeof editModalItem.benefits === "object" && !Array.isArray(editModalItem.benefits)
+                                                            ? { en: [...(editModalItem.benefits.en || [])], ar: [...(editModalItem.benefits.ar || [])] }
+                                                            : { en: Array.isArray(editModalItem.benefits) ? [...editModalItem.benefits] : [], ar: [] };
+                                                        const newIdx = curBenefits.en.length;
+                                                        curBenefits.en.push("");
+                                                        curBenefits.ar.push("");
+                                                        setEditModalItem({ ...editModalItem, benefits: curBenefits });
+                                                        navigateToField(`service-benefit-card-${newIdx}`, `#service-benefit-textarea-${newIdx}`);
+                                                    }}
+                                                    className="px-2.5 py-1 bg-ftx-lime/10 hover:bg-ftx-lime/20 border border-ftx-lime/40 text-ftx-lime text-[11px] font-mono font-bold uppercase rounded transition-colors flex items-center gap-1 cursor-pointer shrink-0 self-start sm:self-auto"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" />
+                                                    <span>ADD BENEFIT</span>
+                                                </button>
+                                            </div>
+
+                                            {(() => {
+                                                const enList: string[] = editModalItem.benefits && typeof editModalItem.benefits === "object" && !Array.isArray(editModalItem.benefits)
+                                                    ? editModalItem.benefits.en || []
+                                                    : Array.isArray(editModalItem.benefits) ? editModalItem.benefits : [];
+                                                const arList: string[] = editModalItem.benefits && typeof editModalItem.benefits === "object" && !Array.isArray(editModalItem.benefits)
+                                                    ? editModalItem.benefits.ar || []
+                                                    : [];
+                                                const maxLen = Math.max(enList.length, arList.length);
+
+                                                if (maxLen === 0) {
+                                                    return (
+                                                        <div className="text-center py-4 text-xs font-mono text-ftx-silver-muted border border-dashed border-ftx-surface-high/60 rounded-lg">
+                                                            No benefits added yet. Click &quot;+ ADD BENEFIT&quot; to add checklist items.
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return (
+                                                    <div className="space-y-3">
+                                                        {Array.from({ length: maxLen }).map((_, bIdx) => (
+                                                            <div id={`service-benefit-card-${bIdx}`} key={bIdx} className="p-3 bg-ftx-surface border border-ftx-surface-high rounded-lg space-y-2 transition-all duration-300">
+                                                                <div className="flex items-center justify-between gap-2">
+                                                                    <span className="text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider">
+                                                                        BENEFIT #{bIdx + 1}
+                                                                    </span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const nextEn = enList.filter((_, i) => i !== bIdx);
+                                                                            const nextAr = arList.filter((_, i) => i !== bIdx);
+                                                                            setEditModalItem({ ...editModalItem, benefits: { en: nextEn, ar: nextAr } });
+                                                                        }}
+                                                                        className="p-1 text-rose-400 hover:text-rose-300 hover:bg-rose-950/50 rounded transition-colors cursor-pointer"
+                                                                        title="Remove benefit"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                    <textarea
+                                                                        id={`service-benefit-textarea-${bIdx}`}
+                                                                        rows={2}
+                                                                        value={enList[bIdx] || ""}
+                                                                        onChange={(e) => {
+                                                                            const nextEn = [...enList];
+                                                                            const nextAr = [...arList];
+                                                                            nextEn[bIdx] = e.target.value;
+                                                                            while (nextAr.length < nextEn.length) nextAr.push("");
+                                                                            setEditModalItem({ ...editModalItem, benefits: { en: nextEn, ar: nextAr } });
+                                                                        }}
+                                                                        placeholder="Benefit description (EN)..."
+                                                                        className="w-full min-w-0 p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none resize-y"
+                                                                    />
+                                                                    <textarea
+                                                                        rows={2}
+                                                                        value={arList[bIdx] || ""}
+                                                                        onChange={(e) => {
+                                                                            const nextEn = [...enList];
+                                                                            const nextAr = [...arList];
+                                                                            nextAr[bIdx] = e.target.value;
+                                                                            while (nextEn.length < nextAr.length) nextEn.push("");
+                                                                            setEditModalItem({ ...editModalItem, benefits: { en: nextEn, ar: nextAr } });
+                                                                        }}
+                                                                        placeholder="وصف الميزة (AR)..."
+                                                                        dir="rtl"
+                                                                        className="w-full min-w-0 p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right resize-y"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+
+                                        {/* 4. SERVICE ACTION BUTTON TEXT */}
+                                        <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
+                                            <div>
+                                                <label className="text-[11px] font-mono text-ftx-lime uppercase font-bold tracking-wider">
+                                                    ACTION BUTTON TEXT
+                                                </label>
+                                                <p className="text-[10px] font-mono text-ftx-silver-muted">
+                                                    Custom text for the service package action button (e.g. EXPLORE DETAILING PACKAGES ↗)
+                                                </p>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-[11px] font-mono text-ftx-silver uppercase font-bold">
+                                                        ACTION BUTTON TEXT (EN)
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={typeof editModalItem.buttonText === "object" && editModalItem.buttonText !== null ? editModalItem.buttonText?.en ?? "" : typeof editModalItem.buttonText === "string" ? editModalItem.buttonText : ""}
+                                                        onChange={(e) => {
+                                                            const curBtn = typeof editModalItem.buttonText === "object" && editModalItem.buttonText !== null ? editModalItem.buttonText : { en: "", ar: "" };
+                                                            setEditModalItem({ ...editModalItem, buttonText: { ...curBtn, en: e.target.value } });
+                                                        }}
+                                                        placeholder="e.g. EXPLORE DETAILING PACKAGES"
+                                                        className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[11px] font-mono text-ftx-silver uppercase font-bold">
+                                                        ACTION BUTTON TEXT (AR)
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        dir="rtl"
+                                                        value={typeof editModalItem.buttonText === "object" && editModalItem.buttonText !== null ? editModalItem.buttonText?.ar ?? "" : ""}
+                                                        onChange={(e) => {
+                                                            const curBtn = typeof editModalItem.buttonText === "object" && editModalItem.buttonText !== null ? editModalItem.buttonText : { en: "", ar: "" };
+                                                            setEditModalItem({ ...editModalItem, buttonText: { ...curBtn, ar: e.target.value } });
+                                                        }}
+                                                        placeholder="مثال: استكشف باقات التلميع"
+                                                        className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 5. DETAIL IMAGES GALLERY */}
                                         <div className="space-y-3 pt-2 border-t border-ftx-surface-high/60">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-[11px] font-mono text-ftx-lime uppercase block font-bold tracking-wider">

@@ -62,6 +62,8 @@ export function ContactForm({ locale, messages, initialServices }: ContactFormPr
                 { value: "ppf", label: messages.contact?.ppf || "Paint Protection Film (PPF)" },
                 { value: "ceramic", label: messages.contact?.ceramic || "Ceramic Coating" },
                 { value: "detailing", label: messages.contact?.detailing || "Professional Detailing" },
+                { value: "window-films", label: messages.contact?.windowFilms || "Automotive Window Heat-Insulation Films" },
+                { value: "underbody-rust-proof", label: messages.contact?.underbodyRustProof || "Underbody Rust-Proof Coating" },
             ]
         )
     ];

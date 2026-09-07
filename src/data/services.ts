@@ -20,6 +20,10 @@ export const servicesData: ServiceItem[] = [
             en: "Our optical-grade Paint Protection Film provides an invisible layer of armor that absorbs stone chips, road debris, bug splatter, and minor abrasions while preserving factory paint clarity.",
             ar: "توفر أفلام حماية الطلاء البصرية من FTX طبقة غير مرئية تمتص صدمات الحجارة، والخدوش، وفضلات الطيور مع الحفاظ على نقاء طلاء المصنع الأصلي.",
         },
+        buttonText: {
+            en: "EXPLORE PPF PACKAGES",
+            ar: "استكشف باقات الـ PPF",
+        },
         benefits: {
             en: [
                 "Instant heat-activated self-healing property for swirl marks",
@@ -112,6 +116,10 @@ export const servicesData: ServiceItem[] = [
         description: {
             en: "Engineered molecular bonding creating a 9H hardness ceramic barrier over vehicle surfaces. Provides unmatched hydrophobic water beading, chemical resistance, and mirror reflection.",
             ar: "ترابط جزيئي متطور يشكل حاجزاً سيراميكياً بصلابة 9H على أسطح السيارة. يمنح خاصية طرد مياه مذهلة ومقاومة للمواد الكيميائية ولمعاناً مرآوياً.",
+        },
+        buttonText: {
+            en: "VIEW CERAMIC OPTIONS",
+            ar: "عرض خيارات السيراميك",
         },
         benefits: {
             en: [
@@ -206,6 +214,10 @@ export const servicesData: ServiceItem[] = [
             en: "A comprehensive restorative service addressing paint defects, orange peel reduction, leather conditioning, engine bay detailing, and high-purity interior ozone sanitization.",
             ar: "خدمة ترميم شاملة تعالج عيوب الطلاء، الخدوش الدقيقة، تنظيف وتغذية الجلد الطبيعي، تلميع حجرة المحرك، وتعقيم المقصورة الداخلية بالأوزون.",
         },
+        buttonText: {
+            en: "EXPLORE DETAILING PACKAGES",
+            ar: "استكشف باقات التلميع",
+        },
         benefits: {
             en: [
                 "Up to 95% swirl, haze, and defect elimination",
@@ -299,6 +311,10 @@ export const servicesData: ServiceItem[] = [
             en: "FTX offers high-quality automotive window heat-insulation films designed to reduce solar heat entering the cabin, block harmful UV rays, and minimize glare—providing a more comfortable driving experience while maintaining clear visibility and a sleek, refined appearance.",
             ar: "تقدم FTX أفلام العزل الحراري عالية الجودة للنوافذ والمصممة لتقليل الحرارة الشمسية داخل المقصورة، وحجب الأشعة فوق البنفسجية الضارة، وتقليل التوهج—مما يمنحك تجربة قيادة مريحة وأنيقة مع الحفاظ على وضوح الرؤية لمظهر متميز.",
         },
+        buttonText: {
+            en: "BOOK WINDOW TINTING",
+            ar: "احجز خدمة التظليل الحراري",
+        },
         benefits: {
             en: [
                 "Blocks up to 99% of harmful UV rays preventing interior fading & skin damage",
@@ -381,6 +397,131 @@ export const servicesData: ServiceItem[] = [
         detailImages: [
             "/images/gallery/ppf-studio-hero.jpg",
             "/images/gallery/gt3rs-ppf.jpg",
+        ],
+    },
+    {
+        id: "underbody-rust-proof",
+        number: "05",
+        badge: {
+            en: "CHASSIS DEFENSE",
+            ar: "حماية الشاسيه والهيكل",
+        },
+        title: {
+            en: "UNDERBODY RUST-PROOF COATING",
+            ar: "طلاء حماية أسفل السيارة من الصدأ",
+        },
+        subtitle: {
+            en: "Protect Your Car From Underneath — Advanced Chassis & Underbody Barrier",
+            ar: "احمِ سيارتك من الأسفل — عازل وحماية متطورة لشاسيه وأسفل السيارة",
+        },
+        description: {
+            en: "Your vehicle’s underbody is constantly exposed to road dust, moisture, mud, chemicals, sand and harsh Gulf conditions. Over time, this exposure can cause corrosion and rust, affecting the chassis and other exposed metal components. Our Professional Underbody Rust-Proof Coating provides an additional protective barrier against moisture, corrosion and road contaminants.",
+            ar: "يتعرض الجزء السفلي لسيارتك باستمرار لغبار الطرق، الرطوبة، الطين، المواد الكيميائية، والرمال وظروف الخليج القاسية. بمرور الوقت، تسبب هذه العوامل التآكل والصدأ للشاسيه والأجزاء المعدنية المكشوفة. يوفر طلاء الحماية الاحترافي لأسفل السيارة حاجزاً وقائياً فائقاً ضد الرطوبة والصدأ ورواسب الطرق.",
+        },
+        buttonText: {
+            en: "BOOK UNDERBODY TREATMENT",
+            ar: "احجز حماية أسفل الهيكل",
+        },
+        benefits: {
+            en: [
+                "Helps prevent rust and corrosion",
+                "Protects against moisture, dust and road contaminants",
+                "Helps preserve the vehicle’s chassis and underbody",
+                "Ideal for Saudi Arabia’s harsh climate and road conditions",
+                "Keeps your vehicle better protected for the long term",
+            ],
+            ar: [
+                "يساعد على منع الصدأ وتآكل الأجزاء المعدنية",
+                "حماية متقدمة ضد الرطوبة والأتربة ورواسب الطرق",
+                "يحافظ على متانة وقوة الشاسيه والسطح السفلي للسيارة",
+                "مثالي لمناخ وطرق المملكة العربية السعودية وظروف الخليج القاسية",
+                "يحافظ على حماية سيارتك بشكل أفضل للمدى الطويل",
+            ],
+        },
+        highlights: [
+            {
+                icon: "shield",
+                title: { en: "Chassis Shield", ar: "درع الشاسيه" },
+                description: {
+                    en: "Forms an impenetrable molecular barrier on exposed metal and suspension joints.",
+                    ar: "يشكل طبقة عازلة تمنع الصدأ تماماً على الأجزاء المعدنية ونظام التعليق.",
+                },
+            },
+            {
+                icon: "droplet",
+                title: { en: "Moisture & Dust Barrier", ar: "عازل الرطوبة والغبار" },
+                description: {
+                    en: "Seals underbody components against high humidity, mud, chemicals, and road salts.",
+                    ar: "يعزل أسفل الهيكل عن الرطوبة العالية، الأملاح، والمواد الكيميائية الضارة.",
+                },
+            },
+            {
+                icon: "car",
+                title: { en: "Long-Term Value", ar: "حفظ قيمة السيارة" },
+                description: {
+                    en: "Maintains vehicle structural health and factory condition for superior longevity.",
+                    ar: "يحافظ على سلامة الشاسيه والقوام المعدني الأصلي لضمان عمر أطول للمركبة.",
+                },
+            },
+        ],
+        process: [
+            {
+                number: "01",
+                title: { en: "Complete underbody cleaning and degreasing", ar: "تنظيف وإزالة دهون أسفل الهيكل بالكامل" },
+                description: {
+                    en: "High-pressure thorough underbody cleaning and degreasing to dissolve road grime, oil, and mud.",
+                    ar: "غسيل ضغط عالي متكامل لأسفل المركبة مع إزالة الزيوت والأوساخ والدهون العالقة.",
+                },
+            },
+            {
+                number: "02",
+                title: { en: "Removal of accumulated dirt, mud and contaminants", ar: "إزالة الأوساخ والطين والرواسب المتراكمة" },
+                description: {
+                    en: "Mechanical extraction and meticulous decontamination of accumulated dirt, road grime, and contaminants from chassis cavities.",
+                    ar: "إزالة دقيقة لكافة الأتربة والرواسب العالقة في تجاويف وهيكل السيارة.",
+                },
+            },
+            {
+                number: "03",
+                title: { en: "Thorough drying and inspection", ar: "التجفيف الشامل وفحص الشاسيه" },
+                description: {
+                    en: "Complete industrial heated air-drying and comprehensive mechanical inspection under lift studio lights.",
+                    ar: "تجفيف هوائي حراري كامل مع فحص ميكانيكي دقيق للشاسيه تحت إضاءة الرفع المتخصصة.",
+                },
+            },
+            {
+                number: "04",
+                title: { en: "Application of professional-grade rust-proof protective coating", ar: "تطبيق طلاء الحماية الاحترافي ضد الصدأ" },
+                description: {
+                    en: "Precision spray application of heavy-duty rust inhibitor creating an impenetrable protective barrier against corrosion.",
+                    ar: "رش دقيق لمركبات عازلة فائقة القوة تشكل حاجزاً منيعاً يحمي المعدن من التآكل.",
+                },
+            },
+            {
+                number: "05",
+                title: { en: "Even coverage of exposed underbody areas and wheel arches", ar: "تغطية متساوية للمناطق المكشوفة وأقواس العجلات" },
+                description: {
+                    en: "Uniform protective layer application across all exposed subframe components, wheel wells, and chassis mountings.",
+                    ar: "تطبيق متجانس لطبقة الحماية على كامل الشاسيه السفلي وأقواس العجلات وبطاناتها.",
+                },
+            },
+            {
+                number: "06",
+                title: { en: "Final quality inspection", ar: "الفحص النهائي الشامل للجودة" },
+                description: {
+                    en: "Multi-point quality sign-off to ensure total seal integrity and perfect finish before vehicle handover.",
+                    ar: "اعتماد الجودة عبر فحص متعدد النقاط لضمان اكتمال العازل ومطابقته لأعلى معايير الحماية.",
+                },
+            },
+        ],
+        footerNote: {
+            en: "Give your car the protection it needs — not just on the outside, but underneath too. 📲 Book your Underbody Rust-Proof Treatment today.",
+            ar: "امنح سيارتك الحماية التي تحتاجها — ليس فقط من الخارج، بل ومن الأسفل أيضاً. 📲 احجز علاج حماية أسفل السيارة من الصدأ اليوم.",
+        },
+        image: "/images/services/underbody-coating.jpg",
+        detailImages: [
+            "/images/services/underbody-coating.jpg",
+            "/images/gallery/before.png",
         ],
     },
 ];

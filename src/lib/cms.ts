@@ -41,8 +41,10 @@ export async function getCmsServices() {
         await connectToDatabase();
         let services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
         
-        // Only seed if the database is truly empty
-        if (!services || services.length === 0) {
+        // Ensure all static services and updated fields are synced into the database
+        const underbodyInDb = services?.find((s: any) => s.serviceId === "underbody-rust-proof");
+        if (!services || services.length < fallbackServices.length || (underbodyInDb && (!underbodyInDb.process || underbodyInDb.process.length < 6))) {
+            global.isDatabaseSeeded = false;
             await seedDatabase();
             services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
         }

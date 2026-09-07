@@ -117,6 +117,8 @@
         "ppf": "Paint Protection Film (PPF)",
         "ceramic": "Ceramic Coating",
         "detailing": "Professional Detailing",
+        "windowFilms": "Automotive Window Heat-Insulation Films",
+        "underbodyRustProof": "Underbody Rust-Proof Coating",
         "package": "Select Package (Optional)",
         "packagePlaceholder": "Specify package or custom options",
         "message": "Additional Details / Requirements",

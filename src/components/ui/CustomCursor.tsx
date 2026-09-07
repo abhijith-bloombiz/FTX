@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
 export function CustomCursor() {
@@ -64,7 +65,7 @@ export function CustomCursor() {
 
         const handleMouseMove = (e: MouseEvent) => {
             mousePos.current = { x: e.clientX, y: e.clientY };
-            if (!isVisible) setIsVisible(true);
+            setIsVisible((prev) => (prev ? prev : true));
             startRafIfNeeded();
         };
 
@@ -107,9 +108,9 @@ export function CustomCursor() {
     // Ensure initial hydration pass matches server (null) 100%, and hide cursor on touch devices or admin pages
     if (!mounted || !isFinePointer || pathname?.includes("/admin")) return null;
 
-    return (
+    const cursorContent = (
         <div
-            className={`fixed inset-0 pointer-events-none z-[9999] transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+            className={`fixed inset-0 pointer-events-none z-[999999] transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
                 }`}
         >
             {/* 1. Fast Precision Center Dot */}
@@ -136,4 +137,6 @@ export function CustomCursor() {
             </div>
         </div>
     );
+
+    return createPortal(cursorContent, document.body);
 }

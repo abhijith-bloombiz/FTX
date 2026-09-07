@@ -22,4 +22,6 @@ export interface ServiceItem {
     process?: ServiceProcessStep[];
     image: string;
     detailImages: string[];
+    footerNote?: Record<"en" | "ar", string>;
+    buttonText?: Record<"en" | "ar", string>;
 }

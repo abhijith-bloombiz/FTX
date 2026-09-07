@@ -42,15 +42,51 @@ export async function seedDatabase() {
                 console.log(`Seeded Admin User: ${adminEmail}`);
             }
 
-            // 2. Seed / Sync Services (Batch check to eliminate 20+ sequential remote DB roundtrips)
-            const serviceCount = await ServiceItemModel.countDocuments();
-            if (serviceCount === 0) {
-                const servicesToInsert = servicesData.map((s) => ({
+            // 2. Seed / Sync Services (Ensure all services in servicesData exist in DB)
+            const existingServices = await ServiceItemModel.find({}, "serviceId").lean();
+            const existingServiceIds = new Set(existingServices.map((s: any) => s.serviceId));
+            const missingServices = servicesData
+                .filter((s) => !existingServiceIds.has(s.id))
+                .map((s) => ({
                     ...s,
                     serviceId: s.id,
                 }));
-                await ServiceItemModel.insertMany(servicesToInsert);
-                console.log("Seeded Services collection");
+
+            if (missingServices.length > 0) {
+                await ServiceItemModel.insertMany(missingServices);
+                console.log(`Synced ${missingServices.length} new service(s) to Services collection`);
+            }
+
+            // Sync updated process, benefits, and footer note for underbody-rust-proof
+            const underbodyData = servicesData.find((s) => s.id === "underbody-rust-proof");
+            if (underbodyData) {
+                await ServiceItemModel.updateOne(
+                    { serviceId: "underbody-rust-proof" },
+                    {
+                        $set: {
+                            process: underbodyData.process,
+                            benefits: underbodyData.benefits,
+                            footerNote: underbodyData.footerNote,
+                        }
+                    }
+                );
+            }
+
+            // Sync default buttonText for existing services if missing or empty
+            for (const s of servicesData) {
+                if (s.buttonText) {
+                    await ServiceItemModel.updateMany(
+                        {
+                            serviceId: s.id,
+                            $or: [
+                                { buttonText: { $exists: false } },
+                                { "buttonText.en": { $exists: false } },
+                                { "buttonText.en": "" }
+                            ]
+                        },
+                        { $set: { buttonText: s.buttonText } }
+                    );
+                }
             }
 
         // 3. Seed Packages

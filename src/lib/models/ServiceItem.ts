@@ -20,6 +20,8 @@ export interface IServiceItem extends Document {
     }>;
     image: string;
     detailImages: string[];
+    footerNote?: { en: string; ar: string };
+    buttonText?: { en: string; ar: string };
 }
 
 const ServiceItemSchema = new Schema<IServiceItem>(
@@ -39,6 +41,10 @@ const ServiceItemSchema = new Schema<IServiceItem>(
             ar: { type: String, default: "" },
         },
         description: {
+            en: { type: String, default: "" },
+            ar: { type: String, default: "" },
+        },
+        buttonText: {
             en: { type: String, default: "" },
             ar: { type: String, default: "" },
         },
@@ -62,9 +68,17 @@ const ServiceItemSchema = new Schema<IServiceItem>(
         ],
         image: { type: String, default: "/images/services/ppf-main.png" },
         detailImages: [{ type: String }],
+        footerNote: {
+            en: { type: String, default: "" },
+            ar: { type: String, default: "" },
+        },
     },
     { timestamps: true }
 );
+
+if (mongoose.models.ServiceItem) {
+    delete (mongoose.models as any).ServiceItem;
+}
 
 export const ServiceItemModel: Model<IServiceItem> =
     mongoose.models.ServiceItem || mongoose.model<IServiceItem>("ServiceItem", ServiceItemSchema);
