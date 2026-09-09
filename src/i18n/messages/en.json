@@ -101,7 +101,7 @@
     },
     "contact": {
         "heroTitle": "LET'S PROTECT YOUR VEHICLE.",
-        "heroSub": "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.",
+        "heroSub": "Get in touch with our studio team or submit a custom quote request below.",
         "formTitle": "REQUEST A QUOTE",
         "formSub": "Fill out the details below for a customized studio quotation.",
         "name": "Full Name",
@@ -135,7 +135,7 @@
         "telephone": "Telephone",
         "emailStudio": "Email Studio",
         "operatingHours": "Operating Hours",
-        "addressArea": "AL QUOZ INDUSTRIAL AREA 3, DUBAI",
+        "addressArea": "AUTOMOTIVE PRECISION DISTRICT",
         "addressFacility": "Climate-Controlled Supercar Enclosure & VIP Waiting Lounge"
     }
 }

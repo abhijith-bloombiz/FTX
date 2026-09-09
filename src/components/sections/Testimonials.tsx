@@ -19,7 +19,7 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
     const touchStartX = useRef<number | null>(null);
     const touchEndX = useRef<number | null>(null);
 
-    const [isIdle, setIsIdle] = useState(true);
+    const isIdleRef = useRef(true);
     const sectionRef = useRef<HTMLElement>(null);
     const [isInView, setIsInView] = useState(true);
 
@@ -38,18 +38,18 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
         return () => observer.disconnect();
     }, []);
 
-    // Scroll Detector: Pause carousel while scrolling, set idle state after 2.5s of no scroll
+    // Scroll Detector: Pause carousel while scrolling without triggering React re-renders
     useEffect(() => {
         if (typeof window === "undefined") return;
 
         let scrollTimer: NodeJS.Timeout | null = null;
 
         const handleScroll = () => {
-            setIsIdle(false);
+            isIdleRef.current = false;
             if (scrollTimer) clearTimeout(scrollTimer);
 
             scrollTimer = setTimeout(() => {
-                setIsIdle(true);
+                isIdleRef.current = true;
             }, 2500);
         };
 
@@ -103,14 +103,16 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
 
     // Autoplay effect (ONLY cycles when visible, idle, and not hovered/paused)
     useEffect(() => {
-        if (isPaused || !isInView || !isIdle) return;
+        if (isPaused || !isInView) return;
 
         const interval = setInterval(() => {
-            handleNext();
+            if (isIdleRef.current) {
+                handleNext();
+            }
         }, 4500);
 
         return () => clearInterval(interval);
-    }, [isPaused, isInView, isIdle, handleNext]);
+    }, [isPaused, isInView, handleNext]);
 
     // Touch swipe handlers for mobile
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -139,9 +141,9 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
 
     return (
         <section ref={sectionRef} className="py-10 sm:py-16 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Left Side) */}
+            {/* Atmospheric Lime Ambient Glow (Left Side - Desktop Only for GPU Optimization) */}
             <div
-                className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                 style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
 
@@ -198,6 +200,8 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                                                 <img
                                                     src={item.avatar || "/images/testimonials/avatar-1.jpg"}
                                                     alt={item.name}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
                                                 />

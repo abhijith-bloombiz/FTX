@@ -354,11 +354,11 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 {/* BOTTOM SECTION: CTA Buttons */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-12 sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
                     <div className="lg:col-span-7 lg:text-left space-y-6 text-center pointer-events-auto w-full">
-                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full pt-1 pb-2">
+                        <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-[calc(100%-10px)] sm:w-full mx-auto lg:mx-0 pt-1 pb-2">
                             <Link
                                 ref={btn1Ref}
                                 href={`/${locale}/contact`}
-                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
+                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-2 px-[19px] sm:px-8 py-3.5 sm:py-4 text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright shadow-lime-glow hover:scale-103 whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                             >
                                 <span>{messages?.common?.getQuote || "GET A QUOTE"}</span>
                                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -367,7 +367,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                             <Link
                                 ref={btn2Ref}
                                 href={`/${locale}/services`}
-                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
+                                className={`flex-1 sm:flex-initial ftx-btn-tech ftx-btn-specular group inline-flex items-center justify-center gap-2 px-[19px] sm:px-8 py-3.5 sm:py-4 text-xs font-mono font-bold tracking-wider sm:tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high whitespace-nowrap min-w-0 will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
                             >
                                 <span>{messages?.common?.exploreServices || "EXPLORE SERVICES"}</span>
                                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1 rtl:rotate-180" />

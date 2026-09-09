@@ -995,8 +995,8 @@ export default function AdminDashboardPage() {
                                                         {(item.category === "before-after" || item.isBeforeAfter) && (item.beforeImage || item.afterImage) ? (
                                                             <div className="w-full h-full relative">
                                                                 <BeforeAfterSlider
-                                                                    beforeImage={item.beforeImage || item.image || "/images/gallery/before.png"}
-                                                                    afterImage={item.afterImage || item.image || "/images/gallery/after.png"}
+                                                                    beforeImage={item.beforeImage || item.image || "/images/gallery/before.webp"}
+                                                                    afterImage={item.afterImage || item.image || "/images/gallery/after.webp"}
                                                                     className="w-full h-full min-h-0 aspect-video rounded-none border-0"
                                                                 />
                                                                 <div className="absolute top-3 right-3 px-2 py-1 bg-ftx-lime text-ftx-black text-[9px] font-mono font-bold rounded uppercase z-20 pointer-events-none">
@@ -1165,7 +1165,7 @@ export default function AdminDashboardPage() {
                                                     vehicle: "Porsche 911 GT3",
                                                     avatar: "/images/testimonials/avatar-1.jpg",
                                                     rating: 5,
-                                                    content: { en: "The precision and quality of FTX detailing is unmatched in Dubai.", ar: "الدقة والجودة في العناية بالسيارات لدى FTX لا مثيل لها في دبي." },
+                                                    content: { en: "The precision and quality of FTX detailing is unmatched.", ar: "الدقة والجودة في العناية بالسيارات لدى FTX لا مثيل لها." },
                                                 });
                                             }}
                                             className="px-4 py-2.5 bg-ftx-lime text-ftx-black text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-lime-glow flex items-center justify-center gap-2 hover:bg-ftx-lime-bright transition-all whitespace-nowrap shrink-0 self-end sm:self-auto"
@@ -1352,7 +1352,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.subtitle?.en ?? ""}
-                                                            placeholder="e.g. AL QUOZ INDUSTRIAL AREA, DUBAI"
+                                                            placeholder="e.g. AUTOMOTIVE PRECISION DISTRICT"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1370,7 +1370,7 @@ export default function AdminDashboardPage() {
                                                             type="text"
                                                             dir="rtl"
                                                             value={contactSec.subtitle?.ar ?? ""}
-                                                            placeholder="مثال: منطقة القوز الصناعية، دبي"
+                                                            placeholder="مثال: منطقة تميز السيارات"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1424,7 +1424,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.metadata?.phone ?? ""}
-                                                            placeholder="+971 50 123 4567"
+                                                            placeholder="+971 50 000 0000"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1459,7 +1459,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.metadata?.addressEn ?? ""}
-                                                            placeholder="Automotive Precision District, Bay 14, Al Quoz, Dubai, UAE"
+                                                            placeholder="Automotive Precision District, Bay 14, UAE"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1477,7 +1477,7 @@ export default function AdminDashboardPage() {
                                                             type="text"
                                                             dir="rtl"
                                                             value={contactSec.metadata?.addressAr ?? ""}
-                                                            placeholder="منطقة تميز السيارات، المجمع 14، القوز، دبي، الإمارات العربية المتحدة"
+                                                            placeholder="منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -2134,8 +2134,8 @@ export default function AdminDashboardPage() {
                                                         </div>
                                                         <div className="relative w-full overflow-hidden rounded-lg">
                                                             <BeforeAfterSlider
-                                                                beforeImage={editModalItem.beforeImage || "/images/gallery/before.png"}
-                                                                afterImage={editModalItem.afterImage || "/images/gallery/after.png"}
+                                                                beforeImage={editModalItem.beforeImage || "/images/gallery/before.webp"}
+                                                                afterImage={editModalItem.afterImage || "/images/gallery/after.webp"}
                                                                 className="min-h-[220px] sm:min-h-[280px] max-h-[320px] aspect-[16/9]"
                                                             />
                                                         </div>
@@ -2167,10 +2167,10 @@ export default function AdminDashboardPage() {
                                                     </div>
 
                                                     <div className="relative w-full h-32 bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden flex items-center justify-center group">
-                                                        {(editModalItem.beforeImage || "/images/gallery/before.png") ? (
+                                                        {(editModalItem.beforeImage || "/images/gallery/before.webp") ? (
                                                             <>
                                                                 <img
-                                                                    src={editModalItem.beforeImage || "/images/gallery/before.png"}
+                                                                    src={editModalItem.beforeImage || "/images/gallery/before.webp"}
                                                                     alt="Before Preview"
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
@@ -2192,7 +2192,7 @@ export default function AdminDashboardPage() {
                                                         value={editModalItem.beforeImage || ""}
                                                         onChange={(e) => setEditModalItem({ ...editModalItem, beforeImage: e.target.value })}
                                                         className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                        placeholder="/images/gallery/before.png"
+                                                        placeholder="/images/gallery/before.webp"
                                                     />
                                                 </div>
 
@@ -2222,10 +2222,10 @@ export default function AdminDashboardPage() {
                                                     </div>
 
                                                     <div className="relative w-full h-32 bg-ftx-obsidian border border-ftx-surface-high rounded-lg overflow-hidden flex items-center justify-center group">
-                                                        {(editModalItem.afterImage || "/images/gallery/after.png") ? (
+                                                        {(editModalItem.afterImage || "/images/gallery/after.webp") ? (
                                                             <>
                                                                 <img
-                                                                    src={editModalItem.afterImage || "/images/gallery/after.png"}
+                                                                    src={editModalItem.afterImage || "/images/gallery/after.webp"}
                                                                     alt="After Preview"
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
@@ -3904,7 +3904,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     type="text"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="+971 50 123 4567"
+                                    placeholder="+971 50 000 0000"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                                 />
                             </div>

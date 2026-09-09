@@ -23,16 +23,46 @@ interface ContactPageProps {
 export async function generateMetadata({ params: { locale } }: ContactPageProps) {
     const isAr = locale === "ar";
     return {
-        title: "First Torque X",
+        title: isAr
+            ? "حجز استشارة وزيارة الاستوديو | تواصل معنا | First Torque X"
+            : "Book a Studio Consultation | Contact Us | First Torque X",
         description: isAr
-            ? "تواصل مع استوديو FTX في القوز دبي لحجز موعد استشارة حماية وتلميع سيارتك."
-            : "Book a consultation or visit the FTX studio in Al Quoz, Dubai. Specialist Paint Protection Film, Ceramic Coating & Detailing.",
+            ? "تواصل مع فريق خبراء FTX لحجز موعد استشارة دقيقة لسيارتك الفاخرة أو لطلب عرض سعر مخصص لأفلام الحماية والسيراميك."
+            : "Schedule an appointment or request a bespoke quote with the FTX concierge team. Climate-controlled studio consultations for PPF, Ceramic Coating, and Detailing.",
         alternates: {
             canonical: `https://ftx.ae/${locale}/contact`,
             languages: {
                 en: "https://ftx.ae/en/contact",
                 ar: "https://ftx.ae/ar/contact",
             },
+        },
+        openGraph: {
+            title: isAr
+                ? "تواصل معنا | First Torque X"
+                : "Contact Us | First Torque X Studio",
+            description: isAr
+                ? "احجز موعد استشارة وتعرف على باقات حماية وتلميع سيارتك."
+                : "Book a personalized studio consultation for your vehicle with First Torque X.",
+            url: `https://ftx.ae/${locale}/contact`,
+            siteName: "First Torque X",
+            images: [
+                {
+                    url: "/brand/ftx-3d-logo.webp",
+                    width: 1200,
+                    height: 630,
+                    alt: "Contact Us | First Torque X Concierge",
+                },
+            ],
+            locale: isAr ? "ar_AE" : "en_US",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: isAr ? "تواصل معنا | First Torque X" : "Contact Us | First Torque X",
+            description: isAr
+                ? "احجز موعد استشارة وتعرف على باقات حماية وتلميع سيارتك."
+                : "Book a personalized studio consultation with First Torque X.",
+            images: ["/brand/ftx-3d-logo.webp"],
         },
     };
 }
@@ -45,7 +75,7 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
     ]);
 
     const headerTitle = contactSection?.title?.[locale] || (locale === "ar" ? "تواصل معنا" : "CONTACT US");
-    const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.";
+    const headerSubtitle = contactSection?.subtitle?.[locale] || messages.contact?.heroSub || "Get in touch with our studio team or submit a custom quote request below.";
     const headerDescription = contactSection?.content?.[locale];
 
     const isAr = locale === "ar";
@@ -62,11 +92,35 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
     const email = contactSection?.metadata?.email || contactConfig.email;
     const mapsUrl = contactSection?.metadata?.mapsUrl || contactConfig.mapsUrl;
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        "name": isAr ? "تواصل مع First Torque X" : "Contact First Torque X",
+        "url": `https://ftx.ae/${locale}/contact`,
+        "mainEntity": {
+            "@type": "AutomotiveBusiness",
+            "name": "First Torque X",
+            "image": "https://ftx.ae/brand/ftx-3d-logo.webp",
+            "telephone": phone,
+            "email": email,
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Automotive Precision District",
+                "addressLocality": "UAE",
+                "addressCountry": "AE"
+            }
+        }
+    };
+
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            {/* Atmospheric Lime Ambient Glow (Bottom Right - Desktop Only for GPU Optimization) */}
             <div
-                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                 style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
             {/* Global Header */}

@@ -20,7 +20,7 @@ export const testimonialsData: TestimonialItem[] = [
         avatar: "/images/testimonials/avatar-1.jpg",
         rating: 5,
         content: {
-            en: "The precision on my GT3 RS is unmatched. The wrapped edges on the PPF are completely invisible. FTX is the gold standard in Dubai.",
+            en: "The precision on my GT3 RS is unmatched. The wrapped edges on the PPF are completely invisible. FTX is the gold standard.",
             ar: "الدقة في عمل جيب البورشه لم أَرَ لها مثيلاً. حواف فلم الحماية غير مرئية كلياً. FTX هم المعيار الذهبي في التلميع والحماية.",
         },
     },

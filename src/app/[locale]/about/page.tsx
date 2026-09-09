@@ -21,16 +21,46 @@ interface AboutPageProps {
 export async function generateMetadata({ params: { locale } }: AboutPageProps) {
     const isAr = locale === "ar";
     return {
-        title: "First Torque X",
+        title: isAr
+            ? "من نحن | معايير الدقة الجراحية وحماية السيارات | First Torque X"
+            : "About Us | Surgical Standards & Luxury Car Protection | First Torque X",
         description: isAr
-            ? "تعرف على فلسفة FTX وشغفنا بالكمال في حماية وتجميل أحدث السيارات الفاخرة والدقيقة في دبي."
-            : "Discover the ethos of FTX Dubai. Engineered for perfection with surgical paint protection, ceramic coatings, and high-end detailing.",
+            ? "تعرف على فلسفة FTX وشغفنا بالكمال في حماية وتجميل أحدث السيارات الفاخرة والدقيقة داخل كبائن معقمة ومتحكم بها مناخياً."
+            : "Discover the ethos of FTX. Engineered for perfection with surgical paint protection film (PPF), nano-ceramic coatings, and bespoke detailing inside climate-controlled studio bays.",
         alternates: {
             canonical: `https://ftx.ae/${locale}/about`,
             languages: {
                 en: "https://ftx.ae/en/about",
                 ar: "https://ftx.ae/ar/about",
             },
+        },
+        openGraph: {
+            title: isAr
+                ? "من نحن | استوديو First Torque X"
+                : "About Us | First Torque X Automotive Studio",
+            description: isAr
+                ? "تعرف على فلسفة FTX ومعايير الدقة الجراحية في حماية وتلميع السيارات الفاخرة."
+                : "Discover the craftsmanship and climate-controlled studio infrastructure of First Torque X.",
+            url: `https://ftx.ae/${locale}/about`,
+            siteName: "First Torque X",
+            images: [
+                {
+                    url: "/images/about/craftsmanship.jpg",
+                    width: 1200,
+                    height: 630,
+                    alt: "FTX Craftsmanship & Detailing Bay",
+                },
+            ],
+            locale: isAr ? "ar_AE" : "en_US",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: isAr ? "من نحن | First Torque X" : "About Us | First Torque X",
+            description: isAr
+                ? "تعرف على فلسفة FTX ومعايير الدقة الجراحية في حماية السيارات."
+                : "Discover the ethos and precision studio bays of First Torque X.",
+            images: ["/images/about/craftsmanship.jpg"],
         },
     };
 }
@@ -46,12 +76,12 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
 
     const isAr = locale === "ar";
 
-    const heroBadge = heroSec?.subtitle?.[locale] || messages.about?.heroBadge || messages.nav?.about || (isAr ? "عن FTX" : "ABOUT FTX");
-    const heroTitle = heroSec?.title?.[locale] || (isAr ? "دقة جراحية." : "SURGICAL PERFECTION.");
+    const heroBadge = heroSec?.subtitle?.[locale] || messages.about?.heroBadge || messages.nav?.about || (isAr ? "دقة وحماية" : "PRECISION PROTECTION");
+    const heroTitle = heroSec?.title?.[locale] || (isAr ? "دقة وإتقان." : "DRIVEN BY PRECISION.");
     const heroSub = heroSec?.content?.[locale] || messages.about?.heroSub || messages.intro?.p1;
 
     const philosophyBadge = philosophySec?.subtitle?.[locale] || (isAr ? "معيار FTX" : "THE FTX STANDARD");
-    const philosophyTitle = philosophySec?.title?.[locale] || (isAr ? "هندسة السيارات الدقيقة تلتقي بالتلميع الجراحي" : "PRECISION AUTOMOTIVE ENGINEERING MEETS SURGICAL DETAILING");
+    const philosophyTitle = philosophySec?.title?.[locale] || (isAr ? "هندسة السيارات تلتقي بدقة التلميع" : "PRECISION AUTOMOTIVE ENGINEERING MEETS BESPOKE DETAILING");
     const philosophyContent = philosophySec?.content?.[locale] || messages.intro?.p1;
     const philosophyImage = philosophySec?.metadata?.imageUrl || "/images/about/craftsmanship.jpg";
 
@@ -68,7 +98,7 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
     const infraContent = infraSec?.content?.[locale];
 
     const infraCard1Image = infraSec?.metadata?.card1Image || "/images/about/plotter.jpg";
-    const infraCard1Title = infraSec?.metadata?.card1Title?.[locale] || (isAr ? "قص كمبيوتري دقيق (Plotter)" : "Surgical Plotter Cutting");
+    const infraCard1Title = infraSec?.metadata?.card1Title?.[locale] || (isAr ? "قص كمبيوتري دقيق (Plotter)" : "Precision Plotter Cutting");
     const infraCard1Desc = infraSec?.metadata?.card1Desc?.[locale] || (isAr ? "برنامج DAP للقص المباشر يضمن عدم ملامسة المشرط لطلاء المصنع إطلاقاً." : "Computer-guided DAP software plots vehicle-specific templates so blades never touch your vehicle's factory paint.");
 
     const infraCard2Image = infraSec?.metadata?.card2Image || "/images/about/hepa-bay.jpg";
@@ -179,77 +209,83 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
                         </ScrollReveal>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <ScrollReveal type="editorial" delay={100}>
-                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
-                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                        <Image
-                                            src={infraCard1Image}
-                                            alt="Surgical Plotter Cutting"
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                        <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
-                                            <Wrench className="w-5 h-5" />
+                            <ScrollReveal type="editorial" delay={100} className="h-full flex flex-col">
+                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high h-full shadow-xl">
+                                    <div className="w-full h-full flex flex-col justify-between overflow-hidden bg-ftx-surface">
+                                        <div className="relative w-full aspect-[16/10] overflow-hidden bg-ftx-surface">
+                                            <Image
+                                                src={infraCard1Image}
+                                                alt="Surgical Plotter Cutting"
+                                                fill
+                                                className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ftx-surface via-ftx-surface/60 to-transparent pointer-events-none z-10" />
+                                            <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform z-20">
+                                                <Wrench className="w-5 h-5" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                        <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                            {infraCard1Title}
-                                        </h3>
-                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                            {infraCard1Desc}
-                                        </p>
+                                        <div className="p-6 space-y-3 flex-1 flex flex-col justify-between bg-ftx-surface relative z-10">
+                                            <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                                {infraCard1Title}
+                                            </h3>
+                                            <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                                {infraCard1Desc}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </ScrollReveal>
 
-                            <ScrollReveal type="editorial" delay={200}>
-                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
-                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                        <Image
-                                            src={infraCard2Image}
-                                            alt="HEPA Filtered Air"
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                        <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
-                                            <ShieldCheck className="w-5 h-5" />
+                            <ScrollReveal type="editorial" delay={200} className="h-full flex flex-col">
+                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high h-full shadow-xl">
+                                    <div className="w-full h-full flex flex-col justify-between overflow-hidden bg-ftx-surface">
+                                        <div className="relative w-full aspect-[16/10] overflow-hidden bg-ftx-surface">
+                                            <Image
+                                                src={infraCard2Image}
+                                                alt="HEPA Filtered Air"
+                                                fill
+                                                className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ftx-surface via-ftx-surface/60 to-transparent pointer-events-none z-10" />
+                                            <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform z-20">
+                                                <ShieldCheck className="w-5 h-5" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                        <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                            {infraCard2Title}
-                                        </h3>
-                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                            {infraCard2Desc}
-                                        </p>
+                                        <div className="p-6 space-y-3 flex-1 flex flex-col justify-between bg-ftx-surface relative z-10">
+                                            <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                                {infraCard2Title}
+                                            </h3>
+                                            <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                                {infraCard2Desc}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </ScrollReveal>
 
-                            <ScrollReveal type="editorial" delay={300}>
-                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high flex flex-col justify-between h-full shadow-xl">
-                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                        <Image
-                                            src={infraCard3Image}
-                                            alt="Curing Infrared Lamps"
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90" />
-                                        <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform">
-                                            <Award className="w-5 h-5" />
+                            <ScrollReveal type="editorial" delay={300} className="h-full flex flex-col">
+                                <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface border border-ftx-surface-high h-full shadow-xl">
+                                    <div className="w-full h-full flex flex-col justify-between overflow-hidden bg-ftx-surface">
+                                        <div className="relative w-full aspect-[16/10] overflow-hidden bg-ftx-surface">
+                                            <Image
+                                                src={infraCard3Image}
+                                                alt="Curing Infrared Lamps"
+                                                fill
+                                                className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ftx-surface via-ftx-surface/60 to-transparent pointer-events-none z-10" />
+                                            <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform z-20">
+                                                <Award className="w-5 h-5" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                                        <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                            {infraCard3Title}
-                                        </h3>
-                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
-                                            {infraCard3Desc}
-                                        </p>
+                                        <div className="p-6 space-y-3 flex-1 flex flex-col justify-between bg-ftx-surface relative z-10">
+                                            <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                                {infraCard3Title}
+                                            </h3>
+                                            <p className="text-xs text-ftx-silver-muted font-body leading-relaxed">
+                                                {infraCard3Desc}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </ScrollReveal>

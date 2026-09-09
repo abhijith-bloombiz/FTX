@@ -5,9 +5,14 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Shield, Sparkles, Award, Zap } from "lucide-react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Locale } from "@/i18n/config";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { TextReveal } from "@/components/motion/TextReveal";
+
+if (typeof window !== "undefined") {
+    gsap.registerPlugin(ScrollTrigger);
+}
 
 interface WhyFTXProps {
     locale: Locale;
@@ -18,25 +23,18 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     const pathname = usePathname();
     const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/` || pathname === "/";
 
-    const [activeCardIndex, setActiveCardIndex] = useState(0);
+    // Stage 1 default: 01 PRECISION (left), 02 PROTECTION (center), 03 CRAFTSMANSHIP (right)
+    const [activeCardIndex, setActiveCardIndex] = useState(1);
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     const sectionRef = useRef<HTMLElement>(null);
     const [isInView, setIsInView] = useState(true);
 
-    // Viewport awareness to suspend background auto-play when scrolled off-screen
-    useEffect(() => {
-        if (!sectionRef.current || typeof window === "undefined" || !("IntersectionObserver" in window)) return;
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsInView(entry.isIntersecting);
-            },
-            { threshold: 0.1 }
-        );
-
-        observer.observe(sectionRef.current);
-        return () => observer.disconnect();
-    }, []);
+    // Scroll Entrance Animation State
+    const revealStateRef = useRef({
+        center: 0,
+        left: 0,
+        right: 0,
+    });
 
     const pillars = [
         {
@@ -67,13 +65,14 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
     const touchStartXRef = useRef<number | null>(null);
     const touchEndXRef = useRef<number | null>(null);
-    const currentStageRef = useRef<{ stage: number }>({ stage: 0 });
-
-    const activeCardIndexRef = useRef(0);
+    const currentStageRef = useRef<{ stage: number }>({ stage: 1 });
+    const activeCardIndexRef = useRef(1);
 
     const updateMobileCardsFromStage = useCallback((stage: number) => {
         const totalPillars = pillars.length;
         if (totalPillars === 0) return;
+
+        const { center, left, right } = revealStateRef.current;
 
         pillars.forEach((_, idx) => {
             const cardEl = cardRefs.current[idx];
@@ -85,22 +84,109 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
 
             const absDist = Math.abs(dist);
 
-            // Translate side cards by ±115px with smoother Z-depth
-            const tx = dist * 115;
-            const tz = 20 - absDist * 70;
-            const rotY = dist * -18;
+            // Base resting carousel positions
+            let tx = dist * 115;
+            let ty = 0;
+            let tz = 20 - absDist * 70;
+            let rotY = dist * -18;
+            let scale = Math.max(0.8, 1 - absDist * 0.15);
 
-            const scale = Math.max(0.8, 1 - absDist * 0.15);
-            const opacity = absDist > 1.8 ? 0 : Math.max(0, 1 - absDist * 0.3);
+            let progress = 1;
+
+            if (absDist <= 0.3) {
+                // CENTER CARD: came from BOTTOM
+                progress = center;
+                const inv = 1 - center;
+                ty += inv * 160; // starts 160px below
+                scale *= (1 - inv * 0.1);
+            } else if (dist < -0.3) {
+                // LEFT CARD: came from LEFT
+                progress = left;
+                const inv = 1 - left;
+                tx += inv * -200; // starts 200px further to the left
+                rotY += inv * -18; // dynamic flight angle
+            } else if (dist > 0.3) {
+                // RIGHT CARD: came from RIGHT
+                progress = right;
+                const inv = 1 - right;
+                tx += inv * 200; // starts 200px further to the right
+                rotY += inv * 18; // dynamic flight angle
+            }
+
+            const baseOpacity = absDist > 1.8 ? 0 : Math.max(0, 1 - absDist * 0.3);
+            const opacity = baseOpacity * progress;
             const zIndex = Math.max(1, Math.round(50 - absDist * 20));
 
             cardEl.style.transformOrigin = "50% 50%";
-            cardEl.style.transform = `translate3d(${tx.toFixed(1)}px, 0px, ${tz.toFixed(1)}px) rotateY(${rotY.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+            cardEl.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, ${tz.toFixed(1)}px) rotateY(${rotY.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
             cardEl.style.opacity = opacity.toFixed(2);
             cardEl.style.zIndex = String(zIndex);
-            cardEl.style.pointerEvents = absDist < 0.3 ? "auto" : "none";
+            cardEl.style.pointerEvents = (absDist < 0.3 && progress > 0.8) ? "auto" : "none";
         });
     }, [pillars.length]);
+
+    // Bidirectional Smooth Scroll-Linked Reveal (works on forward scroll AND reverse scroll)
+    useEffect(() => {
+        if (!sectionRef.current || typeof window === "undefined" || !isHomePage) return;
+
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (prefersReducedMotion) {
+            revealStateRef.current = { center: 1, left: 1, right: 1 };
+            updateMobileCardsFromStage(currentStageRef.current.stage);
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsInView(entry.isIntersecting);
+            },
+            { threshold: 0.05 }
+        );
+        observer.observe(sectionRef.current);
+
+        const ctx = gsap.context(() => {
+            ScrollTrigger.create({
+                trigger: sectionRef.current,
+                start: "top 95%", // starts as soon as top of section enters bottom of viewport
+                end: "bottom 10%", // ends when bottom of section exits off the top
+                scrub: 0.6, // buttery smooth 0.6s physical interpolation in both directions!
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                    const p = self.progress; // 0.0 -> 1.0
+                    let reveal = 1;
+
+                    // Continuous bidirectional envelope:
+                    // 0.0 -> 0.28: enters from top of page (forward scroll 0->1, reverse scroll 1->0)
+                    // 0.28 -> 0.72: locked at 1.0 (fully resting & interactive while viewing)
+                    // 0.72 -> 1.0: exits past bottom (forward scroll 1->0, reverse scroll from below 0->1)
+                    if (p < 0.28) {
+                        const t = p / 0.28;
+                        reveal = t * t * (3 - 2 * t); // smoothstep ease
+                    } else if (p > 0.72) {
+                        const t = (1 - p) / 0.28;
+                        reveal = t * t * (3 - 2 * t); // smoothstep ease
+                    } else {
+                        reveal = 1;
+                    }
+
+                    reveal = Math.max(0, Math.min(1, reveal));
+
+                    revealStateRef.current = {
+                        center: reveal,
+                        left: reveal,
+                        right: reveal,
+                    };
+
+                    updateMobileCardsFromStage(currentStageRef.current.stage);
+                },
+            });
+        }, sectionRef);
+
+        return () => {
+            observer.disconnect();
+            ctx.revert();
+        };
+    }, [isHomePage, updateMobileCardsFromStage]);
 
     const isPausedRef = useRef(false);
     const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -138,11 +224,6 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         };
     }, []);
 
-    useEffect(() => {
-        if (!isHomePage) return;
-        updateMobileCardsFromStage(0);
-    }, [isHomePage, updateMobileCardsFromStage]);
-
     const animateStageTo = useCallback((targetStage: number, duration = 0.55, ease = "power2.out") => {
         const totalPillars = pillars.length;
         const normalizedActiveIndex = ((Math.round(targetStage) % totalPillars) + totalPillars) % totalPillars;
@@ -167,12 +248,12 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         });
     }, [pillars.length, updateMobileCardsFromStage]);
 
-    // Auto-scroll 3D card slideshow timer (ONLY cycles when in view, idle, and not paused)
+    // Auto-scroll 3D card slideshow timer (ONLY cycles when in view, idle, unpaused, and entrance completed)
     useEffect(() => {
         if (!isHomePage || !isInView) return;
 
         const interval = setInterval(() => {
-            if (!isPausedRef.current && isIdleRef.current) {
+            if (!isPausedRef.current && isIdleRef.current && revealStateRef.current.center > 0.9) {
                 const currentIntegerStage = Math.round(currentStageRef.current.stage);
                 const nextStage = currentIntegerStage + 1;
                 animateStageTo(nextStage, 0.7, "power2.inOut");
@@ -186,6 +267,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
     }, [isHomePage, isInView, pillars.length, animateStageTo]);
 
     const handleTouchStart = (e: React.TouchEvent) => {
+        if (revealStateRef.current.center < 0.8) return;
         pauseAutoPlay();
         touchStartXRef.current = e.touches[0].clientX;
         touchEndXRef.current = null;
@@ -253,33 +335,39 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                             const IconComponent = item.icon;
 
                             return (
-                                <ScrollReveal key={idx} type="card" delay={idx * 100} duration={850}>
-                                    <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface/60 overflow-hidden flex flex-col justify-between transition-all duration-500 hover:-translate-y-1.5 h-full shadow-lg">
-                                        <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                            <Image
-                                                src={item.image}
-                                                alt={item.title}
-                                                fill
-                                                sizes="(max-width: 1024px) 50vw, 25vw"
-                                                quality={88}
-                                                decoding="async"
-                                                loading="lazy"
-                                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-surface via-ftx-surface/40 to-transparent opacity-90 pointer-events-none" />
-                                            <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform duration-300 z-10">
-                                                <IconComponent className="w-5 h-5" />
+                                <ScrollReveal key={idx} type="card" delay={idx * 100} duration={850} className="h-full flex flex-col">
+                                    <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface transition-all duration-500 hover:-translate-y-1.5 h-full shadow-lg">
+                                        {/* Single direct child wrapper to prevent inner seam rounding from .ftx-border-card > * */}
+                                        <div className="w-full h-full flex flex-col justify-between overflow-hidden bg-ftx-surface">
+                                            {/* Media Header */}
+                                            <div className="relative w-full aspect-[16/10] overflow-hidden bg-ftx-surface">
+                                                <Image
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    fill
+                                                    sizes="(max-width: 1024px) 50vw, 25vw"
+                                                    quality={88}
+                                                    decoding="async"
+                                                    loading="lazy"
+                                                    className="w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                />
+                                                {/* Seamless 100% solid surface fade eliminating any photo floor artifacts */}
+                                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ftx-surface via-ftx-surface/60 to-transparent pointer-events-none z-10" />
+                                                <div className="absolute top-4 left-4 p-2.5 ftx-squircle-sm bg-ftx-obsidian/90 border border-ftx-lime/40 text-ftx-lime group-hover:scale-110 transition-transform duration-300 z-20">
+                                                    <IconComponent className="w-5 h-5" />
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div className="p-6 flex flex-col justify-start space-y-2 flex-grow">
-                                            <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
-                                                {item.title}
-                                            </h3>
+                                            {/* Content Body */}
+                                            <div className="p-6 flex flex-col justify-start space-y-2 flex-grow bg-ftx-surface relative z-10">
+                                                <h3 className="text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-colors">
+                                                    {item.title}
+                                                </h3>
 
-                                            <p className="text-sm text-ftx-silver font-body leading-relaxed">
-                                                {item.desc}
-                                            </p>
+                                                <p className="text-sm text-ftx-silver font-body leading-relaxed">
+                                                    {item.desc}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </ScrollReveal>
@@ -298,7 +386,10 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 {/* Bottom-Left Atmospheric Lime Glow Partition Light */}
                 <div
                     className="absolute bottom-0 left-0 w-full h-[250px] pointer-events-none z-0"
-                    style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
+                    style={{
+                        background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)",
+                        transform: "translateZ(0)",
+                    }}
                 />
 
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent relative flex flex-col justify-start gap-4 z-10">
@@ -331,6 +422,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                                         transformOrigin: "50% 50% -140px",
                                         backfaceVisibility: "hidden",
                                         transformStyle: "preserve-3d",
+                                        contain: "paint",
                                     }}
                                 >
                                     {/* Card Frame Content */}

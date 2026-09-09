@@ -84,6 +84,7 @@ export function BeforeAfterSlider({
             tabIndex={0}
             dir="ltr"
             onKeyDown={handleKeyDown}
+            style={{ contain: "paint" }}
             className={`relative w-full aspect-[16/8.5] select-none group focus:outline-none focus:ring-2 focus:ring-ftx-lime ftx-squircle-xl border border-ftx-surface-high ${className || "min-h-[340px] sm:min-h-[460px] max-h-[520px]"}`}
             aria-label="Before and after transformation slider. Use left and right arrow keys to adjust."
         >
@@ -94,6 +95,8 @@ export function BeforeAfterSlider({
                     alt={`After: ${alt}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 1200px"
+                    quality={75}
+                    loading="lazy"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
@@ -102,16 +105,22 @@ export function BeforeAfterSlider({
                 </div>
             </div>
 
-            {/* Before Image (Clipped overlay using GPU clip-path) */}
+            {/* Before Image (Clipped overlay using GPU clip-path with translateZ hardware isolation) */}
             <div
                 className="absolute inset-0 w-full h-full pointer-events-none select-none"
-                style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}
+                style={{
+                    clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)`,
+                    transform: "translateZ(0)",
+                    willChange: isDragging ? "clip-path" : "auto",
+                }}
             >
                 <Image
                     src={beforeImage}
                     alt={`Before: ${alt}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 1200px"
+                    quality={75}
+                    loading="lazy"
                     draggable={false}
                     className="object-cover pointer-events-none select-none"
                 />
@@ -142,8 +151,14 @@ export function BeforeAfterSlider({
 
                 {/* Circular Center Handle */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 bg-ftx-obsidian/95 border-2 border-ftx-lime rounded-full shadow-lime-glow flex items-center justify-center gap-0.5 text-ftx-lime backdrop-blur-md pointer-events-none">
-                    <ChevronLeft className={`w-4 h-4 -mr-1 transition-transform ${!isDragging ? "animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] sm:animate-none" : ""}`} style={{ animation: !isDragging ? "bounceLeft 1.4s ease-in-out infinite" : "none" }} />
-                    <ChevronRight className={`w-4 h-4 -ml-1 transition-transform`} style={{ animation: !isDragging ? "bounceRight 1.4s ease-in-out infinite" : "none" }} />
+                    <ChevronLeft
+                        className="w-4 h-4 -mr-1 transition-transform will-change-transform transform-gpu"
+                        style={{ animation: !isDragging ? "bounceLeft 1.4s ease-in-out infinite" : "none" }}
+                    />
+                    <ChevronRight
+                        className="w-4 h-4 -ml-1 transition-transform will-change-transform transform-gpu"
+                        style={{ animation: !isDragging ? "bounceRight 1.4s ease-in-out infinite" : "none" }}
+                    />
                 </div>
             </div>
 

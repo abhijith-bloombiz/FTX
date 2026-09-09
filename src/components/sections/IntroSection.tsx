@@ -13,7 +13,7 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
         <section id="about" className="py-10 sm:py-12 bg-black relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Bottom Left - Desktop Only for GPU Optimization) */}
             <div
-                className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                 style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

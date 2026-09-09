@@ -113,16 +113,48 @@ interface HomePageProps {
 export async function generateMetadata({ params: { locale } }: HomePageProps) {
     const isAr = locale === "ar";
     return {
-        title: "First Torque X",
+        title: isAr
+            ? "First Torque X | استوديو حماية السيارات الفاخرة | أفلام الحماية والسيراميك"
+            : "First Torque X | Premier Automotive Protection Studio | PPF & Ceramic Coating",
         description: isAr
-            ? "استوديو دبي الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء، والعناية الفائقة بالسيارات."
-            : "Dubai's premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
+            ? "الاستوديو الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء، والعناية الفائقة بالسيارات."
+            : "Premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
         alternates: {
             canonical: `https://ftx.ae/${locale}`,
             languages: {
                 en: "https://ftx.ae/en",
                 ar: "https://ftx.ae/ar",
             },
+        },
+        openGraph: {
+            title: isAr
+                ? "First Torque X | استوديو حماية السيارات الفاخرة"
+                : "First Torque X | Premier Automotive Protection Studio",
+            description: isAr
+                ? "الاستوديو الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء."
+                : "Premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, and Surgical Detailing.",
+            url: `https://ftx.ae/${locale}`,
+            siteName: "First Torque X",
+            images: [
+                {
+                    url: "/brand/ftx-3d-logo.webp",
+                    width: 1200,
+                    height: 630,
+                    alt: "First Torque X Automotive Protection Studio",
+                },
+            ],
+            locale: isAr ? "ar_AE" : "en_US",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: isAr
+                ? "First Torque X | استوديو حماية السيارات الفاخرة"
+                : "First Torque X | Premier Automotive Protection Studio",
+            description: isAr
+                ? "أفلام حماية الطلاء PPF، وطلاء السيراميك 9H+، وتصحيح الطلاء فائق الدقة."
+                : "Premier automotive protection studio specializing in PPF, 9H+ Ceramic, and Surgical Detailing.",
+            images: ["/brand/ftx-3d-logo.webp"],
         },
     };
 }
@@ -148,9 +180,9 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
         "priceRange": "$$$$",
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": "Al Quoz Industrial Area 3",
-            "addressLocality": "Dubai",
-            "addressRegion": "Dubai",
+            "streetAddress": "Automotive Precision District",
+            "addressLocality": "UAE",
+            "addressRegion": "UAE",
             "addressCountry": "AE",
         },
         "geo": {
@@ -225,9 +257,9 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
             {/* 7. Book a Studio Visit / Quick Quote (Contacts) */}
             {isVisible("contact") && (
                 <section id="contact" className="py-10 sm:py-12 bg-black relative overflow-hidden">
-                    {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
+                    {/* Atmospheric Lime Ambient Glow (Bottom Right - Desktop Only for GPU Optimization) */}
                     <div
-                        className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                        className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                         style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
                     />
 

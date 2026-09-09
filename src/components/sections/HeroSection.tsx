@@ -49,18 +49,23 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [isLowEnd, setIsLowEnd] = useState(false);
 
-    // IntersectionObserver to pause heavy 60fps canvas re-renders when hero pin container is off-screen
+    // IntersectionObserver to pause heavy 60fps canvas re-renders when hero is off-screen
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 isHeroInViewRef.current = entry.isIntersecting;
                 if (entry.isIntersecting && startRafLoopRef.current) {
                     startRafLoopRef.current();
+                } else if (!entry.isIntersecting && animFrameIdRef.current !== null) {
+                    cancelAnimationFrame(animFrameIdRef.current);
+                    animFrameIdRef.current = null;
+                    isRafRunningRef.current = false;
                 }
             },
             { threshold: 0 }
         );
-        if (pinWrapperRef.current) observer.observe(pinWrapperRef.current);
+        const target = sectionRef.current || pinWrapperRef.current;
+        if (target) observer.observe(target);
         return () => observer.disconnect();
     }, []);
 

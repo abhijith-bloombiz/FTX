@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { galleryData, getVehicleLabel } from "@/data/gallery";
@@ -25,6 +26,14 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     // Track the 4 active item indices for slot 0, 1, 2, 3
     const [slotIndices, setSlotIndices] = useState<number[]>([0, 1, 2, 3]);
     const [fadingSlots, setFadingSlots] = useState<number[]>([]);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        setIsMobile(window.innerWidth < 768);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     useEffect(() => {
         fetch("/api/admin/gallery")
@@ -168,10 +177,11 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     };
 
     // 3. Paired Image Auto-Switch:
-    // Pair 1 (Card 1 & Card 4: slots 0 & 3) rotates every 6s
+    // Pair 1 (Card 1 & Card 4: slots 0 & 3) rotates every 6s on desktop
     // Pair 2 (Card 2 & Card 3: slots 1 & 2) rotates every 6s, delayed by 3s
+    // (Disabled on mobile to preserve 60fps scrolling and eliminate battery/re-render jitter)
     useEffect(() => {
-        if (availableItems.length <= 4 || !isInView) return;
+        if (availableItems.length <= 4 || !isInView || isMobile) return;
 
         let interval1: NodeJS.Timeout;
         let interval2: NodeJS.Timeout;
@@ -249,9 +259,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
             if (fadeTimeout1) clearTimeout(fadeTimeout1);
             if (fadeTimeout2) clearTimeout(fadeTimeout2);
         };
-    }, [availableItems.length, isInView]);
+    }, [availableItems.length, isInView, isMobile]);
 
-    const renderCardSlot = (slotIndex: number, colSpanClass: string, _direction: "left" | "right", delay: number) => {
+    const renderCardSlot = (slotIndex: number, colSpanClass: string, direction: "left" | "right", delay: number) => {
         const itemIdx = (slotIndices[slotIndex] ?? slotIndex) % (availableItems.length || 1);
         const item = availableItems[itemIdx] || availableItems[0];
         const isFading = fadingSlots.includes(slotIndex);
@@ -259,21 +269,31 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
         if (!item) return null;
 
         return (
-            <ScrollReveal type="card" delay={delay} duration={700} className={colSpanClass}>
+            <ScrollReveal
+                type="horizontal"
+                direction={direction}
+                delay={delay}
+                duration={750}
+                className={colSpanClass}
+            >
                 <div
                     onClick={() => setActiveLightboxIndex(itemIdx)}
-                    className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-all duration-500 hover:-translate-y-1"
+                    className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-[transform,border-color,box-shadow] duration-500 hover:-translate-y-1"
+                    style={{ contain: "paint" }}
                 >
                     <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
-                        <img
+                        <Image
                             src={getItemImage(item)}
                             alt={getTitle(item)}
-                            decoding="async"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 30vw"
+                            quality={80}
                             loading="lazy"
-                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 will-change-transform ${isFading ? "opacity-30" : "opacity-100"
+                            decoding="async"
+                            className={`object-cover transform-gpu transition-all duration-700 ease-out md:group-hover:scale-110 ${isFading ? "opacity-30 duration-300" : "opacity-100"
                                 }`}
                         />
-                        <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10">
+                        <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10 pointer-events-none">
                             <h4 className={`text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-all duration-500 leading-tight line-clamp-1 ${isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
                                 }`}>
                                 {getTitle(item)}
@@ -287,9 +307,9 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
 
     return (
         <section ref={sectionRef} id="ourwork" className="py-10 sm:py-12 bg-black relative overflow-hidden">
-            {/* Atmospheric Lime Ambient Glow (Bottom Right) */}
+            {/* Atmospheric Lime Ambient Glow (Bottom Right - Desktop Only for GPU Optimization) */}
             <div
-                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                 style={{ background: "radial-gradient(ellipse 80% 70% at 100% 100%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -344,17 +364,17 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
 
                 {/* 4-Grid Asymmetric Layout: Row 1 (40% / 60%), Row 2 (60% / 40%) */}
                 <div className="grid grid-cols-12 gap-3 sm:gap-6 items-stretch">
-                    {/* Row 1, Card 1: 40% Width (5 Columns) */}
+                    {/* Row 1, Card 1: Left */}
                     {renderCardSlot(0, "col-span-6 sm:col-span-5", "left", 0)}
 
-                    {/* Row 1, Card 2: 60% Width (7 Columns) */}
-                    {renderCardSlot(1, "col-span-6 sm:col-span-7", "right", 100)}
+                    {/* Row 1, Card 2: Right */}
+                    {renderCardSlot(1, "col-span-6 sm:col-span-7", "right", 80)}
 
-                    {/* Row 2, Card 3: 60% Width (7 Columns) */}
-                    {renderCardSlot(2, "col-span-6 sm:col-span-7", "left", 200)}
+                    {/* Row 2, Card 3: Left */}
+                    {renderCardSlot(2, "col-span-6 sm:col-span-7", "left", 140)}
 
-                    {/* Row 2, Card 4: 40% Width (5 Columns) */}
-                    {renderCardSlot(3, "col-span-6 sm:col-span-5", "right", 300)}
+                    {/* Row 2, Card 4: Right */}
+                    {renderCardSlot(3, "col-span-6 sm:col-span-5", "right", 220)}
                 </div>
             </div>
 

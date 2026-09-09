@@ -142,7 +142,7 @@ export async function seedDatabase() {
                 },
                 metadata: {
                     establishedYear: "2024",
-                    studioLocation: "Dubai, UAE",
+                    studioLocation: "UAE",
                 },
             },
             {
@@ -249,8 +249,8 @@ export async function seedDatabase() {
                     ar: "عن FTX - فيرست تورك إكس",
                 },
                 subtitle: {
-                    en: "SURGICAL PRECISION. UNYIELDING DEFENSE.",
-                    ar: "دقة جراحية. حماية لا تضاهى.",
+                    en: "PRECISION PROTECTION",
+                    ar: "دقة وحماية",
                 },
                 content: {
                     en: "FTX stands as an elite studio dedicated exclusively to the preservation and aesthetic perfection of high-value automotive masterworks.",
@@ -337,18 +337,18 @@ export async function seedDatabase() {
                     ar: "تواصل معنا",
                 },
                 subtitle: {
-                    en: "AL QUOZ INDUSTRIAL AREA, DUBAI",
-                    ar: "منطقة القوز الصناعية، دبي",
+                    en: "AUTOMOTIVE PRECISION DISTRICT",
+                    ar: "منطقة تميز السيارات",
                 },
                 content: {
                     en: "Visit our state-of-the-art studio bay or send an inquiry to book your vehicle consultation.",
                     ar: "تفضل بزيارة استوديو FTX أو أرسل استفسارك لحجز موعد استشارة سيارتك.",
                 },
                 metadata: {
-                    phone: "+971 50 123 4567",
+                    phone: "+971 50 000 0000",
                     email: "info@ftxdetailing.ae",
-                    addressEn: "Al Quoz Industrial Area 3, Street 8, Dubai, UAE",
-                    addressAr: "منطقة القوز الصناعية 3، شارع 8، دبي، الإمارات العربية المتحدة",
+                    addressEn: "Automotive Precision District, Bay 14, UAE",
+                    addressAr: "منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة",
                     workingHoursEn: "Mon - Sat: 9:00 AM - 8:00 PM (Sun: Closed)",
                     workingHoursAr: "الإثنين - السبت: 9:00 صباحاً - 8:00 مساءً (الأحد: مغلق)",
                     social: {

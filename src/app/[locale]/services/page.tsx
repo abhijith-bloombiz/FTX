@@ -16,16 +16,46 @@ interface ServicesPageProps {
 export async function generateMetadata({ params: { locale } }: ServicesPageProps) {
     const isAr = locale === "ar";
     return {
-        title: "First Torque X",
+        title: isAr
+            ? "خدمات حماية وتلميع السيارات | أفلام PPF وطلاء السيراميك | First Torque X"
+            : "Automotive Protection Services | PPF, Ceramic Coating & Detailing | First Torque X",
         description: isAr
-            ? "استكشف خدمات FTX المتخصصة في أفلام حماية الطلاء PPF، وطلاء السيراميك 9H، والتلميع الساطع، والعناية الكاملة بالسيارات الفاخرة."
-            : "Explore FTX's suite of luxury automotive protection services in Dubai: Paint Protection Film (PPF), 9H Ceramic Coating, Paint Correction & Detailing.",
+            ? "استكشف خدمات FTX المتخصصة في أفلام حماية الطلاء PPF، وطلاء السيراميك 9H+، والتلميع الساطع، والعناية الفائقة بالسيارات الفاخرة."
+            : "Explore FTX's premier automotive protection services: Self-Healing Paint Protection Film (PPF), 9H+ Nano Ceramic Coating, Surgical Paint Correction & Concierge Detailing.",
         alternates: {
             canonical: `https://ftx.ae/${locale}/services`,
             languages: {
                 en: "https://ftx.ae/en/services",
                 ar: "https://ftx.ae/ar/services",
             },
+        },
+        openGraph: {
+            title: isAr
+                ? "خدمات حماية وتلميع السيارات | First Torque X"
+                : "Automotive Protection Services | First Torque X",
+            description: isAr
+                ? "أفلام حماية الطلاء PPF، وتغليف السيراميك 9H+، والتلميع الجراحي للسيارات الفاخرة."
+                : "Premier Paint Protection Film (PPF), 9H+ Ceramic Coatings, and Paint Correction services.",
+            url: `https://ftx.ae/${locale}/services`,
+            siteName: "First Torque X",
+            images: [
+                {
+                    url: "/images/gallery/gt3rs-ppf.jpg",
+                    width: 1200,
+                    height: 630,
+                    alt: "FTX Paint Protection Film Service",
+                },
+            ],
+            locale: isAr ? "ar_AE" : "en_US",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: isAr ? "خدمات FTX لحماية السيارات" : "Automotive Protection Services | First Torque X",
+            description: isAr
+                ? "أفلام حماية الطلاء PPF، وتغليف السيراميك 9H+، وتصحيح الطلاء."
+                : "Bespoke Paint Protection Film, Ceramic Coating & Surgical Detailing.",
+            images: ["/images/gallery/gt3rs-ppf.jpg"],
         },
     };
 }
@@ -37,11 +67,48 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
         getCmsPackages(),
     ]);
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "serviceType": "Automotive Protection & Detailing",
+        "provider": {
+            "@type": "AutomotiveBusiness",
+            "name": "First Torque X",
+            "url": "https://ftx.ae",
+            "image": "https://ftx.ae/brand/ftx-3d-logo.webp",
+            "telephone": "+971500000000",
+            "priceRange": "$$$$",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Automotive Precision District",
+                "addressLocality": "UAE",
+                "addressCountry": "AE"
+            }
+        },
+        "areaServed": "United Arab Emirates",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "FTX Protection Services",
+            "itemListElement": (servicesData || []).map((s: any) => ({
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Service",
+                    "name": typeof s.title === "object" ? s.title[locale] || s.title.en : s.title,
+                    "description": typeof s.description === "object" ? s.description[locale] || s.description.en : s.description,
+                }
+            }))
+        }
+    };
+
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* Atmospheric Lime Ambient Glow (Top Right) */}
             <div
-                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                 style={{ background: "radial-gradient(ellipse 80% 70% at 100% 0%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
             {/* Global Header */}

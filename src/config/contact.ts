@@ -1,11 +1,11 @@
 export const contactConfig = {
-    phone: "+971 50 123 4567",
-    phoneRaw: "+971501234567",
-    whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "971501234567",
+    phone: "+971 50 000 0000",
+    phoneRaw: "+971500000000",
+    whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "971500000000",
     email: "info@ftxdetailing.com",
     address: {
-        en: "Automotive Precision District, Bay 14, Dubai, United Arab Emirates",
-        ar: "منطقة تميز السيارات، المجمع 14، دبي، الإمارات العربية المتحدة",
+        en: "Automotive Precision District, Bay 14, United Arab Emirates",
+        ar: "منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة",
     },
     workingHours: {
         en: "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)",

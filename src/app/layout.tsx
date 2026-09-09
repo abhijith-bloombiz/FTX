@@ -29,15 +29,18 @@ const notoSansArabic = Noto_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-    title: "First Torque X",
-    description: "Dubai's premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
+    title: {
+        default: "First Torque X – Premier Automotive Protection Studio",
+        template: "%s",
+    },
+    description: "Premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
     keywords: [
-        "Paint Protection Film Dubai",
-        "PPF Dubai",
-        "Ceramic Coating Dubai",
-        "Car Detailing Dubai",
+        "Paint Protection Film",
+        "PPF",
+        "Ceramic Coating",
+        "Car Detailing",
         "Luxury Car Protection",
-        "Paint Correction Dubai",
+        "Paint Correction",
         "FTX",
         "First Torque X",
     ],
@@ -51,7 +54,7 @@ export const metadata: Metadata = {
     },
     openGraph: {
         title: "First Torque X",
-        description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing in Dubai.",
+        description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing.",
         url: "https://ftx.ae",
         siteName: "First Torque X",
         images: [
@@ -59,7 +62,7 @@ export const metadata: Metadata = {
                 url: "/brand/ftx-3d-logo.webp",
                 width: 1200,
                 height: 630,
-                alt: "First Torque X Automotive Protection Studio Dubai",
+                alt: "First Torque X Automotive Protection Studio",
             },
         ],
         locale: "en_US",
@@ -68,7 +71,7 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "First Torque X",
-        description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing in Dubai.",
+        description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing.",
         images: ["/brand/ftx-3d-logo.webp"],
     },
     robots: {

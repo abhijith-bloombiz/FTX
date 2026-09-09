@@ -62,7 +62,10 @@ export function ScrollReveal({
                     setIsVisible(false);
                 }
             },
-            { threshold: mobileCheck ? 0.08 : threshold }
+            {
+                threshold: mobileCheck ? 0.05 : threshold,
+                rootMargin: "60px 0px 60px 0px",
+            }
         );
 
         if (ref.current) {
@@ -87,14 +90,18 @@ export function ScrollReveal({
             return {
                 ...baseTransition,
                 opacity: 1,
-                transform: "perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1)",
-                transformOrigin: "bottom center",
+                transform: type === "rise-from-floor"
+                    ? "perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1)"
+                    : "translate3d(0, 0, 0) scale(1)",
+                transformOrigin: type === "horizontal"
+                    ? (direction === "left" ? "center left" : "center right")
+                    : "bottom center",
             };
         }
 
         switch (type) {
             case "rise-from-floor":
-                const floorY = isMobile ? "60px" : "110px";
+                const floorY = isMobile ? "50px" : "110px";
                 return {
                     ...baseTransition,
                     opacity: 0,
@@ -103,7 +110,7 @@ export function ScrollReveal({
                 };
 
             case "card":
-                const cardY = isMobile ? "45px" : "80px";
+                const cardY = isMobile ? "30px" : "80px";
                 const cardScale = isMobile ? "0.98" : "0.96";
                 return {
                     ...baseTransition,
@@ -112,7 +119,7 @@ export function ScrollReveal({
                 };
 
             case "editorial":
-                const editY = isMobile ? "25px" : "45px";
+                const editY = isMobile ? "20px" : "45px";
                 return {
                     ...baseTransition,
                     opacity: 0,
@@ -123,33 +130,34 @@ export function ScrollReveal({
                 return {
                     ...baseTransition,
                     opacity: 0.7,
-                    transform: "scale(1.06)",
+                    transform: "scale(1.04)",
                 };
 
             case "horizontal":
                 const isFromLeft = direction === "left";
                 const initialX = isFromLeft
-                    ? (isMobile ? "-80px" : "-180px")
-                    : (isMobile ? "80px" : "180px");
+                    ? (isMobile ? "-60px" : "-160px")
+                    : (isMobile ? "60px" : "160px");
                 return {
                     ...baseTransition,
                     opacity: 0,
                     transform: `translate3d(${initialX}, 0, 0) scale(0.96)`,
+                    transformOrigin: isFromLeft ? "center left" : "center right",
                 };
 
             case "scale":
-                const scaleVal = isMobile ? "0.97" : "0.94";
+                const scaleVal = isMobile ? "0.98" : "0.94";
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: `translate3d(0, 30px, 0) scale(${scaleVal})`,
+                    transform: `translate3d(0, 20px, 0) scale(${scaleVal})`,
                 };
 
             case "heading-inset":
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: "translate3d(0, 35px, 0)",
+                    transform: "translate3d(0, 25px, 0)",
                 };
 
             default:

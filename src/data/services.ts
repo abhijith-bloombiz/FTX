@@ -288,8 +288,8 @@ export const servicesData: ServiceItem[] = [
         ],
         image: "/images/services/detailing-main.png",
         detailImages: [
-            "/images/gallery/before.png",
-            "/images/gallery/after.png",
+            "/images/gallery/before.webp",
+            "/images/gallery/after.webp",
         ],
     },
     {
@@ -518,10 +518,10 @@ export const servicesData: ServiceItem[] = [
             en: "Give your car the protection it needs — not just on the outside, but underneath too. 📲 Book your Underbody Rust-Proof Treatment today.",
             ar: "امنح سيارتك الحماية التي تحتاجها — ليس فقط من الخارج، بل ومن الأسفل أيضاً. 📲 احجز علاج حماية أسفل السيارة من الصدأ اليوم.",
         },
-        image: "/images/services/underbody-coating.jpg",
+        image: "/images/services/underbody-coating.webp",
         detailImages: [
-            "/images/services/underbody-coating.jpg",
-            "/images/gallery/before.png",
+            "/images/services/underbody-coating.webp",
+            "/images/gallery/before.webp",
         ],
     },
 ];

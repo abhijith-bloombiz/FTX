@@ -250,14 +250,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 <ViewportVideo
                                                     src={getItemVideo(card1.item)!}
                                                     poster={getItemImage(card1.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             ) : (
                                                 <Image
                                                     src={getItemImage(card1.item)}
                                                     alt={card1.item?.title?.[locale] || "PROJECT: STEALTH"}
                                                     fill
-                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     priority
                                                 />
                                             )}
@@ -305,14 +305,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 <ViewportVideo
                                                     src={getItemVideo(card2.item)!}
                                                     poster={getItemImage(card2.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             ) : (
                                                 <Image
                                                     src={getItemImage(card2.item)}
                                                     alt={card2.item?.title?.[locale] || "Hydrophobic Mastery"}
                                                     fill
-                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -362,14 +362,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 <ViewportVideo
                                                     src={getItemVideo(card3.item)!}
                                                     poster={getItemImage(card3.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             ) : (
                                                 <Image
                                                     src={getItemImage(card3.item)}
                                                     alt={card3.item?.title?.[locale] || "Porsche 911 GT3 RS"}
                                                     fill
-                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -414,14 +414,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                 <ViewportVideo
                                                     src={getItemVideo(card4.item)!}
                                                     poster={getItemImage(card4.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             ) : (
                                                 <Image
                                                     src={getItemImage(card4.item)}
                                                     alt={card4.item?.title?.[locale] || "Hypercar Gloss Matrix"}
                                                     fill
-                                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -477,14 +477,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                             <ViewportVideo
                                                                 src={getItemVideo(item)!}
                                                                 poster={getItemImage(item)}
-                                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                                className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                             />
                                                         ) : (
                                                             <Image
                                                                 src={getItemImage(item)}
                                                                 alt={item.title?.[locale] || ""}
                                                                 fill
-                                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                                className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                             />
                                                         )}
                                                         <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -544,14 +544,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     <ViewportVideo
                                                         src={getItemVideo(item)!}
                                                         poster={getItemImage(item)}
-                                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                        className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     />
                                                 ) : (
                                                     <Image
                                                         src={getItemImage(item)}
                                                         alt={item.title?.[locale] || ""}
                                                         fill
-                                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                        className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     />
                                                 )}
                                                 <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">

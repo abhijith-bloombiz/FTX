@@ -67,25 +67,25 @@ export const DEFAULT_SECTIONS = [
         title: { en: "TRUSTED BY DISCERNING OWNERS", ar: "ثقة ملاك السيارات الفاخرة" },
         subtitle: { en: "CLIENT REVIEWS & FEEDBACK", ar: "آراء وتقييمات العملاء" },
         content: {
-            en: "Read reviews from luxury supercar owners who trust FTX with their automotive protection in Al Quoz, Dubai.",
-            ar: "اقرأ تقييمات وتجارب ملاك السيارات الفاخرة الذين يثقون بشركة FTX لحماية سياراتهم في دبي."
+            en: "Read reviews from luxury supercar owners who trust FTX with their automotive protection.",
+            ar: "اقرأ تقييمات وتجارب ملاك السيارات الفاخرة الذين يثقون بشركة FTX لحماية سياراتهم."
         }
     },
     {
         page: "home",
         sectionKey: "contact",
         title: { en: "LET'S PROTECT YOUR VEHICLE.", ar: "دعنا نحمي سيارتك." },
-        subtitle: { en: "VISIT OUR AL QUOZ STUDIO, DUBAI", ar: "تواصل مع استوديو FTX في دبي" },
+        subtitle: { en: "VISIT OUR STUDIO", ar: "تواصل مع استوديو FTX" },
         content: {
-            en: "Address: AL QUOZ INDUSTRIAL AREA 3, DUBAI.\nFacility: Climate-Controlled Supercar Enclosure & VIP Waiting Lounge.\nGet in touch with our studio team for custom quote requests.",
-            ar: "العنوان: منطقة القوز الصناعية 3، دبي.\nالمرفق: منطقة مخصصة للسيارات الفائقة ومكيفة بالكامل مع صالة كبار الشخصيات.\nتواصل مع فريق الاستوديو للحصول على عرض سعر مخصص."
+            en: "Address: AUTOMOTIVE PRECISION DISTRICT.\nFacility: Climate-Controlled Supercar Enclosure & VIP Waiting Lounge.\nGet in touch with our studio team for custom quote requests.",
+            ar: "العنوان: منطقة تميز السيارات.\nالمرفق: منطقة مخصصة للسيارات الفائقة ومكيفة بالكامل مع صالة كبار الشخصيات.\nتواصل مع فريق الاستوديو للحصول على عرض سعر مخصص."
         },
         metadata: {
             mapsUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3612.4337222165036!2d55.2289!3d25.1208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDA3JzE0LjkiTiA1NcKwMTMnNDQuMCJF!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae",
-            phone: "+971 50 123 4567",
+            phone: "+971 50 000 0000",
             email: "info@ftxdetailing.com",
-            addressEn: "Automotive Precision District, Bay 14, Dubai, United Arab Emirates",
-            addressAr: "منطقة تميز السيارات، المجمع 14، دبي، الإمارات العربية المتحدة",
+            addressEn: "Automotive Precision District, Bay 14, United Arab Emirates",
+            addressAr: "منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة",
             workingHoursEn: "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)",
             workingHoursAr: "الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)",
         }
@@ -93,18 +93,18 @@ export const DEFAULT_SECTIONS = [
     {
         page: "contact",
         sectionKey: "info",
-        title: { en: "GET IN TOUCH", ar: "تواصل معنا" },
+        title: { en: "CONTACT US", ar: "تواصل معنا" },
         subtitle: { en: "STUDIO LOCATION & QUOTATION", ar: "تواصل معنا" },
         content: {
-            en: "Get in touch with our studio team in Al Quoz, Dubai or submit a custom quote request below.",
-            ar: "تواصل مع استوديو FTX في القوز دبي لحجز موعد استشارة حماية وتلميع سيارتك."
+            en: "Get in touch with our studio team or submit a custom quote request below.",
+            ar: "تواصل مع استوديو FTX لحجز موعد استشارة حماية وتلميع سيارتك."
         },
         metadata: {
             mapsUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3612.4337222165036!2d55.2289!3d25.1208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDA3JzE0LjkiTiA1NcKwMTMnNDQuMCJF!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae",
-            phone: "+971 50 123 4567",
+            phone: "+971 50 000 0000",
             email: "info@ftxdetailing.com",
-            addressEn: "Automotive Precision District, Bay 14, Dubai, United Arab Emirates",
-            addressAr: "منطقة تميز السيارات، المجمع 14، دبي، الإمارات العربية المتحدة",
+            addressEn: "Automotive Precision District, Bay 14, United Arab Emirates",
+            addressAr: "منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة",
             workingHoursEn: "Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)",
             workingHoursAr: "الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)",
         }
@@ -115,8 +115,8 @@ export const DEFAULT_SECTIONS = [
         title: { en: "SURGICAL PERFECTION.", ar: "دقة جراحية." },
         subtitle: { en: "ABOUT FTX AUTOMOTIVE", ar: "عن FTX" },
         content: {
-            en: "Engineered for perfection with surgical paint protection, ceramic coatings, and high-end detailing in Al Quoz, Dubai.",
-            ar: "تعرف على فلسفة FTX وشغفنا بالكمال في حماية وتجميل أحدث السيارات الفاخرة والدقيقة في دبي."
+            en: "Engineered for perfection with surgical paint protection, ceramic coatings, and high-end detailing.",
+            ar: "تعرف على فلسفة FTX وشغفنا بالكمال في حماية وتجميل أحدث السيارات الفاخرة والدقيقة."
         }
     },
     {
@@ -125,8 +125,8 @@ export const DEFAULT_SECTIONS = [
         title: { en: "PRECISION AUTOMOTIVE ENGINEERING MEETS SURGICAL DETAILING", ar: "هندسة السيارات الدقيقة تلتقي بالتلميع الجراحي" },
         subtitle: { en: "THE FTX STANDARD", ar: "معيار FTX" },
         content: {
-            en: "Founded by passionate automotive perfectionists, FTX – First Torque X was created to set a new global benchmark in supercar protection film installation, ceramic paint coating, and bespoke paint correction in Dubai.",
-            ar: "تأسست FTX – First Torque X على يد نخبة من عشاق كمال السيارات، لوضع معيار عالمي جديد في تركيب أفلام حماية السيارات الفائقة، طلاء السيراميك، وتصحيح الطلاء في دبي."
+            en: "Founded by passionate automotive perfectionists, FTX – First Torque X was created to set a new global benchmark in supercar protection film installation, ceramic paint coating, and bespoke paint correction.",
+            ar: "تأسست FTX – First Torque X على يد نخبة من عشاق كمال السيارات، لوضع معيار عالمي جديد في تركيب أفلام حماية السيارات الفائقة، طلاء السيراميك، وتصحيح الطلاء."
         },
         metadata: {
             imageUrl: "/images/about/craftsmanship.jpg",

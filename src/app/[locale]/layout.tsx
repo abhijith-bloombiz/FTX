@@ -47,9 +47,9 @@ export default async function LocaleLayout({
         "priceRange": "$$$$",
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": "Al Quoz Industrial Area",
-            "addressLocality": "Dubai",
-            "addressRegion": "Dubai",
+            "streetAddress": "Automotive Precision District",
+            "addressLocality": "UAE",
+            "addressRegion": "UAE",
             "postalCode": "00000",
             "addressCountry": "AE"
         },

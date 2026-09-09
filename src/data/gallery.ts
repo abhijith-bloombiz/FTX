@@ -61,8 +61,8 @@ export const galleryData: GalleryItem[] = [
         },
         image: "/images/gallery/ppf-studio-hero.jpg",
         description: {
-            en: "Full custom ceramic & stealth film fitment with edge wrapping inside Dubai's premier climate-controlled detailing bay.",
-            ar: "تركيب كامل لفيلم الحماية مع طي الحواف داخل استوديو العناية بالفخامة في دبي.",
+            en: "Full custom ceramic & stealth film fitment with edge wrapping inside our premier climate-controlled detailing bay.",
+            ar: "تركيب كامل لفيلم الحماية مع طي الحواف داخل استوديو العناية بالفخامة المتطور.",
         },
         tags: ["PPF", "Studio", "Porsche", "Custom Fitment"],
     },
@@ -149,9 +149,9 @@ export const galleryData: GalleryItem[] = [
             en: "Mercedes-AMG G63",
             ar: "مرسيدس AMG G63",
         },
-        image: "/images/gallery/after.png",
-        beforeImage: "/images/gallery/before.png",
-        afterImage: "/images/gallery/after.png",
+        image: "/images/gallery/after.webp",
+        beforeImage: "/images/gallery/before.webp",
+        afterImage: "/images/gallery/after.webp",
         description: {
             en: "Complete stone-chip prevention package with ceramic glass top coat for high-velocity highway driving.",
             ar: "باقة كاملة لحماية المقدمة من حصى الطرق مع سيراميك للجنوط والزجاج للقيادة على الطرق السريعة.",

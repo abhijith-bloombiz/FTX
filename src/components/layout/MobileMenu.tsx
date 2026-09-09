@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, MessageSquare, X, ChevronRight } from "lucide-react";
 import { navItems } from "@/config/navigation";
-import { contactConfig } from "@/config/contact";
 import { Locale } from "@/i18n/config";
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { AnimatedHamburger } from "./AnimatedHamburger";
@@ -58,7 +57,7 @@ export function MobileMenu({ isOpen, onClose, locale, messages }: MobileMenuProp
     if (!mounted && !isOpen) return null;
 
     return (
-        <div className="fixed top-[74px] sm:top-[86px] left-0 right-0 bottom-0 z-40 md:hidden flex flex-col justify-between select-none overflow-y-auto">
+        <div className="fixed top-[74px] sm:top-[86px] left-0 right-0 bottom-0 z-40 md:hidden flex flex-col justify-between select-none overflow-y-auto overflow-x-hidden">
             {/* 1. Backdrop Layer */}
             <div
                 className={`fixed inset-0 top-[74px] sm:top-[86px] bg-[#060606]/98 backdrop-blur-md transition-opacity duration-300 ease-in-out ${animateIn ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -166,37 +165,59 @@ export function MobileMenu({ isOpen, onClose, locale, messages }: MobileMenuProp
                 </nav>
             </div>
 
-            {/* 4. Bottom Section: Action CTAs with Exit Animation */}
+            {/* 4. Bottom Section: Action CTAs with Left & Right Entrance Animations */}
             <div
-                className={`relative z-10 px-6 pt-6 pb-8 border-t border-ftx-surface-high/60 space-y-3.5 transition-all duration-400 ease-in-out ${animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+                className={`relative z-10 px-6 pt-6 pb-8 border-t border-ftx-surface-high/60 space-y-3.5 overflow-hidden transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"
                     }`}
                 style={{
                     transitionDelay: animateIn
-                        ? `${navItems.length * 60 + 100}ms`
+                        ? `${navItems.length * 60}ms`
                         : "0ms",
                 }}
             >
-                <Link
-                    href={`/${locale}/contact`}
-                    onClick={onClose}
-                    className="w-full inline-flex items-center justify-center gap-2.5 py-4 text-xs font-mono font-bold tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright ftx-squircle-sm transition-all duration-300 shadow-lime-glow active:scale-98"
+                {/* 1st Button: Slides in from the left */}
+                <div
+                    className={`w-full transition-all duration-500 ease-out transform ${animateIn
+                        ? "opacity-100 translate-x-0"
+                        : "opacity-0 -translate-x-full"
+                        }`}
+                    style={{
+                        transitionDelay: animateIn
+                            ? `${navItems.length * 60 + 60}ms`
+                            : "40ms",
+                    }}
                 >
-                    <span>{messages.common.getQuote}</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                </Link>
+                    <Link
+                        href={`/${locale}/contact`}
+                        onClick={onClose}
+                        className="w-full inline-flex items-center justify-center gap-2.5 py-4 text-xs font-mono font-bold tracking-widest text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright ftx-squircle-sm transition-all duration-300 shadow-lime-glow active:scale-98"
+                    >
+                        <span>{messages.common.getQuote}</span>
+                        <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                </div>
 
-                <a
-                    href={getWhatsAppUrl({ locale })}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high ftx-squircle-sm transition-all duration-300 active:scale-98"
+                {/* 2nd Button: Slides in from the right */}
+                <div
+                    className={`w-full transition-all duration-500 ease-out transform ${animateIn
+                        ? "opacity-100 translate-x-0"
+                        : "opacity-0 translate-x-full"
+                        }`}
+                    style={{
+                        transitionDelay: animateIn
+                            ? `${navItems.length * 60 + 140}ms`
+                            : "0ms",
+                    }}
                 >
-                    <MessageSquare className="w-4 h-4 text-ftx-lime" />
-                    <span>{messages.common.whatsappUs}</span>
-                </a>
-
-                <div className="pt-2 text-center text-[10px] font-mono text-ftx-silver/40 tracking-wider">
-                    {contactConfig.phone} • {contactConfig.email}
+                    <a
+                        href={getWhatsAppUrl({ locale })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 text-xs font-mono font-bold tracking-widest text-ftx-silver hover:text-white bg-ftx-surface hover:bg-ftx-surface-high border border-ftx-surface-high ftx-squircle-sm transition-all duration-300 active:scale-98"
+                    >
+                        <MessageSquare className="w-4 h-4 text-ftx-lime" />
+                        <span>{messages.common.whatsappUs}</span>
+                    </a>
                 </div>
             </div>
         </div>

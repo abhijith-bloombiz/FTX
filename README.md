@@ -103,8 +103,8 @@ Create a `.env.local` file in the root directory:
 # Site URL Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
-# WhatsApp Integration Number (e.g. +971501234567)
-NEXT_PUBLIC_WHATSAPP_NUMBER=971501234567
+# WhatsApp Integration Number (e.g. +971500000000)
+NEXT_PUBLIC_WHATSAPP_NUMBER=971500000000
 
 # Google Maps Directions URL
 NEXT_PUBLIC_GOOGLE_MAPS_URL=https://maps.google.com/?q=FTX+First+Torque+X
