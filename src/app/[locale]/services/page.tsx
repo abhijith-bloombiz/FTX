@@ -1,9 +1,13 @@
 import { getCmsServices, getCmsPackages } from "@/lib/cms";
-import { Locale } from "@/i18n/config";
+import { Locale, locales } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ServicesListClient } from "@/components/sections/ServicesListClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export function generateStaticParams() {
+    return locales.map((locale) => ({ locale }));
+}
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;

@@ -1,14 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ShieldCheck, Award, Wrench } from "lucide-react";
-import { Locale } from "@/i18n/config";
+import { Locale, locales } from "@/i18n/config";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 import { getSectionsForPage } from "@/lib/sections";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export function generateStaticParams() {
+    return locales.map((locale) => ({ locale }));
+}
 
 async function getMessages(locale: Locale) {
     return (await import(`@/i18n/messages/${locale}.json`)).default;

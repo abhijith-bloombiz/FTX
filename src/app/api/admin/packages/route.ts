@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/db";
 import { seedDatabase } from "@/lib/seed";
 import { PackageItemModel } from "@/lib/models/PackageItem";
@@ -7,6 +8,19 @@ import { packagesData } from "@/data/packages";
 import { deleteUploadedFile } from "@/lib/deleteFile";
 import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
+
+function triggerPackagesRevalidation() {
+    try {
+        revalidatePath("/[locale]/packages", "page");
+        revalidatePath("/en/packages");
+        revalidatePath("/ar/packages");
+        revalidatePath("/[locale]/services", "page");
+        revalidatePath("/en/services");
+        revalidatePath("/ar/services");
+    } catch (e) {
+        console.warn("revalidatePath error:", e);
+    }
+}
 
 export async function GET() {
     try {
@@ -59,6 +73,7 @@ export async function POST(req: NextRequest) {
             await connectToDatabase();
             const pkg = await PackageItemModel.create(cleanBody);
             invalidateCmsCache("packages");
+            triggerPackagesRevalidation();
             return NextResponse.json({ success: true, package: pkg }, { status: 201 });
         } catch (dbErr: any) {
             console.warn("DB connection error/offline during POST /api/admin/packages, updating fallback memory:", dbErr.message);
@@ -114,6 +129,7 @@ export async function PUT(req: NextRequest) {
             }
 
             invalidateCmsCache("packages");
+            triggerPackagesRevalidation();
             return NextResponse.json({ success: true, package: updated });
         } catch (dbErr: any) {
             console.warn("DB connection offline during PUT /api/admin/packages, applying fallback response.");
@@ -148,6 +164,7 @@ export async function DELETE(req: NextRequest) {
 
             await PackageItemModel.deleteOne({ $or: filterConditions });
             invalidateCmsCache("packages");
+            triggerPackagesRevalidation();
             return NextResponse.json({ success: true });
         } catch (dbErr: any) {
             console.warn("DB connection offline during DELETE /api/admin/packages, applying fallback response.");

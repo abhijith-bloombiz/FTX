@@ -34,12 +34,14 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
         }, 150);
 
         if (typeof window !== "undefined") {
+            window.addEventListener("ftx_loader_complete", handleLoaderComplete);
             window.addEventListener("ftx-loader-complete", handleLoaderComplete);
         }
 
         return () => {
             clearTimeout(timer);
             if (typeof window !== "undefined") {
+                window.removeEventListener("ftx_loader_complete", handleLoaderComplete);
                 window.removeEventListener("ftx-loader-complete", handleLoaderComplete);
             }
         };

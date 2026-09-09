@@ -117,8 +117,19 @@ function cubicBezierEaseInOut(t: number): number {
 export function CinematicLoader() {
     const pathname = usePathname();
     const isAdmin = pathname?.includes("/admin");
-    
-    const [shouldRender, setShouldRender] = useState(!isAdmin);
+    const isHome = Boolean(pathname && /^\/(en|ar)?\/?$/.test(pathname));
+
+    // Check if previously shown in this session
+    const [alreadyShown, setAlreadyShown] = useState<boolean>(() => {
+        if (typeof window === "undefined") return false;
+        try {
+            return sessionStorage.getItem("ftx_loader_shown") === "1";
+        } catch {
+            return false;
+        }
+    });
+
+    const [shouldRender, setShouldRender] = useState(!isAdmin && isHome && !alreadyShown);
     const [isExiting, setIsExiting] = useState(false);
     const [progressPct, setProgressPct] = useState(0);
     const [statusText, setStatusText] = useState("INITIALIZING");
@@ -135,7 +146,19 @@ export function CinematicLoader() {
     const hasExitedRef = useRef(false);
     const animationFrameIdRef = useRef<number | null>(null);
 
-    // 1. Instant Parallel Image Preloading on Mount
+    // Fast-path: If on a subpage or already shown, dispatch completion immediately so other components reveal
+    useEffect(() => {
+        if (!isHome || alreadyShown || isAdmin) {
+            if (typeof window !== "undefined") {
+                (window as any).__FTX_LOADER_DONE__ = true;
+                (window as any).__FTX_SPLASH_DONE__ = true;
+                window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
+                window.dispatchEvent(new CustomEvent("ftx_splash_done"));
+            }
+        }
+    }, [isHome, alreadyShown, isAdmin]);
+
+    // 1. Instant Parallel Image Preloading on Mount (only hero frames if on home)
     useEffect(() => {
         if (!shouldRender || isAdmin) return;
 
@@ -146,7 +169,7 @@ export function CinematicLoader() {
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
             ...navSvgAssets,
-            ...Array.from({ length: 6 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`),
+            ...(isHome ? Array.from({ length: 6 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`) : []),
         ];
 
         assetsToPreload.forEach((url) => {
@@ -156,7 +179,7 @@ export function CinematicLoader() {
                 img.decode().catch(() => { });
             }
         });
-    }, [shouldRender, isAdmin]);
+    }, [shouldRender, isAdmin, isHome]);
 
     // 2. High-Performance 60fps Animation Engine with Dynamic Frame Lock
     useEffect(() => {
@@ -179,10 +202,16 @@ export function CinematicLoader() {
             if (hasExitedRef.current) return;
             hasExitedRef.current = true;
 
+            try {
+                sessionStorage.setItem("ftx_loader_shown", "1");
+            } catch {}
+
             setStatusText("SYSTEM READY");
             setIsExiting(true);
             if (typeof window !== "undefined") {
+                (window as any).__FTX_LOADER_DONE__ = true;
                 (window as any).__FTX_SPLASH_DONE__ = true;
+                window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
                 window.dispatchEvent(new CustomEvent("ftx_splash_done"));
             }
             setTimeout(() => {

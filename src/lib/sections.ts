@@ -206,9 +206,17 @@ export async function getSectionsForPage(page: string) {
     let dbSections: any[] = [];
 
     try {
-        await connectToDatabase();
-        const rawDbSections = await PageSection.find({ page }).lean();
-        dbSections = JSON.parse(JSON.stringify(rawDbSections));
+        const fetchPromise = (async () => {
+            await connectToDatabase();
+            const rawDbSections = await PageSection.find({ page }).lean();
+            return JSON.parse(JSON.stringify(rawDbSections));
+        })();
+
+        const timeoutPromise = new Promise<any[]>((resolve) =>
+            setTimeout(() => resolve(inMemoryStore.filter((s) => s.page === page)), 2500)
+        );
+
+        dbSections = await Promise.race([fetchPromise, timeoutPromise]);
     } catch (e) {
         dbSections = inMemoryStore.filter((s) => s.page === page);
     }

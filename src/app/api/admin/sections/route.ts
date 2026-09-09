@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/db";
 import { PageSection } from "@/lib/models/PageSection";
 import { getAdminSession } from "@/lib/auth";
@@ -58,6 +59,20 @@ export async function PUT(req: NextRequest) {
         }
 
         updateInMemorySection(page, sectionKey, updateData);
+
+        try {
+            if (page === "home") {
+                revalidatePath("/[locale]", "page");
+                revalidatePath("/en");
+                revalidatePath("/ar");
+            } else {
+                revalidatePath(`/[locale]/${page}`, "page");
+                revalidatePath(`/en/${page}`);
+                revalidatePath(`/ar/${page}`);
+            }
+        } catch (e) {
+            console.warn("revalidatePath error:", e);
+        }
 
         return NextResponse.json({ success: true, section: section || updateData, connected });
     } catch (error: any) {

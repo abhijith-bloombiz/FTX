@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/db";
 import { ServiceItemModel } from "@/lib/models/ServiceItem";
 import { getAdminSession } from "@/lib/auth";
@@ -70,6 +71,16 @@ export async function POST(req: NextRequest) {
             }
 
             invalidateCmsCache("services");
+            try {
+                revalidatePath("/[locale]/services", "page");
+                revalidatePath("/en/services");
+                revalidatePath("/ar/services");
+                revalidatePath("/[locale]", "page");
+                revalidatePath("/en");
+                revalidatePath("/ar");
+            } catch (e) {
+                console.warn("revalidatePath error:", e);
+            }
             return NextResponse.json({ success: true, services: reordered });
         } catch (dbErr: any) {
             console.warn("DB offline during POST /api/admin/services/reorder, fallback applied:", dbErr.message);

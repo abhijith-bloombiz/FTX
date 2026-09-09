@@ -38,31 +38,43 @@ export async function getCmsServices() {
     }
 
     try {
-        await connectToDatabase();
-        let services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
-        
-        // Ensure all static services and updated fields are synced into the database
-        const underbodyInDb = services?.find((s: any) => s.serviceId === "underbody-rust-proof");
-        if (!services || services.length < fallbackServices.length || (underbodyInDb && (!underbodyInDb.process || underbodyInDb.process.length < 6))) {
-            global.isDatabaseSeeded = false;
-            await seedDatabase();
-            services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
-        }
+        const fetchPromise = (async () => {
+            await connectToDatabase();
+            let services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
 
-        if (services && services.length > 0) {
-            const plainServices = JSON.parse(JSON.stringify(services));
-            const mapped = plainServices.map((s: any) => ({
-                ...s,
-                id: s.serviceId || s._id,
-            }));
-            const result = mapped.sort((a: any, b: any) => {
-                const numA = parseInt(a.number || "99", 10);
-                const numB = parseInt(b.number || "99", 10);
-                return numA - numB;
-            });
-            servicesCache = { data: result, timestamp: now };
-            return result;
-        }
+            if (!services || services.length === 0) {
+                await seedDatabase();
+                services = await ServiceItemModel.find().sort({ number: 1, serviceId: 1 }).lean();
+            } else {
+                // Ensure all static services and updated fields are synced in the background without blocking request
+                const underbodyInDb = services.find((s: any) => s.serviceId === "underbody-rust-proof");
+                if (services.length < fallbackServices.length || (underbodyInDb && (!underbodyInDb.process || underbodyInDb.process.length < 6))) {
+                    seedDatabase().catch((err) => console.warn("Background seedDatabase error:", err));
+                }
+            }
+
+            if (services && services.length > 0) {
+                const plainServices = JSON.parse(JSON.stringify(services));
+                const mapped = plainServices.map((s: any) => ({
+                    ...s,
+                    id: s.serviceId || s._id,
+                }));
+                const result = mapped.sort((a: any, b: any) => {
+                    const numA = parseInt(a.number || "99", 10);
+                    const numB = parseInt(b.number || "99", 10);
+                    return numA - numB;
+                });
+                servicesCache = { data: result, timestamp: now };
+                return result;
+            }
+            return fallbackServices;
+        })();
+
+        const timeoutPromise = new Promise<any[]>((resolve) =>
+            setTimeout(() => resolve(fallbackServices), 2500)
+        );
+
+        return await Promise.race([fetchPromise, timeoutPromise]);
     } catch (e) {
         console.error("getCmsServices error:", e);
     }
@@ -76,23 +88,32 @@ export async function getCmsPackages() {
     }
 
     try {
-        await connectToDatabase();
-        let pkgs = await PackageItemModel.find().lean();
+        const fetchPromise = (async () => {
+            await connectToDatabase();
+            let pkgs = await PackageItemModel.find().lean();
 
-        if (!pkgs || pkgs.length === 0) {
-            await seedDatabase();
-            pkgs = await PackageItemModel.find().lean();
-        }
+            if (!pkgs || pkgs.length === 0) {
+                await seedDatabase();
+                pkgs = await PackageItemModel.find().lean();
+            }
 
-        if (pkgs && pkgs.length > 0) {
-            const plainPkgs = JSON.parse(JSON.stringify(pkgs));
-            const result = plainPkgs.map((p: any) => ({
-                ...p,
-                id: p.packageId || p._id,
-            }));
-            packagesCache = { data: result, timestamp: now };
-            return result;
-        }
+            if (pkgs && pkgs.length > 0) {
+                const plainPkgs = JSON.parse(JSON.stringify(pkgs));
+                const result = plainPkgs.map((p: any) => ({
+                    ...p,
+                    id: p.packageId || p._id,
+                }));
+                packagesCache = { data: result, timestamp: now };
+                return result;
+            }
+            return fallbackPackages;
+        })();
+
+        const timeoutPromise = new Promise<any[]>((resolve) =>
+            setTimeout(() => resolve(fallbackPackages), 2500)
+        );
+
+        return await Promise.race([fetchPromise, timeoutPromise]);
     } catch (e) {
         console.error("getCmsPackages error:", e);
     }
@@ -106,23 +127,32 @@ export async function getCmsGallery() {
     }
 
     try {
-        await connectToDatabase();
-        let items = await GalleryItemModel.find().lean();
+        const fetchPromise = (async () => {
+            await connectToDatabase();
+            let items = await GalleryItemModel.find().lean();
 
-        if (!items || items.length === 0) {
-            await seedDatabase();
-            items = await GalleryItemModel.find().lean();
-        }
+            if (!items || items.length === 0) {
+                await seedDatabase();
+                items = await GalleryItemModel.find().lean();
+            }
 
-        if (items && items.length > 0) {
-            const plainItems = JSON.parse(JSON.stringify(items));
-            const result = plainItems.map((g: any) => ({
-                ...g,
-                id: g.itemId || g._id,
-            }));
-            galleryCache = { data: result, timestamp: now };
-            return result;
-        }
+            if (items && items.length > 0) {
+                const plainItems = JSON.parse(JSON.stringify(items));
+                const result = plainItems.map((g: any) => ({
+                    ...g,
+                    id: g.itemId || g._id,
+                }));
+                galleryCache = { data: result, timestamp: now };
+                return result;
+            }
+            return fallbackGallery;
+        })();
+
+        const timeoutPromise = new Promise<any[]>((resolve) =>
+            setTimeout(() => resolve(fallbackGallery), 2500)
+        );
+
+        return await Promise.race([fetchPromise, timeoutPromise]);
     } catch (e) {
         console.error("getCmsGallery error:", e);
     }
@@ -136,23 +166,32 @@ export async function getCmsTestimonials() {
     }
 
     try {
-        await connectToDatabase();
-        let items = await TestimonialItemModel.find().lean();
+        const fetchPromise = (async () => {
+            await connectToDatabase();
+            let items = await TestimonialItemModel.find().lean();
 
-        if (!items || items.length === 0) {
-            await seedDatabase();
-            items = await TestimonialItemModel.find().lean();
-        }
+            if (!items || items.length === 0) {
+                await seedDatabase();
+                items = await TestimonialItemModel.find().lean();
+            }
 
-        if (items && items.length > 0) {
-            const plainItems = JSON.parse(JSON.stringify(items));
-            const result = plainItems.map((t: any) => ({
-                ...t,
-                id: t.testimonialId || t._id,
-            }));
-            testimonialsCache = { data: result, timestamp: now };
-            return result;
-        }
+            if (items && items.length > 0) {
+                const plainItems = JSON.parse(JSON.stringify(items));
+                const result = plainItems.map((t: any) => ({
+                    ...t,
+                    id: t.testimonialId || t._id,
+                }));
+                testimonialsCache = { data: result, timestamp: now };
+                return result;
+            }
+            return fallbackTestimonials;
+        })();
+
+        const timeoutPromise = new Promise<any[]>((resolve) =>
+            setTimeout(() => resolve(fallbackTestimonials), 2500)
+        );
+
+        return await Promise.race([fetchPromise, timeoutPromise]);
     } catch (e) {
         console.error("getCmsTestimonials error:", e);
     }

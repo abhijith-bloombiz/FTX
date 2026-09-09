@@ -16,7 +16,11 @@ import { getSectionsForPage } from "@/lib/sections";
 
 import { getCmsServices } from "@/lib/cms";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export function generateStaticParams() {
+    return locales.map((locale) => ({ locale }));
+}
 
 async function getMessages(locale: Locale) {
     if (!locales.includes(locale as Locale)) {
