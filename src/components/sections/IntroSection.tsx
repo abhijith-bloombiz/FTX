@@ -50,7 +50,7 @@ export function IntroSection({ locale, messages }: IntroSectionProps) {
                                 className="object-cover"
                             />
                         </div>
-                        <div className="absolute -bottom-[10px] -right-[10px] z-20 w-40 sm:w-48 bg-ftx-surface/95 backdrop-blur-md border border-ftx-lime/40 ftx-squircle-sm p-3 sm:p-4 shadow-2xl">
+                        <div className="absolute -bottom-[1px] -right-[1px] z-20 w-40 sm:w-48 bg-ftx-surface/95 backdrop-blur-md border border-ftx-lime/40 ftx-squircle-sm p-3 sm:p-4 shadow-2xl">
                             <div className="text-[10px] font-mono text-ftx-lime uppercase tracking-wider font-bold">
                                 {messages.intro?.badgeTitle || "SURGICAL PRECISION"}
                             </div>
