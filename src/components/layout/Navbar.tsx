@@ -74,12 +74,8 @@ export function Navbar({ locale, messages }: NavbarProps) {
         };
 
         const isSubpage = pathname !== "/" && pathname !== `/${locale}` && pathname !== `/${locale}/`;
-        let alreadyShown = false;
-        try {
-            alreadyShown = sessionStorage.getItem("ftx_loader_shown") === "1";
-        } catch {}
 
-        if (isSubpage || alreadyShown || (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__)) {
+        if (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__) {
             setRevealed(true);
         }
 
@@ -95,7 +91,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                 (window as any).__FTX_LOADER_DONE__ = true;
             }
             setRevealed(true);
-        }, isSubpage ? 100 : 1200);
+        }, 4500);
 
         if (typeof window !== "undefined") {
             window.addEventListener("ftx_loader_complete", handleLoaderComplete);

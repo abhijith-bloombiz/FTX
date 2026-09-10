@@ -5,6 +5,7 @@ import { Quote } from "lucide-react";
 import { testimonialsData } from "@/data/testimonials";
 import { Locale } from "@/i18n/config";
 import { TextReveal } from "@/components/motion/TextReveal";
+import { ScrollReveal } from "@/components/motion/ScrollReveal";
 
 interface TestimonialsProps {
     locale: Locale;
@@ -158,84 +159,86 @@ export function Testimonials({ locale, messages }: TestimonialsProps) {
                     </TextReveal>
                 </div>
 
-                {/* Carousel Track Container */}
-                <div
-                    className="overflow-hidden w-full relative touch-pan-y"
-                    onMouseEnter={() => setIsPaused(true)}
-                    onMouseLeave={() => setIsPaused(false)}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                >
+                {/* Carousel Track Container with Smooth ScrollReveal */}
+                <ScrollReveal type="card" delay={120} duration={1200}>
                     <div
-                        className="flex -mx-3 transition-transform duration-500 ease-out"
-                        style={{
-                            transform: isRTL
-                                ? `translateX(${currentIndex * (100 / itemsPerPage)}%)`
-                                : `translateX(-${currentIndex * (100 / itemsPerPage)}%)`,
-                        }}
+                        className="overflow-hidden w-full relative touch-pan-y"
+                        onMouseEnter={() => setIsPaused(true)}
+                        onMouseLeave={() => setIsPaused(false)}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
                     >
-                        {testimonials.map((item) => {
-                            const itemId = item.testimonialId || item.id || item._id;
-                            const contentText = typeof item.content === "object" ? item.content[locale] || item.content.en : item.content;
-                            const roleText = typeof item.role === "object" ? item.role[locale] || item.role.en : item.role;
+                        <div
+                            className="flex -mx-3 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                            style={{
+                                transform: isRTL
+                                    ? `translateX(${currentIndex * (100 / itemsPerPage)}%)`
+                                    : `translateX(-${currentIndex * (100 / itemsPerPage)}%)`,
+                            }}
+                        >
+                            {testimonials.map((item) => {
+                                const itemId = item.testimonialId || item.id || item._id;
+                                const contentText = typeof item.content === "object" ? item.content[locale] || item.content.en : item.content;
+                                const roleText = typeof item.role === "object" ? item.role[locale] || item.role.en : item.role;
 
-                            return (
-                                <div
-                                    key={itemId}
-                                    className="px-3 shrink-0"
-                                    style={{ width: `${100 / itemsPerPage}%` }}
-                                >
-                                    <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-4 px-6 sm:pt-5 sm:pb-5 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-all duration-500 h-full min-h-[160px]">
-                                        <Quote className="absolute top-3 right-3 w-7 h-7 text-ftx-lime/20 group-hover:text-ftx-lime/40 transition-colors z-10" />
+                                return (
+                                    <div
+                                        key={itemId}
+                                        className="px-3 shrink-0"
+                                        style={{ width: `${100 / itemsPerPage}%` }}
+                                    >
+                                        <div className="ftx-btn-specular bg-ftx-surface border border-ftx-surface-high ftx-squircle-xl pt-4 pb-4 px-6 sm:pt-5 sm:pb-5 sm:px-8 flex flex-col justify-between relative group hover:border-ftx-lime/50 hover:shadow-[0_0_30px_rgba(164,214,94,0.22)] transition-[border-color,box-shadow,transform] duration-500 h-full min-h-[160px]">
+                                            <Quote className="absolute top-3 right-3 w-7 h-7 text-ftx-lime/20 group-hover:text-ftx-lime/40 transition-colors z-10" />
 
-                                        <div className="relative z-10">
-                                            <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic pr-6">
-                                                &ldquo;{contentText}&rdquo;
-                                            </p>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 pt-3 mt-3 border-t border-ftx-surface-high relative z-10">
-                                            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0 bg-ftx-obsidian">
-                                                <img
-                                                    src={item.avatar || "/images/testimonials/avatar-1.jpg"}
-                                                    alt={item.name}
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                                                />
+                                            <div className="relative z-10">
+                                                <p className="text-xs sm:text-sm text-ftx-silver font-body leading-relaxed italic pr-6">
+                                                    &ldquo;{contentText}&rdquo;
+                                                </p>
                                             </div>
-                                            <div>
-                                                <div className="text-xs font-mono font-bold text-white uppercase">
-                                                    {item.name}
+
+                                            <div className="flex items-center gap-4 pt-3 mt-3 border-t border-ftx-surface-high relative z-10">
+                                                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-ftx-lime/40 shrink-0 bg-ftx-obsidian">
+                                                    <img
+                                                        src={item.avatar || "/images/testimonials/avatar-1.jpg"}
+                                                        alt={item.name}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                                    />
                                                 </div>
-                                                <div className="text-[10px] font-mono text-ftx-lime">
-                                                    {roleText} • {item.vehicle}
+                                                <div>
+                                                    <div className="text-xs font-mono font-bold text-white uppercase">
+                                                        {item.name}
+                                                    </div>
+                                                    <div className="text-[10px] font-mono text-ftx-lime">
+                                                        {roleText} • {item.vehicle}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
 
-                {/* Carousel Pagination Dots */}
-                <div className="flex items-center justify-center gap-2 mt-8">
-                    {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentIndex(idx)}
-                            aria-label={`Go to slide ${idx + 1}`}
-                            className={`h-2.5 rounded-full transition-all duration-300 ${currentIndex === idx
-                                ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
-                                : "w-2.5 bg-white/20 hover:bg-white/40"
-                                }`}
-                        />
-                    ))}
-                </div>
+                    {/* Carousel Pagination Dots */}
+                    <div className="flex items-center justify-center gap-2 mt-8">
+                        {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentIndex(idx)}
+                                aria-label={`Go to slide ${idx + 1}`}
+                                className={`h-2.5 rounded-full transition-all duration-300 ${currentIndex === idx
+                                    ? "w-8 bg-ftx-lime shadow-[0_0_12px_rgba(164,214,94,0.6)]"
+                                    : "w-2.5 bg-white/20 hover:bg-white/40"
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                </ScrollReveal>
             </div>
         </section>
     );

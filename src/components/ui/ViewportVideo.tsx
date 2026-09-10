@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 interface ViewportVideoProps {
     src: string;
@@ -11,8 +12,19 @@ interface ViewportVideoProps {
 export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const [shouldLoad, setShouldLoad] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile, { passive: true });
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
+    useEffect(() => {
+        if (isMobile) return;
         const el = videoRef.current;
         if (!el) return;
 
@@ -20,7 +32,7 @@ export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
             ([entry]) => {
                 if (entry.isIntersecting) {
                     setShouldLoad(true);
-                    // Defer play call to next tick for smooth mobile thread rendering
+                    // Defer play call to next tick for smooth thread rendering
                     requestAnimationFrame(() => {
                         if (videoRef.current) {
                             videoRef.current.play().catch(() => { });
@@ -43,7 +55,20 @@ export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
             }
             observer.disconnect();
         };
-    }, [src]);
+    }, [src, isMobile]);
+
+    if (isMobile && poster) {
+        return (
+            <Image
+                src={poster}
+                alt="Video Preview"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className={className}
+                priority={false}
+            />
+        );
+    }
 
     return (
         <video

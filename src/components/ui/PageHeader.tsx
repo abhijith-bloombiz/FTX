@@ -31,7 +31,7 @@ export function PageHeader({ badge, title = "", titleLine1, titleLine2, subtitle
                 (window as any).__FTX_LOADER_DONE__ = true;
             }
             setRevealed(true);
-        }, 150);
+        }, 4200);
 
         if (typeof window !== "undefined") {
             window.addEventListener("ftx_loader_complete", handleLoaderComplete);

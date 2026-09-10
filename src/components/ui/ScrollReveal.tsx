@@ -12,6 +12,7 @@ interface ScrollRevealProps {
     className?: string;
     threshold?: number;
     once?: boolean;
+    reverse?: boolean;
     style?: React.CSSProperties;
 }
 
@@ -24,6 +25,7 @@ export function ScrollReveal({
     className = "",
     threshold = 0.15,
     once,
+    reverse,
     style = {},
 }: ScrollRevealProps) {
     const dir = direction === "right" ? "right" : "left";
@@ -37,6 +39,7 @@ export function ScrollReveal({
             duration={duration}
             threshold={threshold}
             once={once}
+            reverse={reverse}
             className={className}
             style={style}
         >

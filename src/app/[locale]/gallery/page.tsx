@@ -168,7 +168,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Top Right) */}
             <div
-                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"
+                className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
                 style={{ background: "radial-gradient(ellipse 80% 70% at 100% 0%, rgba(164, 214, 94, 0.32) 0%, rgba(164, 214, 94, 0.1) 45%, transparent 75%)" }}
             />
             {/* Global Synchronized Header: BUILT TO BE SEEN. */}
@@ -244,7 +244,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             id="gallery-item-0"
                                             key="gallery-card-1"
                                             onClick={() => setActiveLightboxIndex(card1.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             {getItemVideo(card1.item) ? (
                                                 <ViewportVideo
@@ -257,6 +257,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     src={getItemImage(card1.item)}
                                                     alt={card1.item?.title?.[locale] || "PROJECT: STEALTH"}
                                                     fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                                                     className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     priority
                                                 />
@@ -299,7 +300,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             id="gallery-item-1"
                                             key="gallery-card-2"
                                             onClick={() => setActiveLightboxIndex(card2.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             {getItemVideo(card2.item) ? (
                                                 <ViewportVideo
@@ -312,6 +313,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     src={getItemImage(card2.item)}
                                                     alt={card2.item?.title?.[locale] || "Hydrophobic Mastery"}
                                                     fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                                     className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             )}
@@ -356,7 +358,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             id="gallery-item-2"
                                             key="gallery-card-3"
                                             onClick={() => setActiveLightboxIndex(card3.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             {getItemVideo(card3.item) ? (
                                                 <ViewportVideo
@@ -369,6 +371,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     src={getItemImage(card3.item)}
                                                     alt={card3.item?.title?.[locale] || "Porsche 911 GT3 RS"}
                                                     fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                                     className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             )}
@@ -408,7 +411,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                             id="gallery-item-3"
                                             key="gallery-card-4"
                                             onClick={() => setActiveLightboxIndex(card4.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300 animate-grid-reveal"
+                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
                                         >
                                             {getItemVideo(card4.item) ? (
                                                 <ViewportVideo
@@ -421,6 +424,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     src={getItemImage(card4.item)}
                                                     alt={card4.item?.title?.[locale] || "Hypercar Gloss Matrix"}
                                                     fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                                                     className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                 />
                                             )}
@@ -484,6 +488,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                                 src={getItemImage(item)}
                                                                 alt={item.title?.[locale] || ""}
                                                                 fill
+                                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                                 className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                             />
                                                         )}
@@ -551,6 +556,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         src={getItemImage(item)}
                                                         alt={item.title?.[locale] || ""}
                                                         fill
+                                                        sizes="(max-width: 768px) 100vw, 50vw"
                                                         className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     />
                                                 )}

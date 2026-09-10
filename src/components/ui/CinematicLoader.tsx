@@ -119,17 +119,7 @@ export function CinematicLoader() {
     const isAdmin = pathname?.includes("/admin");
     const isHome = Boolean(pathname && /^\/(en|ar)?\/?$/.test(pathname));
 
-    // Check if previously shown in this session
-    const [alreadyShown, setAlreadyShown] = useState<boolean>(() => {
-        if (typeof window === "undefined") return false;
-        try {
-            return sessionStorage.getItem("ftx_loader_shown") === "1";
-        } catch {
-            return false;
-        }
-    });
-
-    const [shouldRender, setShouldRender] = useState(!isAdmin && isHome && !alreadyShown);
+    const [shouldRender, setShouldRender] = useState(!isAdmin);
     const [isExiting, setIsExiting] = useState(false);
     const [progressPct, setProgressPct] = useState(0);
     const [statusText, setStatusText] = useState("INITIALIZING");
@@ -146,9 +136,9 @@ export function CinematicLoader() {
     const hasExitedRef = useRef(false);
     const animationFrameIdRef = useRef<number | null>(null);
 
-    // Fast-path: If on a subpage or already shown, dispatch completion immediately so other components reveal
+    // Fast-path: If on admin, dispatch completion immediately so admin components reveal
     useEffect(() => {
-        if (!isHome || alreadyShown || isAdmin) {
+        if (isAdmin) {
             if (typeof window !== "undefined") {
                 (window as any).__FTX_LOADER_DONE__ = true;
                 (window as any).__FTX_SPLASH_DONE__ = true;
@@ -156,7 +146,7 @@ export function CinematicLoader() {
                 window.dispatchEvent(new CustomEvent("ftx_splash_done"));
             }
         }
-    }, [isHome, alreadyShown, isAdmin]);
+    }, [isAdmin]);
 
     // 1. Instant Parallel Image Preloading on Mount (only hero frames if on home)
     useEffect(() => {
@@ -193,7 +183,7 @@ export function CinematicLoader() {
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         const checkFramesLoaded = () => {
-            if (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__) {
+            if (!isHome || (typeof window !== "undefined" && (window as any).__FTX_LOADER_DONE__)) {
                 framesLoadedRef.current = true;
             }
         };
@@ -203,7 +193,7 @@ export function CinematicLoader() {
             hasExitedRef.current = true;
 
             try {
-                sessionStorage.setItem("ftx_loader_shown", "1");
+                sessionStorage.removeItem("ftx_loader_shown");
             } catch {}
 
             setStatusText("SYSTEM READY");

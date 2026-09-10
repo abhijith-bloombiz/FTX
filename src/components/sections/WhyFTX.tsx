@@ -97,20 +97,20 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                 // CENTER CARD: came from BOTTOM
                 progress = center;
                 const inv = 1 - center;
-                ty += inv * 160; // starts 160px below
-                scale *= (1 - inv * 0.1);
+                ty += inv * 110; // softened travel distance for smoother, slower entrance
+                scale *= (1 - inv * 0.08);
             } else if (dist < -0.3) {
                 // LEFT CARD: came from LEFT
                 progress = left;
                 const inv = 1 - left;
-                tx += inv * -200; // starts 200px further to the left
-                rotY += inv * -18; // dynamic flight angle
+                tx += inv * -130; // softened flight distance
+                rotY += inv * -12; // calm rotation angle
             } else if (dist > 0.3) {
                 // RIGHT CARD: came from RIGHT
                 progress = right;
                 const inv = 1 - right;
-                tx += inv * 200; // starts 200px further to the right
-                rotY += inv * 18; // dynamic flight angle
+                tx += inv * 130; // softened flight distance
+                rotY += inv * 12; // calm rotation angle
             }
 
             const baseOpacity = absDist > 1.8 ? 0 : Math.max(0, 1 - absDist * 0.3);
@@ -147,24 +147,25 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         const ctx = gsap.context(() => {
             ScrollTrigger.create({
                 trigger: sectionRef.current,
-                start: "top 95%", // starts as soon as top of section enters bottom of viewport
-                end: "bottom 10%", // ends when bottom of section exits off the top
-                scrub: 0.6, // buttery smooth 0.6s physical interpolation in both directions!
+                start: "top 90%", // starts smoothly as top of section enters bottom of viewport
+                end: "bottom 15%", // ends when bottom of section exits off the top
+                scrub: 1.4, // ultra-smooth 1.4s physical inertia damping for slower, luxurious reveal
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                     const p = self.progress; // 0.0 -> 1.0
                     let reveal = 1;
 
-                    // Continuous bidirectional envelope:
-                    // 0.0 -> 0.28: enters from top of page (forward scroll 0->1, reverse scroll 1->0)
-                    // 0.28 -> 0.72: locked at 1.0 (fully resting & interactive while viewing)
-                    // 0.72 -> 1.0: exits past bottom (forward scroll 1->0, reverse scroll from below 0->1)
-                    if (p < 0.28) {
-                        const t = p / 0.28;
-                        reveal = t * t * (3 - 2 * t); // smoothstep ease
-                    } else if (p > 0.72) {
-                        const t = (1 - p) / 0.28;
-                        reveal = t * t * (3 - 2 * t); // smoothstep ease
+                    // Continuous bidirectional envelope (spread over 42% for a much slower, gradual reveal):
+                    // 0.0 -> 0.42: enters gracefully with zero-jerk smootherstep polynomial
+                    // 0.42 -> 0.70: locked at 1.0 (fully resting & interactive while viewing)
+                    // 0.70 -> 1.0: exits past bottom
+                    if (p < 0.42) {
+                        const t = p / 0.42;
+                        // Ken Perlin smootherstep: 6t^5 - 15t^4 + 10t^3
+                        reveal = t * t * t * (t * (6 * t - 15) + 10);
+                    } else if (p > 0.70) {
+                        const t = (1 - p) / 0.30;
+                        reveal = t * t * t * (t * (6 * t - 15) + 10);
                     } else {
                         reveal = 1;
                     }
@@ -224,7 +225,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         };
     }, []);
 
-    const animateStageTo = useCallback((targetStage: number, duration = 0.55, ease = "power2.out") => {
+    const animateStageTo = useCallback((targetStage: number, duration = 0.85, ease = "power3.out") => {
         const totalPillars = pillars.length;
         const normalizedActiveIndex = ((Math.round(targetStage) % totalPillars) + totalPillars) % totalPillars;
 
@@ -256,9 +257,9 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
             if (!isPausedRef.current && isIdleRef.current && revealStateRef.current.center > 0.9) {
                 const currentIntegerStage = Math.round(currentStageRef.current.stage);
                 const nextStage = currentIntegerStage + 1;
-                animateStageTo(nextStage, 0.7, "power2.inOut");
+                animateStageTo(nextStage, 1.1, "power2.inOut");
             }
-        }, 4000);
+        }, 4500);
 
         return () => {
             clearInterval(interval);
@@ -285,11 +286,11 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         const currentStage = Math.round(currentStageRef.current.stage);
 
         if (diffX > swipeThreshold) {
-            // Swiped Left -> Next Card (Snappy power2.out for finger swipe release)
-            animateStageTo(currentStage + 1, 0.5, "power2.out");
+            // Swiped Left -> Next Card (Silky smooth power3.out)
+            animateStageTo(currentStage + 1, 0.85, "power3.out");
         } else if (diffX < -swipeThreshold) {
             // Swiped Right -> Previous Card
-            animateStageTo(currentStage - 1, 0.5, "power2.out");
+            animateStageTo(currentStage - 1, 0.85, "power3.out");
         }
 
         touchStartXRef.current = null;
@@ -304,7 +305,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
         if (diff > totalPillars / 2) diff -= totalPillars;
         if (diff < -totalPillars / 2) diff += totalPillars;
 
-        animateStageTo(currentStage + diff, 0.65, "power2.inOut");
+        animateStageTo(currentStage + diff, 0.85, "power2.inOut");
     };
 
     if (!isHomePage) {
@@ -335,7 +336,7 @@ export function WhyFTX({ locale, messages }: WhyFTXProps) {
                             const IconComponent = item.icon;
 
                             return (
-                                <ScrollReveal key={idx} type="card" delay={idx * 100} duration={850} className="h-full flex flex-col">
+                                <ScrollReveal key={idx} type="card" delay={idx * 220} duration={1350} className="h-full flex flex-col">
                                     <div className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface transition-all duration-500 hover:-translate-y-1.5 h-full shadow-lg">
                                         {/* Single direct child wrapper to prevent inner seam rounding from .ftx-border-card > * */}
                                         <div className="w-full h-full flex flex-col justify-between overflow-hidden bg-ftx-surface">

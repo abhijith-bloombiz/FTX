@@ -11,7 +11,7 @@ export type ScrollRevealType =
     | "heading-inset"
     | "rise-from-floor";
 
-interface ScrollRevealProps {
+export interface ScrollRevealProps {
     children: React.ReactNode;
     type?: ScrollRevealType;
     direction?: "left" | "right";
@@ -19,6 +19,7 @@ interface ScrollRevealProps {
     duration?: number;
     threshold?: number;
     once?: boolean;
+    reverse?: boolean;
     className?: string;
     style?: React.CSSProperties;
 }
@@ -28,61 +29,101 @@ export function ScrollReveal({
     type = "card",
     direction = "left",
     delay = 0,
-    duration = 850,
-    threshold = 0.15,
+    duration = 750,
+    threshold = 0.1,
     once = false,
+    reverse = true,
     className = "",
     style = {},
 }: ScrollRevealProps) {
     const [isVisible, setIsVisible] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [entryFrom, setEntryFrom] = useState<"bottom" | "top">("bottom");
     const [isMobile, setIsMobile] = useState(false);
+
     const ref = useRef<HTMLDivElement>(null);
+    const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // If reverse is explicitly requested, once must be false; otherwise respect once prop
+    const isOnce = reverse ? false : once;
 
     useEffect(() => {
-        const mobileCheck = window.innerWidth < 768;
-        setIsMobile(mobileCheck);
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile, { passive: true });
 
-        const prefersReducedMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        ).matches;
-
-        if (prefersReducedMotion) {
-            setIsVisible(true);
-            return;
+        const node = ref.current;
+        if (!node) {
+            return () => window.removeEventListener("resize", checkMobile);
         }
+
+        const isMob = window.innerWidth < 768;
 
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
+                    // Determine arrival vector: did it enter from the top (scrolling up/reverse) or bottom (scrolling down)?
+                    const topBoundary = (entry.rootBounds?.top ?? 0) + (window.innerHeight * 0.25);
+                    const enteredFromTop = entry.boundingClientRect.top < topBoundary;
+                    setEntryFrom(enteredFromTop ? "top" : "bottom");
+
                     setIsVisible(true);
-                    if (ref.current && once) {
-                        observer.unobserve(ref.current);
+                    setIsAnimating(true);
+
+                    if (animTimerRef.current) clearTimeout(animTimerRef.current);
+                    animTimerRef.current = setTimeout(() => {
+                        setIsAnimating(false);
+                    }, duration + delay + 60);
+
+                    if (isOnce && node) {
+                        observer.unobserve(node);
                     }
-                } else if (!once) {
+                } else if (!isOnce) {
+                    // When leaving viewport, detect exit direction so reverse scroll starts from appropriate vector
+                    const exitedTop = entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
+                    setEntryFrom(exitedTop ? "top" : "bottom");
+
                     setIsVisible(false);
+                    setIsAnimating(true);
+
+                    if (animTimerRef.current) clearTimeout(animTimerRef.current);
+                    animTimerRef.current = setTimeout(() => {
+                        setIsAnimating(false);
+                    }, (isMob ? 220 : 260) + 40);
                 }
             },
             {
-                threshold: mobileCheck ? 0.05 : threshold,
-                rootMargin: "60px 0px 60px 0px",
+                threshold: isMob ? 0.08 : threshold,
+                // Negative bottom margin ensures the element enters the viewport slightly before triggering,
+                // so users on mobile actually SEE the sweep & reveal animation in motion rather than it finishing off-screen!
+                rootMargin: isMob ? "60px 0px -30px 0px" : "100px 0px -35px 0px",
             }
         );
 
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
+        observer.observe(node);
 
         return () => {
+            window.removeEventListener("resize", checkMobile);
             observer.disconnect();
+            if (animTimerRef.current) clearTimeout(animTimerRef.current);
         };
-    }, [threshold, once]);
+    }, [threshold, isOnce, duration, delay]);
 
     const getStyles = (): React.CSSProperties => {
+        const exitDuration = isMobile ? 220 : 260;
+
+        // When entering: apply full duration, stagger delay, and silky deceleration curve
+        // When exiting off-screen: 0ms delay and fast exit duration to release GPU immediately
         const baseTransition: React.CSSProperties = {
             transitionProperty: "transform, opacity",
-            transitionDuration: `${duration}ms`,
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-            transitionDelay: `${delay}ms`,
+            transitionDuration: isVisible ? `${duration}ms` : `${exitDuration}ms`,
+            transitionTimingFunction: isVisible
+                ? "cubic-bezier(0.16, 1, 0.3, 1)"
+                : "cubic-bezier(0.25, 1, 0.5, 1)",
+            transitionDelay: isVisible ? `${delay}ms` : "0ms",
+            willChange: isAnimating ? "transform, opacity" : "auto",
             ...style,
         };
 
@@ -99,66 +140,103 @@ export function ScrollReveal({
             };
         }
 
+        // Off-screen / hidden states: direction-aware for silky forward & reverse scrolling
+        const isFromTop = entryFrom === "top";
+
         switch (type) {
-            case "rise-from-floor":
-                const floorY = isMobile ? "50px" : "110px";
+            case "rise-from-floor": {
+                if (isFromTop) {
+                    const floorY = isMobile ? "-36px" : "-50px";
+                    return {
+                        ...baseTransition,
+                        opacity: 0,
+                        transform: `perspective(1000px) rotateX(-12deg) translate3d(0, ${floorY}, -20px) scale(0.96)`,
+                        transformOrigin: "top center",
+                    };
+                }
+                const floorY = isMobile ? "45px" : "70px";
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: `perspective(1200px) rotateX(28deg) translate3d(0, ${floorY}, -50px) scale(0.92)`,
+                    transform: `perspective(1000px) rotateX(18deg) translate3d(0, ${floorY}, -30px) scale(0.95)`,
                     transformOrigin: "bottom center",
                 };
+            }
 
-            case "card":
-                const cardY = isMobile ? "30px" : "80px";
-                const cardScale = isMobile ? "0.98" : "0.96";
+            case "card": {
+                if (isFromTop) {
+                    const cardY = isMobile ? "-28px" : "-36px";
+                    const cardScale = isMobile ? "0.97" : "0.96";
+                    return {
+                        ...baseTransition,
+                        opacity: 0,
+                        transform: `translate3d(0, ${cardY}, 0) scale(${cardScale})`,
+                        transformOrigin: "top center",
+                    };
+                }
+                const cardY = isMobile ? "36px" : "50px";
+                const cardScale = isMobile ? "0.97" : "0.96";
                 return {
                     ...baseTransition,
                     opacity: 0,
                     transform: `translate3d(0, ${cardY}, 0) scale(${cardScale})`,
+                    transformOrigin: "bottom center",
                 };
+            }
 
-            case "editorial":
-                const editY = isMobile ? "20px" : "45px";
+            case "editorial": {
+                const editY = isFromTop
+                    ? (isMobile ? "-20px" : "-28px")
+                    : (isMobile ? "24px" : "32px");
                 return {
                     ...baseTransition,
                     opacity: 0,
                     transform: `translate3d(0, ${editY}, 0)`,
                 };
+            }
 
             case "image-mask":
                 return {
                     ...baseTransition,
-                    opacity: 0.7,
+                    opacity: 0.6,
                     transform: "scale(1.04)",
                 };
 
-            case "horizontal":
+            case "horizontal": {
                 const isFromLeft = direction === "left";
-                const initialX = isFromLeft
-                    ? (isMobile ? "-60px" : "-160px")
-                    : (isMobile ? "60px" : "160px");
+                // Preserves the cinematic directional sweep on mobile with proportional translation
+                const initialX = isMobile
+                    ? (isFromLeft ? "-55px" : "55px")
+                    : (isFromLeft ? "-100px" : "100px");
+                const offsetY = isFromTop
+                    ? (isMobile ? "-14px" : "-16px")
+                    : (isMobile ? "14px" : "16px");
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: `translate3d(${initialX}, 0, 0) scale(0.96)`,
+                    transform: `translate3d(${initialX}, ${offsetY}, 0) scale(${isMobile ? 0.96 : 0.96})`,
                     transformOrigin: isFromLeft ? "center left" : "center right",
                 };
+            }
 
-            case "scale":
-                const scaleVal = isMobile ? "0.98" : "0.94";
+            case "scale": {
+                const scaleVal = isMobile ? "0.96" : "0.94";
+                const scaleY = isFromTop ? "-16px" : "20px";
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: `translate3d(0, 20px, 0) scale(${scaleVal})`,
+                    transform: `translate3d(0, ${scaleY}, 0) scale(${scaleVal})`,
                 };
+            }
 
-            case "heading-inset":
+            case "heading-inset": {
+                const insetY = isFromTop ? "-18px" : "22px";
                 return {
                     ...baseTransition,
                     opacity: 0,
-                    transform: "translate3d(0, 25px, 0)",
+                    transform: `translate3d(0, ${insetY}, 0)`,
                 };
+            }
 
             default:
                 return baseTransition;

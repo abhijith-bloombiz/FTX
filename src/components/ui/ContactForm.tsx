@@ -247,12 +247,12 @@ export function ContactForm({ locale, messages, initialServices }: ContactFormPr
     const selectedServiceObj = serviceOptions.find(opt => opt.value === formData.service);
 
     return (
-        <ScrollReveal type="card" duration={800}>
+        <ScrollReveal type="card" duration={1200}>
             <div
                 ref={cardRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                className="bg-[#121212] border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-all duration-500 transform-gpu"
+                className="bg-[#121212] border border-white/10 p-4 sm:p-6 ftx-squircle-xl shadow-2xl relative overflow-hidden group hover:border-ftx-lime/50 transition-[border-color,box-shadow] duration-500 transform-gpu"
             >
                 {/* Form Card Ambient Corner Highlight */}
                 <div className="absolute top-0 right-0 w-40 h-40 bg-ftx-lime/5 rounded-bl-full pointer-events-none z-0" />

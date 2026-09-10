@@ -70,7 +70,7 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                     <ScrollReveal
                         type="card"
                         delay={0}
-                        duration={750}
+                        duration={1200}
                         className="lg:col-span-7 flex flex-col h-full"
                     >
                         <Link
@@ -126,8 +126,8 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                 <ScrollReveal
                                     key={serv._id || serv.serviceId || idx}
                                     type="card"
-                                    delay={(idx + 1) * 100}
-                                    duration={750}
+                                    delay={(idx + 1) * 160}
+                                    duration={1200}
                                     className="flex-1 flex flex-col h-full"
                                 >
                                     <Link
@@ -183,8 +183,8 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                 {/* Card 02 Fallback: Ceramic Coating */}
                                 <ScrollReveal
                                     type="card"
-                                    delay={100}
-                                    duration={750}
+                                    delay={160}
+                                    duration={1200}
                                     className="flex-1 flex flex-col h-full"
                                 >
                                     <Link
@@ -229,8 +229,8 @@ export function ServicesGrid({ locale, messages, services }: ServicesGridProps) 
                                 {/* Card 03 Fallback: Pro Detailing */}
                                 <ScrollReveal
                                     type="card"
-                                    delay={200}
-                                    duration={750}
+                                    delay={320}
+                                    duration={1200}
                                     className="flex-1 flex flex-col h-full"
                                 >
                                     <Link

@@ -55,9 +55,35 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
     const [isPlaying, setIsPlaying] = useState(true);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [showControls, setShowControls] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const touchStartX = useRef<number | null>(null);
     const touchStartY = useRef<number | null>(null);
+
+    const triggerControls = () => {
+        setShowControls(true);
+        if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+        }
+        if (isPlaying) {
+            controlsTimeoutRef.current = setTimeout(() => {
+                setShowControls(false);
+            }, 3500);
+        }
+    };
+
+    useEffect(() => {
+        if (!isPlaying) {
+            setShowControls(true);
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        } else {
+            triggerControls();
+        }
+        return () => {
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        };
+    }, [isPlaying, displayItem]);
 
     const handleTouchStart = (e: React.TouchEvent) => {
         touchStartX.current = e.touches[0].clientX;
@@ -308,7 +334,10 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
             >
                 <div className={`relative w-full h-full ${mediaMaxHeightClass} flex items-center justify-center transition-all duration-300`}>
                     {isVideo && videoSrc ? (
-                        <div className={`relative max-w-full ${mediaMaxHeightClass} flex items-center justify-center group transition-all duration-300`}>
+                        <div
+                            className={`relative max-w-full ${mediaMaxHeightClass} flex items-center justify-center group transition-all duration-300`}
+                            onMouseMove={triggerControls}
+                        >
                             <video
                                 ref={videoRef}
                                 key={getItemId(displayItem)}
@@ -321,7 +350,10 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                                 onPause={() => setIsPlaying(false)}
                                 onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                                 onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                                onClick={togglePlay}
+                                onClick={() => {
+                                    togglePlay();
+                                    triggerControls();
+                                }}
                                 className={`max-w-full ${mediaMaxHeightClass} w-auto h-auto object-contain ftx-squircle-xl shadow-2xl border border-ftx-surface-high/50 transition-all duration-300 cubic-bezier(0.16,1,0.3,1) cursor-pointer ${isClosing
                                     ? "scale-90 opacity-0"
                                     : !isMounted
@@ -330,19 +362,29 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                                     }`}
                             />
 
-                            {/* Floating Tech Video Controls Bar (Visible on Hover) */}
-                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[92%] max-w-xl z-50 bg-ftx-obsidian/95 border border-ftx-lime/50 backdrop-blur-xl px-3.5 py-2 ftx-squircle-lg shadow-2xl flex items-center gap-2.5 text-white opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300">
+                            {/* Floating Tech Video Controls Bar */}
+                            <div
+                                dir="ltr"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    triggerControls();
+                                }}
+                                className={`absolute bottom-3 sm:bottom-4 left-0 right-0 mx-auto w-[92%] sm:w-[88%] max-w-xl z-50 bg-ftx-obsidian/95 border border-ftx-lime/50 backdrop-blur-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-2xl flex items-center gap-2 sm:gap-2.5 text-white transition-opacity duration-300 ${showControls
+                                    ? "opacity-100 pointer-events-auto"
+                                    : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+                                    }`}
+                            >
                                 {/* Play / Pause */}
                                 <button
                                     onClick={togglePlay}
-                                    className="p-1 text-ftx-silver hover:text-ftx-lime transition-colors cursor-pointer"
+                                    className="p-1.5 text-ftx-silver hover:text-ftx-lime transition-colors cursor-pointer shrink-0"
                                     title={isPlaying ? "Pause" : "Play"}
                                 >
                                     {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
                                 </button>
 
                                 {/* Time Counter */}
-                                <span className="text-[10px] sm:text-[11px] font-mono text-ftx-silver shrink-0">
+                                <span className="text-[10px] sm:text-[11px] font-mono text-ftx-silver shrink-0 tabular-nums select-none">
                                     {formatTime(currentTime)} / {formatTime(duration)}
                                 </span>
 
@@ -354,13 +396,13 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                                     step={0.1}
                                     value={currentTime}
                                     onChange={handleSeek}
-                                    className="w-full accent-ftx-lime h-1.5 bg-ftx-surface-high rounded-lg cursor-pointer"
+                                    className="w-full accent-ftx-lime h-1.5 bg-ftx-surface-high rounded-lg cursor-pointer min-w-[40px]"
                                 />
 
                                 {/* Audio Mute/Unmute */}
                                 <button
                                     onClick={toggleAudio}
-                                    className="p-1 text-ftx-silver hover:text-ftx-lime transition-colors cursor-pointer"
+                                    className="p-1.5 text-ftx-silver hover:text-ftx-lime transition-colors cursor-pointer shrink-0"
                                     title={isMuted ? "Unmute" : "Mute"}
                                 >
                                     {!isMuted ? <Volume2 className="w-4 h-4 text-ftx-lime" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
@@ -369,7 +411,7 @@ export function Lightbox({ item, locale, onClose, onPrev, onNext }: LightboxProp
                                 {/* Fullscreen */}
                                 <button
                                     onClick={toggleFullscreen}
-                                    className="p-1 text-ftx-silver hover:text-ftx-lime transition-colors cursor-pointer"
+                                    className="p-1.5 text-ftx-silver hover:text-ftx-lime transition-colors cursor-pointer shrink-0"
                                     title="Fullscreen"
                                 >
                                     <Maximize className="w-4 h-4" />

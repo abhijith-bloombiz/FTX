@@ -214,7 +214,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     return next;
                 });
                 setFadingSlots([]);
-            }, 350);
+            }, 450);
         };
 
         const triggerPair2 = () => {
@@ -242,7 +242,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     return next;
                 });
                 setFadingSlots([]);
-            }, 350);
+            }, 450);
         };
 
         interval1 = setInterval(triggerPair1, 6000);
@@ -273,12 +273,12 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                 type="horizontal"
                 direction={direction}
                 delay={delay}
-                duration={750}
+                duration={1200}
                 className={colSpanClass}
             >
                 <div
                     onClick={() => setActiveLightboxIndex(itemIdx)}
-                    className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[160px] sm:h-[250px] shadow-lg transition-[transform,border-color,box-shadow] duration-500 hover:-translate-y-1"
+                    className="ftx-border-card ftx-squircle-lg group cursor-pointer bg-ftx-surface relative overflow-hidden h-[170px] sm:h-[260px] shadow-lg transition-[transform,border-color,box-shadow] duration-500 hover:-translate-y-1.5"
                     style={{ contain: "paint" }}
                 >
                     <div className="relative w-full h-full overflow-hidden flex flex-col justify-end">
@@ -290,12 +290,14 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                             quality={80}
                             loading="lazy"
                             decoding="async"
-                            className={`object-cover transform-gpu transition-all duration-700 ease-out md:group-hover:scale-110 ${isFading ? "opacity-30 duration-300" : "opacity-100"
-                                }`}
+                            className={`object-cover transform-gpu transition-[transform,opacity] duration-700 ease-out md:group-hover:scale-108 ${
+                                isFading ? "opacity-0 scale-95 duration-450" : "opacity-100 scale-100 duration-700"
+                            }`}
                         />
                         <div className="absolute inset-x-0 bottom-0 w-full bg-gradient-to-t from-ftx-black via-ftx-black/80 to-transparent p-3 sm:p-5 z-10 pointer-events-none">
-                            <h4 className={`text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-all duration-500 leading-tight line-clamp-1 ${isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
-                                }`}>
+                            <h4 className={`text-xs sm:text-lg font-heading font-bold text-white uppercase group-hover:text-ftx-lime transition-[color,opacity,transform] duration-500 leading-tight line-clamp-1 ${
+                                isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                            }`}>
                                 {getTitle(item)}
                             </h4>
                         </div>
@@ -306,7 +308,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     };
 
     return (
-        <section ref={sectionRef} id="ourwork" className="py-10 sm:py-12 bg-black relative overflow-hidden">
+        <section ref={sectionRef} id="ourwork" className="py-12 sm:py-16 bg-black relative overflow-hidden">
             {/* Atmospheric Lime Ambient Glow (Bottom Right - Desktop Only for GPU Optimization) */}
             <div
                 className="absolute bottom-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"
@@ -335,7 +337,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
 
                 {/* Interactive Before/After Showcase */}
                 {beforeAfterItem && beforeAfterItem.beforeImage && beforeAfterItem.afterImage && (
-                    <ScrollReveal type="card" delay={0} duration={850} className="mb-8">
+                    <ScrollReveal type="card" delay={0} duration={1250} className="mb-8">
                         <div className="bg-ftx-surface p-5 sm:p-6 ftx-squircle-xl border border-ftx-surface-high shadow-2xl">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                 <div>
@@ -368,13 +370,13 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                     {renderCardSlot(0, "col-span-6 sm:col-span-5", "left", 0)}
 
                     {/* Row 1, Card 2: Right */}
-                    {renderCardSlot(1, "col-span-6 sm:col-span-7", "right", 80)}
+                    {renderCardSlot(1, "col-span-6 sm:col-span-7", "right", 160)}
 
                     {/* Row 2, Card 3: Left */}
-                    {renderCardSlot(2, "col-span-6 sm:col-span-7", "left", 140)}
+                    {renderCardSlot(2, "col-span-6 sm:col-span-7", "left", 300)}
 
                     {/* Row 2, Card 4: Right */}
-                    {renderCardSlot(3, "col-span-6 sm:col-span-5", "right", 220)}
+                    {renderCardSlot(3, "col-span-6 sm:col-span-5", "right", 440)}
                 </div>
             </div>
 

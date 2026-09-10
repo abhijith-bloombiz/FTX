@@ -115,8 +115,6 @@
   overflow: hidden;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
   mask-image: radial-gradient(white, black);
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
   isolation: isolate;
 }
 
@@ -129,8 +127,6 @@
   overflow: hidden;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
   mask-image: radial-gradient(white, black);
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
   isolation: isolate;
 }
 
@@ -205,6 +201,10 @@ body {
 html.lenis,
 html.lenis-smooth {
   height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }
 
 .lenis.lenis-smooth [data-lenis-prevent],
@@ -317,20 +317,23 @@ html[dir="rtl"] {
 @keyframes gridItemReveal {
   0% {
     opacity: 0;
-    transform: translateY(28px) scale(0.96);
-    filter: blur(4px);
+    transform: translateY(18px);
   }
 
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
 .animate-grid-reveal {
-  animation: gridItemReveal 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity, filter;
+  animation: gridItemReveal 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 768px) {
+  .animate-grid-reveal {
+    animation-duration: 250ms;
+  }
 }
 
 /* Staggered Item Entrance Animation for Dropdown List Items */
