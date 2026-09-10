@@ -73,6 +73,29 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
             return;
         }
 
+        // On mobile touch devices, allow the browser's native 120Hz/60Hz hardware compositor
+        // to handle touch scrolling with zero latency, natural momentum, and zero stutter.
+        const isMobileTouch = window.innerWidth < 768 && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+        if (isMobileTouch) {
+            // Native smooth scroll for anchor clicks (#services, #gallery, etc.)
+            const handleAnchorClick = (e: MouseEvent) => {
+                const target = e.target as HTMLElement;
+                const anchor = target.closest("a");
+                if (anchor && anchor.hash && anchor.hash.startsWith("#") && anchor.pathname === window.location.pathname) {
+                    e.preventDefault();
+                    const targetElement = document.querySelector(anchor.hash);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: "smooth" });
+                    }
+                }
+            };
+
+            document.addEventListener("click", handleAnchorClick);
+            return () => {
+                document.removeEventListener("click", handleAnchorClick);
+            };
+        }
+
         const instance = new Lenis(LENIS_CONFIG);
         lenisRef.current = instance;
         setLenis(instance);

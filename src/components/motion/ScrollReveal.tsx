@@ -24,6 +24,18 @@ export interface ScrollRevealProps {
     style?: React.CSSProperties;
 }
 
+let isMobileViewport = false;
+if (typeof window !== "undefined") {
+    isMobileViewport = window.innerWidth < 768;
+    window.addEventListener(
+        "resize",
+        () => {
+            isMobileViewport = window.innerWidth < 768;
+        },
+        { passive: true }
+    );
+}
+
 export function ScrollReveal({
     children,
     type = "card",
@@ -39,7 +51,6 @@ export function ScrollReveal({
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [entryFrom, setEntryFrom] = useState<"bottom" | "top">("bottom");
-    const [isMobile, setIsMobile] = useState(false);
 
     const ref = useRef<HTMLDivElement>(null);
     const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -48,18 +59,10 @@ export function ScrollReveal({
     const isOnce = reverse ? false : once;
 
     useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        checkMobile();
-        window.addEventListener("resize", checkMobile, { passive: true });
-
         const node = ref.current;
-        if (!node) {
-            return () => window.removeEventListener("resize", checkMobile);
-        }
+        if (!node) return;
 
-        const isMob = window.innerWidth < 768;
+        const isMob = typeof window !== "undefined" ? window.innerWidth < 768 : false;
 
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -85,43 +88,35 @@ export function ScrollReveal({
                     const exitedTop = entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
                     setEntryFrom(exitedTop ? "top" : "bottom");
 
+                    // Immediately reset off-screen without burning GPU transitions or CPU timers
                     setIsVisible(false);
-                    setIsAnimating(true);
-
+                    setIsAnimating(false);
                     if (animTimerRef.current) clearTimeout(animTimerRef.current);
-                    animTimerRef.current = setTimeout(() => {
-                        setIsAnimating(false);
-                    }, (isMob ? 220 : 260) + 40);
                 }
             },
             {
-                threshold: isMob ? 0.08 : threshold,
-                // Negative bottom margin ensures the element enters the viewport slightly before triggering,
-                // so users on mobile actually SEE the sweep & reveal animation in motion rather than it finishing off-screen!
-                rootMargin: isMob ? "60px 0px -30px 0px" : "100px 0px -35px 0px",
+                threshold: isMob ? 0.05 : threshold,
+                rootMargin: isMob ? "40px 0px -20px 0px" : "100px 0px -35px 0px",
             }
         );
 
         observer.observe(node);
 
         return () => {
-            window.removeEventListener("resize", checkMobile);
             observer.disconnect();
             if (animTimerRef.current) clearTimeout(animTimerRef.current);
         };
     }, [threshold, isOnce, duration, delay]);
 
     const getStyles = (): React.CSSProperties => {
-        const exitDuration = isMobile ? 220 : 260;
+        const isMobile = typeof window !== "undefined" ? isMobileViewport : false;
 
         // When entering: apply full duration, stagger delay, and silky deceleration curve
-        // When exiting off-screen: 0ms delay and fast exit duration to release GPU immediately
+        // When exiting off-screen: 0ms duration to instantly reset and release GPU with zero overhead
         const baseTransition: React.CSSProperties = {
             transitionProperty: "transform, opacity",
-            transitionDuration: isVisible ? `${duration}ms` : `${exitDuration}ms`,
-            transitionTimingFunction: isVisible
-                ? "cubic-bezier(0.16, 1, 0.3, 1)"
-                : "cubic-bezier(0.25, 1, 0.5, 1)",
+            transitionDuration: isVisible ? `${duration}ms` : "0ms",
+            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
             transitionDelay: isVisible ? `${delay}ms` : "0ms",
             willChange: isAnimating ? "transform, opacity" : "auto",
             ...style,

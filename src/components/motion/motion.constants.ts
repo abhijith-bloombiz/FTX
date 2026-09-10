@@ -31,6 +31,6 @@ export const LENIS_CONFIG = {
     smoothWheel: true,
     wheelMultiplier: 1.0,
     touchMultiplier: 1.0,
-    syncTouch: true,
+    syncTouch: false,
     infinite: false,
 };
