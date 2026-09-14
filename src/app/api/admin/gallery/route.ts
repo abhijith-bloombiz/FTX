@@ -10,13 +10,13 @@ import mongoose from "mongoose";
 import fs from "fs";
 import path from "path";
 
-function sanitizeAssetUrl(url?: string | null): string {
-    if (!url || typeof url !== "string") return "/images/gallery/ppf-studio-hero.jpg";
+function sanitizeAssetUrl(url?: string | null, fallback: string = ""): string {
+    if (!url || typeof url !== "string") return fallback;
     if (url.startsWith("/uploads/") || url.startsWith("uploads/")) {
         const cleanPath = url.replace(/^\/?/, "");
         const localFilePath = path.join(process.cwd(), "public", cleanPath);
         if (!fs.existsSync(localFilePath)) {
-            return "/images/gallery/ppf-studio-hero.jpg";
+            return fallback;
         }
     }
     return url;
@@ -36,9 +36,10 @@ export async function GET() {
 
         const sanitizedGallery = (gallery || []).map((item: any) => ({
             ...item,
-            image: sanitizeAssetUrl(item.image),
-            beforeImage: item.beforeImage ? sanitizeAssetUrl(item.beforeImage) : item.beforeImage,
-            afterImage: item.afterImage ? sanitizeAssetUrl(item.afterImage) : item.afterImage,
+            image: sanitizeAssetUrl(item.image, "/images/gallery/ppf-studio-hero.jpg"),
+            video: sanitizeAssetUrl(item.video, ""),
+            beforeImage: item.beforeImage ? sanitizeAssetUrl(item.beforeImage, "") : item.beforeImage,
+            afterImage: item.afterImage ? sanitizeAssetUrl(item.afterImage, "") : item.afterImage,
         }));
 
         return NextResponse.json(
