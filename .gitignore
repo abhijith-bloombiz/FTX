@@ -25,6 +25,10 @@ logs
 # Vercel & Deployment
 .vercel
 
+# Uploaded User Media
+/public/uploads/*
+!/public/uploads/.gitkeep
+
 # TypeScript Cache
 *.tsbuildinfo
 
