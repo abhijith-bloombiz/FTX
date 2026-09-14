@@ -7,6 +7,20 @@ import { galleryData } from "@/data/gallery";
 import { deleteUploadedFile } from "@/lib/deleteFile";
 import { invalidateCmsCache } from "@/lib/cms";
 import mongoose from "mongoose";
+import fs from "fs";
+import path from "path";
+
+function sanitizeAssetUrl(url?: string | null): string {
+    if (!url || typeof url !== "string") return "/images/gallery/ppf-studio-hero.jpg";
+    if (url.startsWith("/uploads/") || url.startsWith("uploads/")) {
+        const cleanPath = url.replace(/^\/?/, "");
+        const localFilePath = path.join(process.cwd(), "public", cleanPath);
+        if (!fs.existsSync(localFilePath)) {
+            return "/images/gallery/ppf-studio-hero.jpg";
+        }
+    }
+    return url;
+}
 
 export async function GET() {
     try {
@@ -19,11 +33,19 @@ export async function GET() {
                 gallery = galleryData.map((g) => ({ ...g, itemId: g.id })) as any;
             }
         }
+
+        const sanitizedGallery = (gallery || []).map((item: any) => ({
+            ...item,
+            image: sanitizeAssetUrl(item.image),
+            beforeImage: item.beforeImage ? sanitizeAssetUrl(item.beforeImage) : item.beforeImage,
+            afterImage: item.afterImage ? sanitizeAssetUrl(item.afterImage) : item.afterImage,
+        }));
+
         return NextResponse.json(
-            { gallery, connected: true },
+            { gallery: sanitizedGallery, connected: true },
             {
                 headers: {
-                    "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+                    "Cache-Control": "no-store, no-cache, must-revalidate",
                 },
             }
         );
@@ -36,7 +58,7 @@ export async function GET() {
             },
             {
                 headers: {
-                    "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+                    "Cache-Control": "no-store, no-cache, must-revalidate",
                 },
             }
         );

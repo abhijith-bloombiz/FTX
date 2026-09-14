@@ -35,8 +35,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
 
     useEffect(() => {
         Promise.all([
-            fetch("/api/admin/gallery").then((res) => res.json()).catch(() => ({})),
-            fetch("/api/admin/services").then((res) => res.json()).catch(() => ({})),
+            fetch("/api/admin/gallery", { cache: "no-store" }).then((res) => res.json()).catch(() => ({})),
+            fetch("/api/admin/services", { cache: "no-store" }).then((res) => res.json()).catch(() => ({})),
         ])
             .then(([galData, srvData]) => {
                 if (galData.gallery && galData.gallery.length > 0) {
