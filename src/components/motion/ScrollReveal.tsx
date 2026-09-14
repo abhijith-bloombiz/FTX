@@ -48,6 +48,7 @@ export function ScrollReveal({
     className = "",
     style = {},
 }: ScrollRevealProps) {
+    const [mounted, setMounted] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [entryFrom, setEntryFrom] = useState<"bottom" | "top">("bottom");
@@ -57,6 +58,10 @@ export function ScrollReveal({
 
     // If reverse is explicitly requested, once must be false; otherwise respect once prop
     const isOnce = reverse ? false : once;
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         const node = ref.current;
@@ -109,7 +114,7 @@ export function ScrollReveal({
     }, [threshold, isOnce, duration, delay]);
 
     const getStyles = (): React.CSSProperties => {
-        const isMobile = typeof window !== "undefined" ? isMobileViewport : false;
+        const isMobile = mounted ? isMobileViewport : false;
 
         // When entering: apply full duration, stagger delay, and silky deceleration curve
         // When exiting off-screen: 0ms duration to instantly reset and release GPU with zero overhead
@@ -239,7 +244,7 @@ export function ScrollReveal({
     };
 
     return (
-        <div ref={ref} style={getStyles()} className={className}>
+        <div ref={ref} suppressHydrationWarning style={getStyles()} className={className}>
             {children}
         </div>
     );

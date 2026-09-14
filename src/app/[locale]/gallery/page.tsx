@@ -315,6 +315,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     fill
                                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                                     className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                    priority
                                                 />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -373,6 +374,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     fill
                                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                                     className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                    priority
                                                 />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
