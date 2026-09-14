@@ -16,10 +16,10 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             ? "شاهد التحولات المذهلة قبل وبعد في استوديو FTX. أعمال حماية الطلاء PPF والسيراميك 9H+ وتصحيح الطلاء لأحدث السيارات الخارقة والفاخرة."
             : "Experience high-definition transformations and before/after comparisons of supercars and luxury vehicles protected with PPF and ceramic coatings at FTX.",
         alternates: {
-            canonical: `https://ftx.ae/${locale}/gallery`,
+            canonical: `https://firsttorquex.com/${locale}/gallery`,
             languages: {
-                en: "https://ftx.ae/en/gallery",
-                ar: "https://ftx.ae/ar/gallery",
+                en: "https://firsttorquex.com/en/gallery",
+                ar: "https://firsttorquex.com/ar/gallery",
             },
         },
         openGraph: {
@@ -29,7 +29,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             description: isAr
                 ? "شاهد أحدث أعمال حماية الطلاء والسيراميك والتلميع للسيارات الخارقة."
                 : "Browse completed hypercar and luxury vehicle transformations at First Torque X.",
-            url: `https://ftx.ae/${locale}/gallery`,
+            url: `https://firsttorquex.com/${locale}/gallery`,
             siteName: "First Torque X",
             images: [
                 {

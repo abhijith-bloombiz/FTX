@@ -32,10 +32,10 @@ export async function generateMetadata({ params: { locale } }: AboutPageProps) {
             ? "تعرف على فلسفة FTX وشغفنا بالكمال في حماية وتجميل أحدث السيارات الفاخرة والدقيقة داخل كبائن معقمة ومتحكم بها مناخياً."
             : "Discover the ethos of FTX. Engineered for perfection with surgical paint protection film (PPF), nano-ceramic coatings, and bespoke detailing inside climate-controlled studio bays.",
         alternates: {
-            canonical: `https://ftx.ae/${locale}/about`,
+            canonical: `https://firsttorquex.com/${locale}/about`,
             languages: {
-                en: "https://ftx.ae/en/about",
-                ar: "https://ftx.ae/ar/about",
+                en: "https://firsttorquex.com/en/about",
+                ar: "https://firsttorquex.com/ar/about",
             },
         },
         openGraph: {
@@ -45,7 +45,7 @@ export async function generateMetadata({ params: { locale } }: AboutPageProps) {
             description: isAr
                 ? "تعرف على فلسفة FTX ومعايير الدقة الجراحية في حماية وتلميع السيارات الفاخرة."
                 : "Discover the craftsmanship and climate-controlled studio infrastructure of First Torque X.",
-            url: `https://ftx.ae/${locale}/about`,
+            url: `https://firsttorquex.com/${locale}/about`,
             siteName: "First Torque X",
             images: [
                 {

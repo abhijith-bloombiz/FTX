@@ -124,10 +124,10 @@ export async function generateMetadata({ params: { locale } }: HomePageProps) {
             ? "الاستوديو الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء، والعناية الفائقة بالسيارات."
             : "Premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, Surgical Paint Correction, and Bespoke Car Detailing.",
         alternates: {
-            canonical: `https://ftx.ae/${locale}`,
+            canonical: `https://firsttorquex.com/${locale}`,
             languages: {
-                en: "https://ftx.ae/en",
-                ar: "https://ftx.ae/ar",
+                en: "https://firsttorquex.com/en",
+                ar: "https://firsttorquex.com/ar",
             },
         },
         openGraph: {
@@ -137,7 +137,7 @@ export async function generateMetadata({ params: { locale } }: HomePageProps) {
             description: isAr
                 ? "الاستوديو الرائد لحماية السيارات المتخصص في أفلام حماية الطلاء (PPF)، وتغليف السيراميك 9H+، وتصحيح الطلاء."
                 : "Premier automotive protection studio specializing in Paint Protection Film (PPF), 9H+ Ceramic Coatings, and Surgical Detailing.",
-            url: `https://ftx.ae/${locale}`,
+            url: `https://firsttorquex.com/${locale}`,
             siteName: "First Torque X",
             images: [
                 {
@@ -177,9 +177,9 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
         "@context": "https://schema.org",
         "@type": "AutomotiveBusiness",
         "name": "FTX – FIRST TORQUE X",
-        "image": "https://ftx.ae/images/gallery/ppf-studio-hero.jpg",
-        "@id": "https://ftx.ae",
-        "url": `https://ftx.ae/${locale}`,
+        "image": "https://firsttorquex.com/images/gallery/ppf-studio-hero.jpg",
+        "@id": "https://firsttorquex.com",
+        "url": `https://firsttorquex.com/${locale}`,
         "telephone": "+971500000000",
         "priceRange": "$$$$",
         "address": {

@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ftx.ae";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://firsttorquex.com";
     const locales = ["en", "ar"];
     const routes = ["", "/about", "/services", "/packages", "/gallery", "/contact"];
 

@@ -16,10 +16,10 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             ? "استكشف باقات حماية وتلميع السيارات المتكاملة من FTX: باقات حماية الطلاء الكاملة والجزئية، ودرع السيراميك 9H+، وباقات العناية الفائقة."
             : "Explore comprehensive vehicle protection packages from FTX: Full-Body & Track PPF, 9H+ Ceramic Shield, and Signature Detailing packages.",
         alternates: {
-            canonical: `https://ftx.ae/${locale}/packages`,
+            canonical: `https://firsttorquex.com/${locale}/packages`,
             languages: {
-                en: "https://ftx.ae/en/packages",
-                ar: "https://ftx.ae/ar/packages",
+                en: "https://firsttorquex.com/en/packages",
+                ar: "https://firsttorquex.com/ar/packages",
             },
         },
         openGraph: {
@@ -29,7 +29,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             description: isAr
                 ? "باقات حماية الطلاء والسيراميك والعناية الفائقة بالسيارات الفاخرة."
                 : "Explore transparent, comprehensive automotive protection packages tailored for luxury vehicles.",
-            url: `https://ftx.ae/${locale}/packages`,
+            url: `https://firsttorquex.com/${locale}/packages`,
             siteName: "First Torque X",
             images: [
                 {

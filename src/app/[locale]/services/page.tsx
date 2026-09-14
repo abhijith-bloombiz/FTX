@@ -27,10 +27,10 @@ export async function generateMetadata({ params: { locale } }: ServicesPageProps
             ? "استكشف خدمات FTX المتخصصة في أفلام حماية الطلاء PPF، وطلاء السيراميك 9H+، والتلميع الساطع، والعناية الفائقة بالسيارات الفاخرة."
             : "Explore FTX's premier automotive protection services: Self-Healing Paint Protection Film (PPF), 9H+ Nano Ceramic Coating, Surgical Paint Correction & Concierge Detailing.",
         alternates: {
-            canonical: `https://ftx.ae/${locale}/services`,
+            canonical: `https://firsttorquex.com/${locale}/services`,
             languages: {
-                en: "https://ftx.ae/en/services",
-                ar: "https://ftx.ae/ar/services",
+                en: "https://firsttorquex.com/en/services",
+                ar: "https://firsttorquex.com/ar/services",
             },
         },
         openGraph: {
@@ -40,7 +40,7 @@ export async function generateMetadata({ params: { locale } }: ServicesPageProps
             description: isAr
                 ? "أفلام حماية الطلاء PPF، وتغليف السيراميك 9H+، والتلميع الجراحي للسيارات الفاخرة."
                 : "Premier Paint Protection Film (PPF), 9H+ Ceramic Coatings, and Paint Correction services.",
-            url: `https://ftx.ae/${locale}/services`,
+            url: `https://firsttorquex.com/${locale}/services`,
             siteName: "First Torque X",
             images: [
                 {
@@ -78,8 +78,8 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
         "provider": {
             "@type": "AutomotiveBusiness",
             "name": "First Torque X",
-            "url": "https://ftx.ae",
-            "image": "https://ftx.ae/brand/ftx-3d-logo.webp",
+            "url": "https://firsttorquex.com",
+            "image": "https://firsttorquex.com/brand/ftx-3d-logo.webp",
             "telephone": "+971500000000",
             "priceRange": "$$$$",
             "address": {

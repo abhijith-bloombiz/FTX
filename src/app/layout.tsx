@@ -44,7 +44,7 @@ export const metadata: Metadata = {
         "FTX",
         "First Torque X",
     ],
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ftx.ae"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://firsttorquex.com"),
     alternates: {
         canonical: "/",
         languages: {
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "First Torque X",
         description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing.",
-        url: "https://ftx.ae",
+        url: "https://firsttorquex.com",
         siteName: "First Torque X",
         images: [
             {

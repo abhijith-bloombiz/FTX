@@ -30,10 +30,10 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
             ? "تواصل مع فريق خبراء FTX لحجز موعد استشارة دقيقة لسيارتك الفاخرة أو لطلب عرض سعر مخصص لأفلام الحماية والسيراميك."
             : "Schedule an appointment or request a bespoke quote with the FTX concierge team. Climate-controlled studio consultations for PPF, Ceramic Coating, and Detailing.",
         alternates: {
-            canonical: `https://ftx.ae/${locale}/contact`,
+            canonical: `https://firsttorquex.com/${locale}/contact`,
             languages: {
-                en: "https://ftx.ae/en/contact",
-                ar: "https://ftx.ae/ar/contact",
+                en: "https://firsttorquex.com/en/contact",
+                ar: "https://firsttorquex.com/ar/contact",
             },
         },
         openGraph: {
@@ -43,7 +43,7 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
             description: isAr
                 ? "احجز موعد استشارة وتعرف على باقات حماية وتلميع سيارتك."
                 : "Book a personalized studio consultation for your vehicle with First Torque X.",
-            url: `https://ftx.ae/${locale}/contact`,
+            url: `https://firsttorquex.com/${locale}/contact`,
             siteName: "First Torque X",
             images: [
                 {
@@ -96,11 +96,11 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
         "@context": "https://schema.org",
         "@type": "ContactPage",
         "name": isAr ? "تواصل مع First Torque X" : "Contact First Torque X",
-        "url": `https://ftx.ae/${locale}/contact`,
+        "url": `https://firsttorquex.com/${locale}/contact`,
         "mainEntity": {
             "@type": "AutomotiveBusiness",
             "name": "First Torque X",
-            "image": "https://ftx.ae/brand/ftx-3d-logo.webp",
+            "image": "https://firsttorquex.com/brand/ftx-3d-logo.webp",
             "telephone": phone,
             "email": email,
             "address": {
