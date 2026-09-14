@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Play, Loader2 } from "lucide-react";
+import { ArrowUpRight, Play, Loader2, Film } from "lucide-react";
 import { galleryData, getVehicleLabel } from "@/data/gallery";
 import { GalleryCategory, MediaTypeFilter } from "@/types/gallery";
 import { GalleryFilter } from "@/components/ui/GalleryFilter";
@@ -149,18 +149,14 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
             }
         }
 
-        while (selected.length < 4) {
-            selected.push({ item: items[0] || null, index: 0 });
-        }
-
         return selected;
     };
 
     const uniqueCards = getUniqueInitialCards(visibleItems);
-    const card1 = uniqueCards[0];
-    const card2 = uniqueCards[1];
-    const card3 = uniqueCards[2];
-    const card4 = uniqueCards[3];
+    const card1 = uniqueCards[0] || null;
+    const card2 = uniqueCards[1] || null;
+    const card3 = uniqueCards[2] || null;
+    const card4 = uniqueCards[3] || null;
 
     const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
 
@@ -228,238 +224,275 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                             <div className="lg:col-span-8 bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl min-h-[320px] sm:min-h-[380px] p-8 sm:p-10 flex flex-col justify-end space-y-4">
                                 <div className="h-5 bg-ftx-surface-high/60 rounded w-1/4" />
                                 <div className="h-8 bg-ftx-surface-high/50 rounded w-1/2" />
-                                <div className="h-4 bg-ftx-surface-high/30 rounded w-2/3" />
                             </div>
                         </div>
+                    </div>
+                ) : filteredItems.length === 0 ? (
+                    <div className="text-center py-20 px-6 bg-ftx-surface/20 border border-ftx-surface-high/30 ftx-squircle-xl animate-fade-in my-8">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-ftx-surface flex items-center justify-center border border-ftx-surface-high/50 text-ftx-silver-muted shadow-lg">
+                            <Film className="w-7 h-7 text-ftx-lime" />
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight mb-2">
+                            {activeMediaType === "video"
+                                ? (locale === "ar" ? "لا توجد مقاطع فيديو متوفرة" : "NO VIDEOS AVAILABLE")
+                                : (locale === "ar" ? "لا توجد أعمال مطابقة" : "NO PROJECTS FOUND")}
+                        </h3>
+                        <p className="text-sm text-ftx-silver-muted max-w-md mx-auto mb-6">
+                            {activeMediaType === "video"
+                                ? (locale === "ar"
+                                    ? "لم يتم رفع أي مقاطع فيديو حتى الآن. يمكنك تصفح الصور أو عرض جميع الأعمال."
+                                    : "There are currently no video showcases uploaded to the gallery. You can browse all projects or filter by photos.")
+                                : (locale === "ar"
+                                    ? "لم يتم العثور على مشاريع تطابق الفلاتر المحددة. يرجى تجربة تصنيف آخر."
+                                    : "No projects match your selected filter criteria. Try selecting another category.")}
+                        </p>
+                        <button
+                            onClick={() => {
+                                setActiveMediaType("all");
+                                setActiveCategory("all");
+                            }}
+                            className="inline-flex items-center px-6 py-3 bg-ftx-lime text-ftx-black font-heading font-bold text-xs uppercase tracking-wider ftx-squircle-sm hover:brightness-110 transition-all shadow-lime-glow"
+                        >
+                            {locale === "ar" ? "عرض جميع الأعمال" : "VIEW ALL WORK"}
+                        </button>
                     </div>
                 ) : (
                     <div key={`${activeCategory}-${activeMediaType}-${layoutMode}`} className="animate-grid-reveal">
                         {layoutMode === "grid" ? (
                             <div className="space-y-8">
                                 {/* Top Row: Main Feature (8 cols) + Tall Hydrophobic Card (4 cols) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                                    {/* Top Left Main Feature Card (1st: Pair 1 - Card 1) */}
-                                    <ScrollReveal type="horizontal" direction="left" delay={0} className="lg:col-span-8 flex flex-col h-full">
-                                        <div
-                                            id="gallery-item-0"
-                                            key="gallery-card-1"
-                                            onClick={() => setActiveLightboxIndex(card1.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
-                                        >
-                                            {getItemVideo(card1.item) ? (
-                                                <ViewportVideo
-                                                    src={getItemVideo(card1.item)!}
-                                                    poster={getItemImage(card1.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src={getItemImage(card1.item)}
-                                                    alt={card1.item?.title?.[locale] || "PROJECT: STEALTH"}
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
-                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                    priority
-                                                />
-                                            )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/40 to-transparent" />
+                                {card1 && (
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                                        {/* Top Left Main Feature Card (1st: Pair 1 - Card 1) */}
+                                        <ScrollReveal type="horizontal" direction="left" delay={0} className={`${card2 ? "lg:col-span-8" : "lg:col-span-12"} flex flex-col h-full`}>
+                                            <div
+                                                id="gallery-item-0"
+                                                key="gallery-card-1"
+                                                onClick={() => setActiveLightboxIndex(card1.index)}
+                                                className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                            >
+                                                {getItemVideo(card1.item) ? (
+                                                    <ViewportVideo
+                                                        src={getItemVideo(card1.item)!}
+                                                        poster={getItemImage(card1.item)}
+                                                        className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={getItemImage(card1.item)}
+                                                        alt={card1.item?.title?.[locale] || "PROJECT: STEALTH"}
+                                                        fill
+                                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                                                        className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        priority
+                                                    />
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/40 to-transparent" />
 
-                                            {/* Top Badge for Static Images */}
-                                            {!(card1.item?.isVideo || card1.item?.video) && (
-                                                <div className="absolute top-6 right-6 z-10">
-                                                    <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                        {card1.item ? getVehicleLabel(card1.item.vehicle, locale) : ""}
+                                                {/* Top Badge for Static Images */}
+                                                {!(card1.item?.isVideo || card1.item?.video) && (
+                                                    <div className="absolute top-6 right-6 z-10">
+                                                        <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
+                                                            {card1.item ? getVehicleLabel(card1.item.vehicle, locale) : ""}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {/* Center Play Button Overlay for Videos */}
-                                            {(card1.item?.isVideo || card1.item?.video) && (
-                                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                                    <div className="w-16 h-16 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
-                                                        <Play className="w-7 h-7 fill-ftx-black ml-1" />
+                                                {/* Center Play Button Overlay for Videos */}
+                                                {(card1.item?.isVideo || card1.item?.video) && (
+                                                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                                        <div className="w-16 h-16 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
+                                                            <Play className="w-7 h-7 fill-ftx-black ml-1" />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {/* Bottom Content */}
-                                            <div className="relative z-10 space-y-2">
-                                                <h2 className="text-xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight line-clamp-2">
-                                                    {card1.item?.title?.[locale] || (locale === "ar" ? "مشروع: ستيلث" : "PROJECT: STEALTH")}
-                                                </h2>
-                                                <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-1">
-                                                    {card1.item?.description?.[locale] || (locale === "ar" ? "لامبورغيني أفينتادور SVJ • تغليف كامل XPEL STEALTH" : "LAMBORGHINI AVENTADOR SVJ • FULL BODY XPEL STEALTH")}
-                                                </p>
+                                                {/* Bottom Content */}
+                                                <div className="relative z-10 space-y-2">
+                                                    <h2 className="text-xl sm:text-4xl font-heading font-black text-white uppercase tracking-tight line-clamp-2">
+                                                        {card1.item?.title?.[locale] || (locale === "ar" ? "مشروع: ستيلث" : "PROJECT: STEALTH")}
+                                                    </h2>
+                                                    <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-1">
+                                                        {card1.item?.description?.[locale] || (locale === "ar" ? "لامبورغيني أفينتادور SVJ • تغليف كامل XPEL STEALTH" : "LAMBORGHINI AVENTADOR SVJ • FULL BODY XPEL STEALTH")}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </ScrollReveal>
+                                        </ScrollReveal>
 
-                                    {/* Top Right Tall Hydrophobic Card (2nd: Pair 2 - Card 2) */}
-                                    <ScrollReveal type="horizontal" direction="right" delay={120} className="lg:col-span-4 flex flex-col h-full">
-                                        <div
-                                            id="gallery-item-1"
-                                            key="gallery-card-2"
-                                            onClick={() => setActiveLightboxIndex(card2.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
-                                        >
-                                            {getItemVideo(card2.item) ? (
-                                                <ViewportVideo
-                                                    src={getItemVideo(card2.item)!}
-                                                    poster={getItemImage(card2.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src={getItemImage(card2.item)}
-                                                    alt={card2.item?.title?.[locale] || "Hydrophobic Mastery"}
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                    priority
-                                                />
-                                            )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
+                                        {/* Top Right Tall Hydrophobic Card (2nd: Pair 2 - Card 2) */}
+                                        {card2 && (
+                                            <ScrollReveal type="horizontal" direction="right" delay={120} className="lg:col-span-4 flex flex-col h-full">
+                                                <div
+                                                    id="gallery-item-1"
+                                                    key="gallery-card-2"
+                                                    onClick={() => setActiveLightboxIndex(card2.index)}
+                                                    className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[380px] sm:min-h-[460px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                                >
+                                                    {getItemVideo(card2.item) ? (
+                                                        <ViewportVideo
+                                                            src={getItemVideo(card2.item)!}
+                                                            poster={getItemImage(card2.item)}
+                                                            className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        />
+                                                    ) : (
+                                                        <Image
+                                                            src={getItemImage(card2.item)}
+                                                            alt={card2.item?.title?.[locale] || "Hydrophobic Mastery"}
+                                                            fill
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                                                            className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                            priority
+                                                        />
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
-                                            {/* Top Badge for Static Images */}
-                                            {!(card2.item?.isVideo || card2.item?.video) && (
-                                                <div className="absolute top-6 right-6 z-10">
-                                                    <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                        {card2.item ? getVehicleLabel(card2.item.vehicle, locale) : ""}
+                                                    {/* Top Badge for Static Images */}
+                                                    {!(card2.item?.isVideo || card2.item?.video) && (
+                                                        <div className="absolute top-6 right-6 z-10">
+                                                            <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
+                                                                {card2.item ? getVehicleLabel(card2.item.vehicle, locale) : ""}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Center Play Button Overlay for Videos */}
+                                                    {(card2.item?.isVideo || card2.item?.video) && (
+                                                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                                            <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
+                                                                <Play className="w-6 h-6 fill-ftx-black ml-1" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Bottom Content */}
+                                                    <div className="relative z-10 space-y-2">
+                                                        <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
+                                                            {card2.item?.title?.[locale]}
+                                                        </h3>
+                                                        <p className="text-xs text-ftx-silver-muted font-body leading-relaxed line-clamp-3">
+                                                            {card2.item?.description?.[locale]}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            {/* Center Play Button Overlay for Videos */}
-                                            {(card2.item?.isVideo || card2.item?.video) && (
-                                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                                    <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
-                                                        <Play className="w-6 h-6 fill-ftx-black ml-1" />
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Bottom Content */}
-                                            <div className="relative z-10 space-y-2">
-                                                <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {card2.item?.title?.[locale]}
-                                                </h3>
-                                                <p className="text-xs text-ftx-silver-muted font-body leading-relaxed line-clamp-3">
-                                                    {card2.item?.description?.[locale]}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </ScrollReveal>
-                                </div>
+                                            </ScrollReveal>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Bottom Row: 4 cols card + 8 cols Wide card */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                                    {/* Bottom Left Card (3rd: Pair 2 - Card 3) */}
-                                    <ScrollReveal type="horizontal" direction="left" delay={200} className="lg:col-span-4 flex flex-col h-full">
-                                        <div
-                                            id="gallery-item-2"
-                                            key="gallery-card-3"
-                                            onClick={() => setActiveLightboxIndex(card3.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
-                                        >
-                                            {getItemVideo(card3.item) ? (
-                                                <ViewportVideo
-                                                    src={getItemVideo(card3.item)!}
-                                                    poster={getItemImage(card3.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src={getItemImage(card3.item)}
-                                                    alt={card3.item?.title?.[locale] || "Porsche 911 GT3 RS"}
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                />
-                                            )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
+                                {(card3 || card4) && (
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                                        {/* Bottom Left Card (3rd: Pair 2 - Card 3) */}
+                                        {card3 && (
+                                            <ScrollReveal type="horizontal" direction="left" delay={200} className={`${card4 ? "lg:col-span-4" : "lg:col-span-12"} flex flex-col h-full`}>
+                                                <div
+                                                    id="gallery-item-2"
+                                                    key="gallery-card-3"
+                                                    onClick={() => setActiveLightboxIndex(card3.index)}
+                                                    className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                                >
+                                                    {getItemVideo(card3.item) ? (
+                                                        <ViewportVideo
+                                                            src={getItemVideo(card3.item)!}
+                                                            poster={getItemImage(card3.item)}
+                                                            className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        />
+                                                    ) : (
+                                                        <Image
+                                                            src={getItemImage(card3.item)}
+                                                            alt={card3.item?.title?.[locale] || "Porsche 911 GT3 RS"}
+                                                            fill
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                                                            className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        />
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
-                                            {/* Top Badge */}
-                                            <div className="absolute top-6 right-6 z-10">
-                                                <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                    {card3.item ? getVehicleLabel(card3.item.vehicle, locale) : "PORSCHE 911 GT3 RS"}
-                                                </div>
-                                            </div>
+                                                    {/* Top Badge */}
+                                                    <div className="absolute top-6 right-6 z-10">
+                                                        <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
+                                                            {card3.item ? getVehicleLabel(card3.item.vehicle, locale) : "PORSCHE 911 GT3 RS"}
+                                                        </div>
+                                                    </div>
 
-                                            {/* Center Play Button Overlay for Videos */}
-                                            {(card3.item?.isVideo || card3.item?.video) && (
-                                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                                    <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
-                                                        <Play className="w-6 h-6 fill-ftx-black ml-1" />
+                                                    {/* Center Play Button Overlay for Videos */}
+                                                    {(card3.item?.isVideo || card3.item?.video) && (
+                                                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                                            <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
+                                                                <Play className="w-6 h-6 fill-ftx-black ml-1" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Bottom Content */}
+                                                    <div className="relative z-10 space-y-1">
+                                                        <span className="text-[10px] font-mono font-bold text-ftx-lime uppercase tracking-widest block">
+                                                            {card3.item ? getVehicleLabel(card3.item.vehicle, locale) : "PORSCHE 911 GT3 RS"}
+                                                        </span>
+                                                        <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
+                                                            {card3.item?.title?.[locale]}
+                                                        </h3>
                                                     </div>
                                                 </div>
-                                            )}
+                                            </ScrollReveal>
+                                        )}
 
-                                            {/* Bottom Content */}
-                                            <div className="relative z-10 space-y-1">
-                                                <span className="text-[10px] font-mono font-bold text-ftx-lime uppercase tracking-widest block">
-                                                    {card3.item ? getVehicleLabel(card3.item.vehicle, locale) : "PORSCHE 911 GT3 RS"}
-                                                </span>
-                                                <h3 className="text-xl sm:text-2xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {card3.item?.title?.[locale]}
-                                                </h3>
-                                            </div>
-                                        </div>
-                                    </ScrollReveal>
+                                        {/* Bottom Right Wide Card (4th: Pair 1 - Card 4) */}
+                                        {card4 && (
+                                            <ScrollReveal type="horizontal" direction="right" delay={280} className={`${card3 ? "lg:col-span-8" : "lg:col-span-12"} flex flex-col h-full`}>
+                                                <div
+                                                    id="gallery-item-3"
+                                                    key="gallery-card-4"
+                                                    onClick={() => setActiveLightboxIndex(card4.index)}
+                                                    className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
+                                                >
+                                                    {getItemVideo(card4.item) ? (
+                                                        <ViewportVideo
+                                                            src={getItemVideo(card4.item)!}
+                                                            poster={getItemImage(card4.item)}
+                                                            className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        />
+                                                    ) : (
+                                                        <Image
+                                                            src={getItemImage(card4.item)}
+                                                            alt={card4.item?.title?.[locale] || "Hypercar Gloss Matrix"}
+                                                            fill
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                                                            className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        />
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
 
-                                    {/* Bottom Right Wide Card (4th: Pair 1 - Card 4) */}
-                                    <ScrollReveal type="horizontal" direction="right" delay={280} className="lg:col-span-8 flex flex-col h-full">
-                                        <div
-                                            id="gallery-item-3"
-                                            key="gallery-card-4"
-                                            onClick={() => setActiveLightboxIndex(card4.index)}
-                                            className="ftx-squircle-xl group cursor-pointer bg-ftx-surface relative overflow-hidden border border-ftx-surface-high hover:border-ftx-lime/40 min-h-[320px] sm:min-h-[380px] h-full flex flex-col justify-end p-8 sm:p-10 shadow-2xl transition-colors duration-300"
-                                        >
-                                            {getItemVideo(card4.item) ? (
-                                                <ViewportVideo
-                                                    src={getItemVideo(card4.item)!}
-                                                    poster={getItemImage(card4.item)}
-                                                    className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src={getItemImage(card4.item)}
-                                                    alt={card4.item?.title?.[locale] || "Hypercar Gloss Matrix"}
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
-                                                    className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
-                                                />
-                                            )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
+                                                    {/* Top Badge */}
+                                                    <div className="absolute top-6 right-6 z-10">
+                                                        <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
+                                                            {card4.item ? getVehicleLabel(card4.item.vehicle, locale) : "HYPERCAR GLOSS MATRIX"}
+                                                        </div>
+                                                    </div>
 
-                                            {/* Top Badge */}
-                                            <div className="absolute top-6 right-6 z-10">
-                                                <div className="px-3 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">
-                                                    {card4.item ? getVehicleLabel(card4.item.vehicle, locale) : "HYPERCAR GLOSS MATRIX"}
-                                                </div>
-                                            </div>
+                                                    {/* Center Play Button Overlay for Videos */}
+                                                    {(card4.item?.isVideo || card4.item?.video) && (
+                                                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                                            <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
+                                                                <Play className="w-6 h-6 fill-ftx-black ml-1" />
+                                                            </div>
+                                                        </div>
+                                                    )}
 
-                                            {/* Center Play Button Overlay for Videos */}
-                                            {(card4.item?.isVideo || card4.item?.video) && (
-                                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                                    <div className="w-14 h-14 rounded-full bg-ftx-lime text-ftx-black flex items-center justify-center shadow-lime-glow group-hover:scale-110 transition-transform duration-300">
-                                                        <Play className="w-6 h-6 fill-ftx-black ml-1" />
+                                                    {/* Bottom Content */}
+                                                    <div className="relative z-10 space-y-2">
+                                                        <h3 className="text-xl sm:text-3xl font-heading font-black text-white uppercase tracking-tight">
+                                                            {card4.item?.title?.[locale] || (locale === "ar" ? "تصحيح الطلاء" : "PAINT CORRECTION")}
+                                                        </h3>
+                                                        <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-2 max-w-2xl">
+                                                            {card4.item?.description?.[locale]}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            {/* Bottom Content */}
-                                            <div className="relative z-10 space-y-2">
-                                                <h3 className="text-xl sm:text-3xl font-heading font-black text-white uppercase tracking-tight">
-                                                    {card4.item?.title?.[locale] || (locale === "ar" ? "تصحيح الطلاء" : "PAINT CORRECTION")}
-                                                </h3>
-                                                <p className="text-xs sm:text-sm font-mono text-ftx-silver-muted tracking-wider uppercase line-clamp-2 max-w-2xl">
-                                                    {card4.item?.description?.[locale]}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </ScrollReveal>
-                                </div>
-
+                                            </ScrollReveal>
+                                        )}
+                                    </div>
+                                )}
                                 {/* Additional dynamic cards if visibleItems has more than 4 items */}
                                 {visibleItems.length > 4 && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch pt-4">
