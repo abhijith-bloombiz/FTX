@@ -9,46 +9,6 @@ export function getVehicleLabel(vehicle: string | Record<"en" | "ar", string> | 
 
 export const galleryData: GalleryItem[] = [
     {
-        id: "v1",
-        title: {
-            en: "Hypercar Precision Detailing & Surface Transformation",
-            ar: "العناية الفائقة بالسيارات الخارقة وتحول الطلاء الملكي",
-        },
-        category: "detailing",
-        vehicle: {
-            en: "FTX Cinematic Studio",
-            ar: "استوديو FTX السينمائي",
-        },
-        image: "/images/gallery/ppf-studio-hero.jpg",
-        video: "/video/gallery/6159208-hd_1920_1080_30fps.mp4",
-        isVideo: true,
-        description: {
-            en: "Ultra-high definition cinematic footage showcasing surgical paint correction, foam decontamination, and hydrophobic coating cure.",
-            ar: "فيديو سينمائي بدقة فائقة يعرض مراحل تصحيح الطلاء والغسيل بالرغوة ومعالجة السيراميك.",
-        },
-        tags: ["Video", "Cinematic", "Detailing", "Studio Process"],
-    },
-    {
-        id: "v2",
-        title: {
-            en: "Bespoke Paint Protection Film Fitment & Hydrophobic Beading",
-            ar: "تركيب أفلام الحماية المصنوعة خصيصاً واختبار طرد المياه",
-        },
-        category: "ppf",
-        vehicle: {
-            en: "Supercar PPF Suite",
-            ar: "جناح حماية السيارات الخارقة",
-        },
-        image: "/images/gallery/gt3rs-ppf.jpg",
-        video: "/video/gallery/6873506-hd_1920_1080_25fps.mp4",
-        isVideo: true,
-        description: {
-            en: "Close-up action video detailing edge wrapping precision fitment and instant water beading repulsion test.",
-            ar: "فيديو مقرب يعرض دقة تركيب فيلم الحماية وطرد المياه على الهيكل الخارجي.",
-        },
-        tags: ["Video", "PPF", "Hydrophobic", "Precision Fit"],
-    },
-    {
         id: "g-hero",
         title: {
             en: "Porsche 911 GT3 RS – Climate-Controlled Studio Fitment",
