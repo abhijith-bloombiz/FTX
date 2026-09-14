@@ -290,6 +290,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
                             quality={80}
                             loading="lazy"
                             decoding="async"
+                            unoptimized={typeof getItemImage(item) === "string" && getItemImage(item).startsWith("/uploads/")}
                             className={`object-cover transform-gpu transition-[transform,opacity] duration-700 ease-out md:group-hover:scale-108 ${
                                 isFading ? "opacity-0 scale-95 duration-450" : "opacity-100 scale-100 duration-700"
                             }`}

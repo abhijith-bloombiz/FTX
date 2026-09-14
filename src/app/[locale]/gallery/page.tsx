@@ -121,6 +121,8 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
         return "/images/gallery/ppf-studio-hero.jpg";
     };
 
+    const isUploadSrc = (src: any) => typeof src === "string" && src.startsWith("/uploads/");
+
     const getItemVideo = (item: any) => {
         if (!item) return null;
         if (item.video) return item.video;
@@ -285,6 +287,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                                                         className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                         priority
+                                                        unoptimized={isUploadSrc(getItemImage(card1.item))}
                                                     />
                                                 )}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/40 to-transparent" />
@@ -342,6 +345,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                                             className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                             priority
+                                                            unoptimized={isUploadSrc(getItemImage(card2.item))}
                                                         />
                                                     )}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -404,6 +408,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                             fill
                                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                                             className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                            unoptimized={isUploadSrc(getItemImage(card3.item))}
                                                         />
                                                     )}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -459,6 +464,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                             fill
                                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                                                             className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                            unoptimized={isUploadSrc(getItemImage(card4.item))}
                                                         />
                                                     )}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -524,6 +530,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                                 fill
                                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                                 className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                                unoptimized={isUploadSrc(getItemImage(item))}
                                                             />
                                                         )}
                                                         <div className="absolute inset-0 bg-gradient-to-t from-ftx-black via-ftx-black/50 to-transparent" />
@@ -592,6 +599,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         fill
                                                         sizes="(max-width: 768px) 100vw, 50vw"
                                                         className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        unoptimized={isUploadSrc(getItemImage(item))}
                                                     />
                                                 )}
                                                 <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 px-2.5 py-1 bg-ftx-obsidian/90 border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime font-bold uppercase tracking-wider ftx-squircle-sm shadow-md">

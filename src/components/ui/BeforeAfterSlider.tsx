@@ -98,6 +98,7 @@ export function BeforeAfterSlider({
                     quality={75}
                     loading="lazy"
                     draggable={false}
+                    unoptimized={typeof afterImage === "string" && afterImage.startsWith("/uploads/")}
                     className="object-cover pointer-events-none select-none"
                 />
                 <div className="absolute bottom-4 right-4 px-3 py-1 bg-ftx-black/80 border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest rounded pointer-events-auto shadow-lg">
@@ -122,6 +123,7 @@ export function BeforeAfterSlider({
                     quality={75}
                     loading="lazy"
                     draggable={false}
+                    unoptimized={typeof beforeImage === "string" && beforeImage.startsWith("/uploads/")}
                     className="object-cover pointer-events-none select-none"
                 />
                 <div className="absolute bottom-4 left-4 px-3 py-1 bg-ftx-black/80 border border-ftx-surface-high text-[10px] font-mono font-bold text-ftx-silver tracking-widest rounded pointer-events-auto shadow-lg">

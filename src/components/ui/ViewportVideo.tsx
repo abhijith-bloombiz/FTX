@@ -66,6 +66,7 @@ export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className={className}
                 priority={false}
+                unoptimized={typeof poster === "string" && poster.startsWith("/uploads/")}
             />
         );
     }
