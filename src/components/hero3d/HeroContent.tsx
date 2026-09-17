@@ -260,7 +260,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 </div>
 
                 {/* BOTTOM SECTION: CTA Buttons */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-12 sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-16 sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
                     <div className="lg:col-span-7 lg:text-left space-y-6 text-center pointer-events-auto w-full">
                         <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-[calc(100%-10px)] sm:w-full mx-auto lg:mx-0 pt-1 pb-2">
                             <Link

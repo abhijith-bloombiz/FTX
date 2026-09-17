@@ -595,7 +595,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                         type="button"
                         onClick={handleScrollToReveal}
                         aria-label="Scroll to reveal"
-                        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none"
+                        className="absolute bottom-14 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none"
                         style={{
                             transition: "opacity 0.3s ease",
                         }}
