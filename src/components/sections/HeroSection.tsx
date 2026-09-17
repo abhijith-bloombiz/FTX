@@ -45,7 +45,6 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const startRafLoopRef = useRef<() => void>(() => {});
 
     const lastDrawnFrameIndexRef = useRef<number>(-1);
-    const lastDrawnFractionRef = useRef<number>(-1);
     const cachedBottomGradRef = useRef<{ height: number; grad: CanvasGradient } | null>(null);
 
     const [revealed, setRevealed] = useState(false);
@@ -72,16 +71,17 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => observer.disconnect();
     }, []);
 
-    // High-DPI Cover-fit Canvas Drawing Pipeline with Sub-Frame Motion Crossfading
-    const drawFrame = useCallback((baseImg: HTMLImageElement, nextImg?: HTMLImageElement | null, blendWeight: number = 0) => {
-        if (!canvasRef.current || !baseImg || !baseImg.complete || baseImg.naturalWidth === 0) return;
+    // High-DPI Cover-fit Canvas Drawing Pipeline (100% Native Clarity, Zero Mid-Frame Blending)
+    const drawFrame = useCallback((img: HTMLImageElement) => {
+        if (!canvasRef.current || !img || !img.complete || img.naturalWidth === 0) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
-        // 100% Native Hardware DPR on both Mobile & Desktop (up to 3x for Retina / High-DPI screens)
+        // Hardware DPR Capping (Native devicePixelRatio capped at 1.0x on Low-End & 1.25x on Mobile & 2x on Desktop)
+        const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
         const dpr = typeof window !== "undefined"
-            ? Math.min(window.devicePixelRatio || 1, 3)
+            ? Math.min(window.devicePixelRatio || 1, maxDpr)
             : 1;
 
         const displayWidth = canvas.clientWidth;
@@ -102,31 +102,27 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         if (!canvasWidth || !canvasHeight) return;
 
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
+        ctx.imageSmoothingQuality = isMobile ? "medium" : "high";
 
-        const imgWidth = baseImg.naturalWidth || 1600;
-        const imgHeight = baseImg.naturalHeight || 900;
+        const imgWidth = img.naturalWidth || 1600;
+        const imgHeight = img.naturalHeight || 900;
 
         ctx.fillStyle = "#070707";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // 100% Cover scale calculation without arbitrary downscaling
-        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight);
+        // Full cover scale calculation
+        const fullCoverScale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight);
+
+        const scaleMultiplier = isMobile ? 0.95 : 1.0;
+        const scale = fullCoverScale * scaleMultiplier;
         const width = imgWidth * scale;
         const height = imgHeight * scale;
         const x = (canvasWidth - width) / 2;
         const y = (canvasHeight - height) / 2;
 
-        // 1. Draw base frame at full opacity
+        // 100% Crisp Frame Rendering - Zero crossfade ghosting / blending
         ctx.globalAlpha = 1.0;
-        ctx.drawImage(baseImg, x, y, width, height);
-
-        // 2. Sub-frame motion crossfade: smoothly blend next frame during mid-frame scroll
-        if (nextImg && nextImg.complete && nextImg.naturalWidth > 0 && blendWeight > 0.01) {
-            ctx.globalAlpha = Math.min(1, Math.max(0, blendWeight));
-            ctx.drawImage(nextImg, x, y, width, height);
-            ctx.globalAlpha = 1.0;
-        }
+        ctx.drawImage(img, x, y, width, height);
 
         const bottomFadeH = isMobile ? canvasHeight * 0.30 : canvasHeight * 0.22;
         const bottomFadeY = canvasHeight - bottomFadeH;
@@ -143,7 +139,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
         ctx.fillStyle = cachedBottomGradRef.current.grad;
         ctx.fillRect(0, bottomFadeY, canvasWidth, bottomFadeH);
-    }, [isMobile]);
+    }, [isMobile, isLowEnd]);
 
     // Fast Single-Frame Loader & Decoder with Shared In-Flight Promises & Auto-Draw
     const loadFrame = useCallback((index: number): Promise<HTMLImageElement | null> => {
@@ -189,22 +185,19 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return promise;
     }, [drawFrame]);
 
-    // Memory Management (Generous Sliding Window with Directional Preloading)
+    // Memory Management (Sliding Window Pruning with Fast Scroll Expansion)
     const manageMemoryAndQueue = useCallback((centerFrame: number, isForward: boolean) => {
-        // Generous cache retention: 70+ frames on mobile, full retention on desktop
-        // (Prevents aggressive frame purging/re-decoding cycles that cause mobile stutter)
-        const backKeep = isMobile ? 32 : 55;
-        const forwardKeep = isMobile ? 48 : 55;
+        // Mobile VRAM optimization: Keep 14 frames (-4/+10) vs 50 frames (-15/+35) on Desktop
+        const backKeep = isMobile ? 4 : 15;
+        const forwardKeep = isMobile ? 10 : 35;
         const minKeep = Math.max(0, centerFrame - backKeep);
         const maxKeep = Math.min(TOTAL_FRAMES - 1, centerFrame + forwardKeep);
 
-        // 1. Release decoded images outside active window only on memory-constrained devices (keep index 0 as fallback safety)
-        if (isMobile || isLowEnd) {
-            for (let i = 0; i < TOTAL_FRAMES; i++) {
-                if (i !== 0 && (i < minKeep || i > maxKeep)) {
-                    if (imagesRef.current[i]) {
-                        imagesRef.current[i] = null;
-                    }
+        // 1. Release decoded images outside active window (keep index 0 as fallback safety)
+        for (let i = 0; i < TOTAL_FRAMES; i++) {
+            if (i !== 0 && (i < minKeep || i > maxKeep)) {
+                if (imagesRef.current[i]) {
+                    imagesRef.current[i] = null;
                 }
             }
         }
@@ -212,8 +205,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         // 2. Prioritize preloading ahead in current scroll direction
         const queue: number[] = [];
         const step = isForward ? 1 : -1;
-        const forwardAhead = isMobile ? 24 : 35;
-        const backAhead = isMobile ? 12 : 20;
+        const forwardAhead = isMobile ? 10 : 25;
+        const backAhead = isMobile ? 4 : 8;
 
         for (let offset = 1; offset <= forwardAhead; offset++) {
             const targetIdx = centerFrame + offset * step;
@@ -235,7 +228,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 loadFrame(idx);
             }
         });
-    }, [loadFrame, isMobile, isLowEnd]);
+    }, [loadFrame, isMobile]);
 
     // Initial Mobile & Low-End Hardware Capability Check
     useEffect(() => {
@@ -245,8 +238,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
             const cores = typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 4 : 4;
             const memory = typeof navigator !== "undefined" ? (navigator as any).deviceMemory || 4 : 4;
-            if (cores <= 4 || memory <= 4 || mobile) {
+            if (mobile && (cores <= 4 || memory <= 4)) {
                 setIsLowEnd(true);
+            } else {
+                setIsLowEnd(false);
             }
         };
         checkHardware();
@@ -267,13 +262,13 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, []);
 
-    // Adaptive Batch Preloader: Only load initial critical frames on mount; buffer rest in background
+    // Adaptive Batch Preloader: Only load initial critical frames on mount; load rest on demand
     useEffect(() => {
         let isCancelled = false;
 
         const loadInitialAndDeferred = async () => {
-            // Batch 1: Load initial critical frames for instant hero entry (6 on mobile, 8 on desktop)
-            const initialCount = isMobile ? 6 : CRITICAL_LOAD_COUNT;
+            // Batch 1: Load initial critical frames for instant hero entry (4 on mobile, 8 on desktop)
+            const initialCount = isMobile ? 4 : CRITICAL_LOAD_COUNT;
             const batch1Promises: Promise<HTMLImageElement | null>[] = [];
             for (let i = 0; i < initialCount; i++) {
                 batch1Promises.push(loadFrame(i));
@@ -299,38 +294,30 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
             }
 
-            // Both Mobile and Desktop: buffer remaining frames gently during idle time
-            // On mobile, use gentle micro-batches with short breathers so touch responsiveness stays 100% fluid
+            // On mobile / low-end, do NOT eagerly download remaining frames 26-129 upfront!
+            // manageMemoryAndQueue will dynamically load frames as user scrolls into the section.
+            if (isMobile || isLowEnd) return;
+
+            // On desktop: gently buffer remaining frames during idle time
             const scheduleIdle = (fn: () => void) => {
                 if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-                    (window as any).requestIdleCallback(fn, { timeout: 2000 });
+                    (window as any).requestIdleCallback(fn, { timeout: 2500 });
                 } else {
-                    setTimeout(fn, 1200);
+                    setTimeout(fn, 1500);
                 }
             };
 
             scheduleIdle(async () => {
                 if (isCancelled) return;
-                const batchSize = isMobile ? 12 : 25;
-                const totalBatches = Math.ceil(TOTAL_FRAMES / batchSize);
-
-                for (let b = 0; b < totalBatches; b++) {
+                for (let b = 1; b < 6; b++) {
                     if (isCancelled) return;
-                    const start = b * batchSize;
-                    const end = Math.min(TOTAL_FRAMES, start + batchSize);
+                    const start = b * 26;
+                    const end = Math.min(TOTAL_FRAMES, start + 26);
                     const batch: Promise<HTMLImageElement | null>[] = [];
                     for (let i = start; i < end; i++) {
-                        if (!imagesRef.current[i]) {
-                            batch.push(loadFrame(i));
-                        }
+                        batch.push(loadFrame(i));
                     }
-                    if (batch.length > 0) {
-                        await Promise.all(batch);
-                        // On mobile, take a short breather between batches to keep the main thread free
-                        if (isMobile) {
-                            await new Promise((r) => setTimeout(r, 60));
-                        }
-                    }
+                    await Promise.all(batch);
                 }
             });
         };
@@ -340,7 +327,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => {
             isCancelled = true;
         };
-    }, [drawFrame, loadFrame, isMobile]);
+    }, [drawFrame, loadFrame, isMobile, isLowEnd]);
 
     // Single rAF Render & Animation Loop with Idle Sleep & Adaptive Velocity Smoothing
     useEffect(() => {
@@ -361,56 +348,43 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             if (absDiff < 0.015) {
                 currentFrameRef.current = target;
             } else {
-                // Adaptive velocity-aware lerp factor for smooth momentum glide on both mobile & desktop
+                // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
                 const lerpFactor = isMobile
-                    ? (absDiff > 18 ? 0.36 : absDiff > 6 ? 0.28 : 0.22)
-                    : (absDiff > 15 ? 0.44 : absDiff > 6 ? 0.35 : 0.28);
+                    ? (absDiff > 15 ? 0.55 : absDiff > 6 ? 0.45 : 0.38)
+                    : (absDiff > 15 ? 0.48 : absDiff > 6 ? 0.38 : 0.30);
                 currentFrameRef.current += diff * lerpFactor;
             }
 
             const val = Math.min(TOTAL_FRAMES - 1, Math.max(0, currentFrameRef.current));
-            const baseIdx = Math.floor(val);
-            const nextIdx = Math.min(TOTAL_FRAMES - 1, baseIdx + 1);
-            const fraction = val - baseIdx;
+            const frameIdx = Math.round(val);
 
-            // Idle Canvas Redraw Guard: Skip canvas redraws when completely idle and frame hasn't moved
-            const isFrameIdle = absDiff < 0.001 && baseIdx === lastDrawnFrameIndexRef.current && Math.abs(fraction - lastDrawnFractionRef.current) < 0.01;
+            // Idle Canvas Redraw Guard: Skip canvas fillrate redraws when frame position is static
+            const isFrameIdle = absDiff < 0.001 && frameIdx === lastDrawnFrameIndexRef.current;
 
             if (!isFrameIdle) {
-                let baseImg = imagesRef.current[baseIdx];
+                let img = imagesRef.current[frameIdx];
 
-                // Fallback decoding lookup if base frame is still decoding during fast scroll
-                if (!baseImg) {
+                // Fallback decoding lookup if target frame is still decoding during fast scroll
+                if (!img) {
                     for (let offset = 1; offset < 25; offset++) {
-                        const prev = imagesRef.current[Math.max(0, baseIdx - offset)];
-                        if (prev) { baseImg = prev; break; }
-                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, baseIdx + offset)];
-                        if (next) { baseImg = next; break; }
+                        const prev = imagesRef.current[Math.max(0, frameIdx - offset)];
+                        if (prev) { img = prev; break; }
+                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, frameIdx + offset)];
+                        if (next) { img = next; break; }
                     }
-                    loadFrame(baseIdx);
+                    loadFrame(frameIdx);
                 }
 
-                let nextImg: HTMLImageElement | null = null;
-                if (baseIdx !== nextIdx && fraction > 0.01) {
-                    nextImg = imagesRef.current[nextIdx];
-                    if (!nextImg) {
-                        loadFrame(nextIdx);
-                    }
-                }
-
-                if (baseImg) {
-                    // Sub-frame motion crossfade: smoothly blend next frame over base frame
-                    drawFrame(baseImg, nextImg, fraction);
-                    lastDrawnFrameIndexRef.current = baseIdx;
-                    lastDrawnFractionRef.current = fraction;
+                if (img) {
+                    drawFrame(img);
+                    lastDrawnFrameIndexRef.current = frameIdx;
                 }
             }
 
-            const roundedFrameIdx = Math.round(val);
-            if (roundedFrameIdx !== lastFrameIdx) {
+            if (frameIdx !== lastFrameIdx) {
                 const isForward = target >= current;
-                manageMemoryAndQueue(roundedFrameIdx, isForward);
-                lastFrameIdx = roundedFrameIdx;
+                manageMemoryAndQueue(frameIdx, isForward);
+                lastFrameIdx = frameIdx;
             }
 
             // If settled and completely idle, put RAF to sleep to save 100% CPU/GPU and mobile battery!
@@ -439,7 +413,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, [drawFrame, loadFrame, manageMemoryAndQueue, isMobile]);
 
-    // GSAP ScrollTrigger Integration — Zero React Re-renders
+    // GSAP ScrollTrigger Integration ΓÇö Zero React Re-renders
     useEffect(() => {
         if (!sectionRef.current || !pinWrapperRef.current) return;
 
@@ -451,8 +425,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 trigger: section,
                 pin: pinWrapper,
                 start: "top top",
-                end: isMobile ? "+=2000px" : "+=2200px",
-                scrub: isMobile ? 0.45 : true,
+                end: isMobile ? "+=1600px" : "+=2200px",
+                scrub: true,
                 anticipatePin: 1,
                 fastScrollEnd: true,
                 preventOverlaps: true,
@@ -480,7 +454,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 const img = imagesRef.current[frameIndex] || imagesRef.current[0];
 
                 if (img && canvasRef.current) {
-                    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 3) : 1;
+                    const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
+                    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
                     const w = canvasRef.current.clientWidth;
                     const h = canvasRef.current.clientHeight;
                     if (w && h) {
@@ -533,7 +508,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const introSection = document.getElementById("about") || document.getElementById("intro");
         const defaultTarget = scrollTriggerRef.current
             ? scrollTriggerRef.current.end
-            : (sectionRef.current ? sectionRef.current.offsetTop + (isMobile ? 2000 : 2200) : 2200);
+            : (sectionRef.current ? sectionRef.current.offsetTop + (isMobile ? 1600 : 2200) : 2200);
 
         if (lenis) {
             if (introSection) {
@@ -560,7 +535,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         <section
             ref={sectionRef}
             id="hero"
-            className="relative w-full h-[220vh] md:h-[260vh] bg-[#070707] overflow-visible"
+            className="relative w-full h-[180vh] md:h-[260vh] bg-[#070707] overflow-visible"
         >
             <div
                 ref={pinWrapperRef}
@@ -592,7 +567,6 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                         transform: revealed ? "scale(1)" : "scale(1.03)",
                         transition: "opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1400ms cubic-bezier(0.16, 1, 0.3, 1)",
                         willChange: revealed ? "auto" : "opacity, transform",
-                        imageRendering: "-webkit-optimize-contrast",
                     }}
                 />
 
