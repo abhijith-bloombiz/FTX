@@ -57,6 +57,7 @@ export const metadata: Metadata = {
         languages: {
             "en": "/en",
             "ar": "/ar",
+            "x-default": "/en",
         },
     },
     openGraph: {
@@ -123,6 +124,7 @@ export default function RootLayout({
     return (
         <html
             lang="en"
+            suppressHydrationWarning
             className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable} ${ethnocentric.variable}`}
         >
             <body className="bg-ftx-black text-ftx-silver antialiased overflow-x-hidden">

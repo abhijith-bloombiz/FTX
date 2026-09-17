@@ -19,7 +19,7 @@ export const galleryData: GalleryItem[] = [
             en: "Porsche 911 GT3 RS",
             ar: "بورشه 911 GT3 RS",
         },
-        image: "/images/gallery/ppf-studio-hero.jpg",
+        image: "/images/gallery/gt3rs-ppf.jpg",
         description: {
             en: "Full custom ceramic & stealth film fitment with edge wrapping inside our premier climate-controlled detailing bay.",
             ar: "تركيب كامل لفيلم الحماية مع طي الحواف داخل استوديو العناية بالفخامة المتطور.",

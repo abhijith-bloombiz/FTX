@@ -95,7 +95,7 @@ export const servicesData: ServiceItem[] = [
         image: "/images/services/ppf-main.png",
         detailImages: [
             "/images/gallery/gt3rs-ppf.jpg",
-            "/images/gallery/ppf-studio-hero.jpg",
+            "/images/gallery/gt3rs-ppf.jpg",
         ],
     },
     {
@@ -395,7 +395,7 @@ export const servicesData: ServiceItem[] = [
         ],
         image: "/images/services/ppf-main.png",
         detailImages: [
-            "/images/gallery/ppf-studio-hero.jpg",
+            "/images/gallery/gt3rs-ppf.jpg",
             "/images/gallery/gt3rs-ppf.jpg",
         ],
     },

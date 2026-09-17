@@ -21,12 +21,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         const containerRef = useRef<HTMLDivElement>(null);
 
         // Group 1 Individual Line Refs (Top Left)
-        const line1Ref = useRef<HTMLHeadingElement>(null); // "PRECISION"
-        const line2Ref = useRef<HTMLHeadingElement>(null); // "PROTECTION."
+        const line1Ref = useRef<HTMLDivElement>(null); // "PRECISION"
+        const line2Ref = useRef<HTMLDivElement>(null); // "PROTECTION."
 
         // Group 2 Individual Line Refs (Top Left - Same Position)
-        const line3Ref = useRef<HTMLHeadingElement>(null); // "AUTOMOTIVE"
-        const line4Ref = useRef<HTMLHeadingElement>(null); // "PERFECTION."
+        const line3Ref = useRef<HTMLDivElement>(null); // "AUTOMOTIVE"
+        const line4Ref = useRef<HTMLDivElement>(null); // "PERFECTION."
 
         // CTA Button refs
         const btn1Ref = useRef<HTMLAnchorElement>(null);
@@ -228,39 +228,50 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             >
                 {/* TOP LEFT HEADLINE */}
                 <div className="relative pointer-events-auto h-[85px] sm:h-[105px] md:h-[120px] lg:h-[135px] xl:h-[155px]">
-                    {/* GROUP 1: PRECISION PROTECTION. */}
-                    <h1
+                    {/* Semantic Authoritative H1 for Search Engines & Accessibility */}
+                    <h1 className="sr-only">
+                        {locale === "en"
+                            ? "First Torque X – Precision Protection & Automotive Perfection | PPF & Ceramic Coating"
+                            : "First Torque X – دقة جراحية وحماية فائقة للسيارات | أفلام الحماية والنانو سيراميك"}
+                    </h1>
+
+                    {/* GROUP 1: PRECISION PROTECTION. (Visual Animated Layer) */}
+                    <div
                         ref={line1Ref}
-                        className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
+                        aria-hidden="true"
+                        className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                     >
                         {locale === "en" ? "PRECISION" : (messages?.hero?.title || "PRECISION PROTECTION.").split(" ")[0]}
-                    </h1>
+                    </div>
 
-                    <h1
+                    <div
                         ref={line2Ref}
-                        className={`absolute top-[36px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
+                        aria-hidden="true"
+                        className={`absolute top-[40px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
                     >
                         {locale === "en" ? "PROTECTION." : (messages?.hero?.title || "PRECISION PROTECTION.").split(" ").slice(1).join(" ")}
-                    </h1>
+                    </div>
 
-                    {/* GROUP 2: AUTOMOTIVE PERFECTION. */}
-                    <h1
+                    {/* GROUP 2: AUTOMOTIVE PERFECTION. (Visual Animated Layer) */}
+                    <div
                         ref={line3Ref}
-                        className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
+                        aria-hidden="true"
+                        className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
                     >
                         {locale === "en" ? "AUTOMOTIVE" : (messages?.hero?.subtitle || "AUTOMOTIVE PERFECTION.").split(" ")[0]}
-                    </h1>
+                    </div>
 
-                    <h1
+                    <div
                         ref={line4Ref}
-                        className={`absolute top-[36px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
+                        aria-hidden="true"
+                        className={`absolute top-[40px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
                     >
                         {locale === "en" ? "PERFECTION." : (messages?.hero?.subtitle || "AUTOMOTIVE PERFECTION.").split(" ").slice(1).join(" ")}
-                    </h1>
+                    </div>
                 </div>
 
                 {/* BOTTOM SECTION: CTA Buttons */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-16 sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end pb-[84px] sm:pb-8 lg:pb-4 pt-2 lg:pt-8 overflow-hidden">
                     <div className="lg:col-span-7 lg:text-left space-y-6 text-center pointer-events-auto w-full">
                         <div className="relative z-20 flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-[calc(100%-10px)] sm:w-full mx-auto lg:mx-0 pt-1 pb-2">
                             <Link

@@ -20,6 +20,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             languages: {
                 en: "https://firsttorquex.com/en/gallery",
                 ar: "https://firsttorquex.com/ar/gallery",
+                "x-default": "https://firsttorquex.com/en/gallery",
             },
         },
         openGraph: {
@@ -33,7 +34,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             siteName: "First Torque X",
             images: [
                 {
-                    url: "/images/gallery/ppf-studio-hero.jpg",
+                    url: "/images/gallery/gt3rs-ppf.jpg",
                     width: 1200,
                     height: 630,
                     alt: "FTX Supercar Transformation Gallery",
@@ -48,11 +49,54 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             description: isAr
                 ? "شاهد أحدث أعمال حماية الطلاء والسيراميك والتلميع للسيارات الخارقة."
                 : "Browse completed hypercar and luxury vehicle transformations at First Torque X.",
-            images: ["/images/gallery/ppf-studio-hero.jpg"],
+            images: ["/images/gallery/gt3rs-ppf.jpg"],
         },
     };
 }
 
-export default function GalleryLayout({ children }: GalleryLayoutProps) {
-    return <>{children}</>;
+export default function GalleryLayout({ children, params: { locale } }: GalleryLayoutProps) {
+    const isAr = locale === "ar";
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "ImageGallery",
+                "@id": `https://firsttorquex.com/${locale}/gallery`,
+                "name": isAr ? "معرض أعمال وتطبيقات First Torque X" : "First Torque X Transformation Gallery",
+                "description": isAr
+                    ? "معرض صور وفيديوهات تحولات السيارات الفاخرة وأفلام حماية الطلاء PPF وتغليف السيراميك."
+                    : "Showcase of luxury hypercar transformations, paint protection film installations, and bespoke detailing.",
+                "isPartOf": {
+                    "@id": "https://firsttorquex.com/#website"
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": isAr ? "الرئيسية" : "Home",
+                        "item": `https://firsttorquex.com/${locale}`
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": isAr ? "معرض الأعمال" : "Gallery",
+                        "item": `https://firsttorquex.com/${locale}/gallery`
+                    }
+                ]
+            }
+        ]
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            {children}
+        </>
+    );
 }

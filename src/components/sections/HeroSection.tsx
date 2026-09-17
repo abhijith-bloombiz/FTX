@@ -45,7 +45,6 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const startRafLoopRef = useRef<() => void>(() => {});
 
     const lastDrawnFrameIndexRef = useRef<number>(-1);
-    const lastDrawnBlendRatioRef = useRef<number>(-1);
     const cachedBottomGradRef = useRef<{ height: number; grad: CanvasGradient } | null>(null);
 
     const [revealed, setRevealed] = useState(false);
@@ -72,17 +71,16 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => observer.disconnect();
     }, []);
 
-    // High-DPI Cover-fit Canvas Drawing Pipeline with Sub-Frame Crossfade Interpolation
-    const drawFrame = useCallback((img: HTMLImageElement, nextImg?: HTMLImageElement | null, blendRatio: number = 0) => {
+    // High-DPI Cover-fit Canvas Drawing Pipeline (100% Native Resolution, Zero Mid-Frame Blending)
+    const drawFrame = useCallback((img: HTMLImageElement) => {
         if (!canvasRef.current || !img || !img.complete || img.naturalWidth === 0) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
-        // Hardware DPR Capping (Native devicePixelRatio capped at 1.0x on Low-End & 1.25x on Mobile & 2x on Desktop)
-        const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
+        // 100% Native Hardware DPR on both Mobile & Desktop (up to 3x for Retina / High-DPI screens)
         const dpr = typeof window !== "undefined"
-            ? Math.min(window.devicePixelRatio || 1, maxDpr)
+            ? Math.min(window.devicePixelRatio || 1, 3)
             : 1;
 
         const displayWidth = canvas.clientWidth;
@@ -103,7 +101,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         if (!canvasWidth || !canvasHeight) return;
 
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = isMobile ? "medium" : "high";
+        ctx.imageSmoothingQuality = "high";
 
         const imgWidth = img.naturalWidth || 1600;
         const imgHeight = img.naturalHeight || 900;
@@ -111,25 +109,16 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         ctx.fillStyle = "#070707";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // Full cover scale calculation
-        const fullCoverScale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight);
-
-        const scaleMultiplier = isMobile ? 0.95 : 1.0;
-        const scale = fullCoverScale * scaleMultiplier;
+        // 100% Cover scale calculation without arbitrary downscaling
+        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight);
         const width = imgWidth * scale;
         const height = imgHeight * scale;
         const x = (canvasWidth - width) / 2;
         const y = (canvasHeight - height) / 2;
 
+        // 100% Crisp Frame Rendering - zero crossfade ghosting/blending
         ctx.globalAlpha = 1.0;
         ctx.drawImage(img, x, y, width, height);
-
-        // Desktop Dual-Buffer Blend (Skipped on Mobile & Low-End for Maximum 60 FPS Fillrate)
-        if (!isMobile && !isLowEnd && nextImg && nextImg.complete && nextImg.naturalWidth > 0 && blendRatio > 0.03) {
-            ctx.globalAlpha = Math.min(1.0, Math.max(0, blendRatio));
-            ctx.drawImage(nextImg, x, y, width, height);
-            ctx.globalAlpha = 1.0;
-        }
 
         const bottomFadeH = isMobile ? canvasHeight * 0.30 : canvasHeight * 0.22;
         const bottomFadeY = canvasHeight - bottomFadeH;
@@ -146,7 +135,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
         ctx.fillStyle = cachedBottomGradRef.current.grad;
         ctx.fillRect(0, bottomFadeY, canvasWidth, bottomFadeH);
-    }, [isMobile, isLowEnd]);
+    }, [isMobile]);
 
     // Fast Single-Frame Loader & Decoder with Shared In-Flight Promises & Auto-Draw
     const loadFrame = useCallback((index: number): Promise<HTMLImageElement | null> => {
@@ -361,39 +350,35 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             }
 
             const val = Math.min(TOTAL_FRAMES - 1, Math.max(0, currentFrameRef.current));
-            const floorIdx = Math.floor(val);
-            const ceilIdx = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
-            const blendRatio = val - floorIdx;
+            const frameIdx = Math.round(val);
 
-            // Idle Canvas Redraw Guard: Skip canvas fillrate redraws when frame position is static
-            const isFrameIdle = absDiff < 0.001 && floorIdx === lastDrawnFrameIndexRef.current && (isMobile || Math.abs(blendRatio - lastDrawnBlendRatioRef.current) < 0.01);
+            // Idle Canvas Redraw Guard: Skip canvas redraws when exact frame index is already drawn
+            const isFrameIdle = absDiff < 0.001 && frameIdx === lastDrawnFrameIndexRef.current;
 
             if (!isFrameIdle) {
-                let img1 = imagesRef.current[floorIdx];
-                let img2 = imagesRef.current[ceilIdx];
+                let img = imagesRef.current[frameIdx];
 
-                // Fallback decoding lookup if target frame is still decoding during extreme fast scroll
-                if (!img1) {
+                // Fallback decoding lookup if target frame is still decoding during fast scroll
+                if (!img) {
                     for (let offset = 1; offset < 25; offset++) {
-                        const prev = imagesRef.current[Math.max(0, floorIdx - offset)];
-                        if (prev) { img1 = prev; break; }
-                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, floorIdx + offset)];
-                        if (next) { img1 = next; break; }
+                        const prev = imagesRef.current[Math.max(0, frameIdx - offset)];
+                        if (prev) { img = prev; break; }
+                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, frameIdx + offset)];
+                        if (next) { img = next; break; }
                     }
-                    loadFrame(floorIdx);
+                    loadFrame(frameIdx);
                 }
 
-                if (img1) {
-                    drawFrame(img1, img2, blendRatio);
-                    lastDrawnFrameIndexRef.current = floorIdx;
-                    lastDrawnBlendRatioRef.current = blendRatio;
+                if (img) {
+                    drawFrame(img);
+                    lastDrawnFrameIndexRef.current = frameIdx;
                 }
             }
 
-            if (floorIdx !== lastFrameIdx) {
+            if (frameIdx !== lastFrameIdx) {
                 const isForward = target >= current;
-                manageMemoryAndQueue(floorIdx, isForward);
-                lastFrameIdx = floorIdx;
+                manageMemoryAndQueue(frameIdx, isForward);
+                lastFrameIdx = frameIdx;
             }
 
             // If settled and completely idle, put RAF to sleep to save 100% CPU/GPU and mobile battery!
@@ -463,8 +448,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 const img = imagesRef.current[frameIndex] || imagesRef.current[0];
 
                 if (img && canvasRef.current) {
-                    const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
-                    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
+                    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 3) : 1;
                     const w = canvasRef.current.clientWidth;
                     const h = canvasRef.current.clientHeight;
                     if (w && h) {
@@ -576,6 +560,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                         transform: revealed ? "scale(1)" : "scale(1.03)",
                         transition: "opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1400ms cubic-bezier(0.16, 1, 0.3, 1)",
                         willChange: revealed ? "auto" : "opacity, transform",
+                        imageRendering: "-webkit-optimize-contrast",
                     }}
                 />
 
@@ -595,7 +580,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                         type="button"
                         onClick={handleScrollToReveal}
                         aria-label="Scroll to reveal"
-                        className="absolute bottom-14 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none"
+                        className="absolute bottom-[76px] sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none"
                         style={{
                             transition: "opacity 0.3s ease",
                         }}

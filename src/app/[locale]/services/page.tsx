@@ -31,6 +31,7 @@ export async function generateMetadata({ params: { locale } }: ServicesPageProps
             languages: {
                 en: "https://firsttorquex.com/en/services",
                 ar: "https://firsttorquex.com/ar/services",
+                "x-default": "https://firsttorquex.com/en/services",
             },
         },
         openGraph: {
@@ -71,37 +72,60 @@ export default async function ServicesPage({ params: { locale } }: ServicesPageP
         getCmsPackages(),
     ]);
 
+    const isAr = locale === "ar";
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Automotive Protection & Detailing",
-        "provider": {
-            "@type": "AutomotiveBusiness",
-            "name": "First Torque X",
-            "url": "https://firsttorquex.com",
-            "image": "https://firsttorquex.com/brand/ftx-3d-logo.webp",
-            "telephone": "+971500000000",
-            "priceRange": "$$$$",
-            "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "Automotive Precision District",
-                "addressLocality": "UAE",
-                "addressCountry": "AE"
-            }
-        },
-        "areaServed": "United Arab Emirates",
-        "hasOfferCatalog": {
-            "@type": "OfferCatalog",
-            "name": "FTX Protection Services",
-            "itemListElement": (servicesData || []).map((s: any) => ({
-                "@type": "Offer",
-                "itemOffered": {
-                    "@type": "Service",
-                    "name": typeof s.title === "object" ? s.title[locale] || s.title.en : s.title,
-                    "description": typeof s.description === "object" ? s.description[locale] || s.description.en : s.description,
+        "@graph": [
+            {
+                "@type": "Service",
+                "serviceType": "Automotive Protection & Detailing",
+                "provider": {
+                    "@type": "AutomotiveBusiness",
+                    "name": "First Torque X",
+                    "url": "https://firsttorquex.com",
+                    "image": "https://firsttorquex.com/brand/ftx-3d-logo.webp",
+                    "telephone": "+966 54 951 1812",
+                    "priceRange": "$$$$",
+                    "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": "Jubail – King Faisal West Road, Opposite Lulu Hypermarket",
+                        "addressLocality": "Jubail",
+                        "addressRegion": "Eastern Province",
+                        "addressCountry": "SA"
+                    }
+                },
+                "areaServed": "Saudi Arabia",
+                "hasOfferCatalog": {
+                    "@type": "OfferCatalog",
+                    "name": "FTX Protection Services",
+                    "itemListElement": (servicesData || []).map((s: any) => ({
+                        "@type": "Offer",
+                        "itemOffered": {
+                            "@type": "Service",
+                            "name": typeof s.title === "object" ? s.title[locale] || s.title.en : s.title,
+                            "description": typeof s.description === "object" ? s.description[locale] || s.description.en : s.description,
+                        }
+                    }))
                 }
-            }))
-        }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": isAr ? "الرئيسية" : "Home",
+                        "item": `https://firsttorquex.com/${locale}`
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": isAr ? "خدماتنا" : "Services",
+                        "item": `https://firsttorquex.com/${locale}/services`
+                    }
+                ]
+            }
+        ]
     };
 
     return (

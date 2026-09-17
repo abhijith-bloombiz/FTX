@@ -14,6 +14,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
                 lastModified: new Date(),
                 changeFrequency: route === "" ? "daily" : "weekly",
                 priority: route === "" ? 1.0 : 0.8,
+                alternates: {
+                    languages: {
+                        en: `${baseUrl}/en${route}`,
+                        ar: `${baseUrl}/ar${route}`,
+                        "x-default": `${baseUrl}/en${route}`,
+                    },
+                },
             });
         });
     });

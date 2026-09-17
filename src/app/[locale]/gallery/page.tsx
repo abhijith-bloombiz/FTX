@@ -115,10 +115,12 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
     };
 
     const getItemImage = (item: any) => {
-        if (item?.image && typeof item.image === "string" && !item.image.endsWith(".mp4") && !item.image.endsWith(".webm") && item.image.trim().length > 0) {
-            return item.image;
+        const img = item?.image;
+        if (img && typeof img === "string" && !img.endsWith(".mp4") && !img.endsWith(".webm") && !img.startsWith("blob:") && img.trim().length > 0) {
+            if (img.includes("ppf-studio-hero.jpg")) return "/images/gallery/gt3rs-ppf.jpg";
+            return img;
         }
-        return "/images/gallery/ppf-studio-hero.jpg";
+        return "/images/gallery/gt3rs-ppf.jpg";
     };
 
     const isUploadSrc = (src: any) => typeof src === "string" && src.startsWith("/uploads/");
@@ -160,7 +162,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
     const card3 = uniqueCards[2] || null;
     const card4 = uniqueCards[3] || null;
 
-    const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
+    const beforeAfterItem = allGalleryItems.find((g) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage)) || galleryData.find((g: any) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage));
 
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">

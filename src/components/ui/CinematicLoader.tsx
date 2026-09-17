@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 
 const DEBUG_LOADER = false;
 const DISABLE_AUTO_EXIT = false;
-const DEFAULT_ANIMATION_DURATION = 3500; // 3.5 seconds cinematic animation duration
+const DEFAULT_ANIMATION_DURATION = 2500; // 2.5 seconds cinematic animation duration
 
 // Container-relative logo component configurations (1536x1024 base ratio)
 const LOADER_CONFIGS = [
@@ -231,7 +231,7 @@ export function CinematicLoader() {
         const safetyTimer = setTimeout(() => {
             framesLoadedRef.current = true;
             triggerExitTransition();
-        }, animationDuration + 1500);
+        }, animationDuration + 1000);
 
         const startTime = performance.now();
 
@@ -244,7 +244,7 @@ export function CinematicLoader() {
             let rawProgress = elapsed / animationDuration;
 
             if (rawProgress >= 1.0) {
-                if (framesLoadedRef.current || prefersReducedMotion || elapsed > (animationDuration + 300)) {
+                if (framesLoadedRef.current || prefersReducedMotion || elapsed > (animationDuration + 200)) {
                     rawProgress = 1.0;
                     if (!minAnimationDoneRef.current) {
                         minAnimationDoneRef.current = true;

@@ -1006,7 +1006,7 @@ export default function AdminDashboardPage() {
                                                         ) : (
                                                             <>
                                                                 <img
-                                                                    src={item.image || "/images/gallery/ppf-studio-hero.jpg"}
+                                                                    src={item.image || "/images/gallery/gt3rs-ppf.jpg"}
                                                                     alt={typeof item.title === "string" ? item.title : item.title?.en}
                                                                     className="w-full h-full object-cover"
                                                                 />
@@ -1424,7 +1424,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.metadata?.phone ?? ""}
-                                                            placeholder="+971 50 000 0000"
+                                                            placeholder="+966 54 951 1812"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1441,7 +1441,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.metadata?.email ?? ""}
-                                                            placeholder="info@ftxdetailing.ae"
+                                                            placeholder="firsttorquex1@gmail.com"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1459,7 +1459,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.metadata?.addressEn ?? ""}
-                                                            placeholder="Automotive Precision District, Bay 14, UAE"
+                                                            placeholder="Jubail – King Faisal West Road, Opposite Lulu Hypermarket"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1477,7 +1477,7 @@ export default function AdminDashboardPage() {
                                                             type="text"
                                                             dir="rtl"
                                                             value={contactSec.metadata?.addressAr ?? ""}
-                                                            placeholder="منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة"
+                                                            placeholder="الجبيل – طريق الملك فيصل الغربي، مقابل لولو هايبر ماركت"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1495,7 +1495,7 @@ export default function AdminDashboardPage() {
                                                         <input
                                                             type="text"
                                                             value={contactSec.metadata?.workingHoursEn ?? ""}
-                                                            placeholder="Monday – Saturday: 9:00 AM – 8:00 PM (Sunday Closed)"
+                                                            placeholder="All days : 12:00 P.M – 11:00 PM"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -1513,7 +1513,7 @@ export default function AdminDashboardPage() {
                                                             type="text"
                                                             dir="rtl"
                                                             value={contactSec.metadata?.workingHoursAr ?? ""}
-                                                            placeholder="الإثنين – السبت: 9:00 صباحاً – 8:00 مساءً (الأحد مغلق)"
+                                                            placeholder="جميع الأيام: 12:00 ظهراً – 11:00 مساءً"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 updateContactSec((s) => ({
@@ -2413,7 +2413,7 @@ export default function AdminDashboardPage() {
                                                                         ...prev,
                                                                         video: preview,
                                                                         isVideo: true,
-                                                                        image: autoThumb || prev.image || "/images/gallery/ppf-studio-hero.jpg",
+                                                                        image: autoThumb || prev.image || "/images/gallery/gt3rs-ppf.jpg",
                                                                         _pendingVideoFile: file
                                                                     }));
                                                                 }}
@@ -2592,7 +2592,7 @@ export default function AdminDashboardPage() {
                                                         value={editModalItem.beforeImage || ""}
                                                         onChange={(e) => setEditModalItem({ ...editModalItem, beforeImage: e.target.value })}
                                                         className="w-full p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                        placeholder="/images/gallery/before.png"
+                                                        placeholder="/images/gallery/before.webp"
                                                     />
                                                 </div>
 
@@ -2625,7 +2625,7 @@ export default function AdminDashboardPage() {
                                                         value={editModalItem.afterImage || ""}
                                                         onChange={(e) => setEditModalItem({ ...editModalItem, afterImage: e.target.value })}
                                                         className="w-full p-2.5 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
-                                                        placeholder="/images/gallery/after.png"
+                                                        placeholder="/images/gallery/after.webp"
                                                     />
                                                 </div>
                                             </div>
@@ -3904,7 +3904,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     type="text"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="+971 50 000 0000"
+                                    placeholder="+966 54 951 1812"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                                 />
                             </div>
@@ -3914,7 +3914,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     type="text"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="info@ftxdetailing.com"
+                                    placeholder="firsttorquex1@gmail.com"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                                 />
                             </div>
@@ -3927,6 +3927,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     rows={2}
                                     value={addressEn}
                                     onChange={(e) => setAddressEn(e.target.value)}
+                                    placeholder="Jubail – King Faisal West Road, Opposite Lulu Hypermarket"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                                 />
                             </div>
@@ -3936,6 +3937,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     rows={2}
                                     value={addressAr}
                                     onChange={(e) => setAddressAr(e.target.value)}
+                                    placeholder="الجبيل – طريق الملك فيصل الغربي، مقابل لولو هايبر ماركت"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
                                 />
                             </div>
@@ -3948,6 +3950,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     type="text"
                                     value={workingHoursEn}
                                     onChange={(e) => setWorkingHoursEn(e.target.value)}
+                                    placeholder="All days : 12:00 P.M – 11:00 PM"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
                                 />
                             </div>
@@ -3957,6 +3960,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                                     type="text"
                                     value={workingHoursAr}
                                     onChange={(e) => setWorkingHoursAr(e.target.value)}
+                                    placeholder="جميع الأيام: 12:00 ظهراً – 11:00 مساءً"
                                     className="w-full p-2.5 bg-ftx-surface border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
                                 />
                             </div>

@@ -20,6 +20,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
             languages: {
                 en: "https://firsttorquex.com/en/packages",
                 ar: "https://firsttorquex.com/ar/packages",
+                "x-default": "https://firsttorquex.com/en/packages",
             },
         },
         openGraph: {
@@ -53,6 +54,49 @@ export async function generateMetadata({ params: { locale } }: { params: { local
     };
 }
 
-export default function PackagesLayout({ children }: PackagesLayoutProps) {
-    return <>{children}</>;
+export default function PackagesLayout({ children, params: { locale } }: PackagesLayoutProps) {
+    const isAr = locale === "ar";
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "CollectionPage",
+                "@id": `https://firsttorquex.com/${locale}/packages`,
+                "name": isAr ? "باقات حماية وتلميع السيارات | First Torque X" : "Protection Packages & Pricing | First Torque X",
+                "description": isAr
+                    ? "استكشف باقات حماية وتلميع السيارات المتكاملة من FTX: باقات حماية الطلاء الكاملة والجزئية، ودرع السيراميك 9H+، وباقات العناية الفائقة."
+                    : "Comprehensive automotive protection packages from FTX: Full-Body & Track PPF, 9H+ Ceramic Shield, and Signature Detailing packages.",
+                "isPartOf": {
+                    "@id": "https://firsttorquex.com/#website"
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": isAr ? "الرئيسية" : "Home",
+                        "item": `https://firsttorquex.com/${locale}`
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": isAr ? "الباقات والأسعار" : "Packages",
+                        "item": `https://firsttorquex.com/${locale}/packages`
+                    }
+                ]
+            }
+        ]
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            {children}
+        </>
+    );
 }

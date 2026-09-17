@@ -36,6 +36,7 @@ export async function generateMetadata({ params: { locale } }: AboutPageProps) {
             languages: {
                 en: "https://firsttorquex.com/en/about",
                 ar: "https://firsttorquex.com/ar/about",
+                "x-default": "https://firsttorquex.com/en/about",
             },
         },
         openGraph: {
@@ -125,8 +126,47 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
     const metric3Suffix = metricsSec?.metadata?.metric3Suffix ?? "%";
     const metric3Label = metricsSec?.metadata?.metric3Label?.[locale] || (isAr ? "تركيز على رضا العملاء" : "SATISFACTION FOCUS");
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "AboutPage",
+                "@id": `https://firsttorquex.com/${locale}/about`,
+                "url": `https://firsttorquex.com/${locale}/about`,
+                "name": isAr ? "من نحن | First Torque X" : "About First Torque X",
+                "description": isAr
+                    ? "تعرف على فلسفة FTX ومعايير الدقة الجراحية في حماية وتلميع السيارات الفاخرة."
+                    : "Discover the ethos of FTX and our surgical standard of automotive paint protection.",
+                "isPartOf": {
+                    "@id": "https://firsttorquex.com/#website"
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": isAr ? "الرئيسية" : "Home",
+                        "item": `https://firsttorquex.com/${locale}`
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": isAr ? "من نحن" : "About Us",
+                        "item": `https://firsttorquex.com/${locale}/about`
+                    }
+                ]
+            }
+        ]
+    };
+
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* Atmospheric Lime Ambient Glow (Top Right) */}
             <div
                 className="absolute top-0 right-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0"

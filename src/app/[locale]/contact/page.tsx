@@ -34,6 +34,7 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
             languages: {
                 en: "https://firsttorquex.com/en/contact",
                 ar: "https://firsttorquex.com/ar/contact",
+                "x-default": "https://firsttorquex.com/en/contact",
             },
         },
         openGraph: {
@@ -94,22 +95,45 @@ export default async function ContactPage({ params: { locale } }: ContactPagePro
 
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "ContactPage",
-        "name": isAr ? "تواصل مع First Torque X" : "Contact First Torque X",
-        "url": `https://firsttorquex.com/${locale}/contact`,
-        "mainEntity": {
-            "@type": "AutomotiveBusiness",
-            "name": "First Torque X",
-            "image": "https://firsttorquex.com/brand/ftx-3d-logo.webp",
-            "telephone": phone,
-            "email": email,
-            "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "Automotive Precision District",
-                "addressLocality": "UAE",
-                "addressCountry": "AE"
+        "@graph": [
+            {
+                "@type": "ContactPage",
+                "@id": `https://firsttorquex.com/${locale}/contact`,
+                "name": isAr ? "تواصل مع First Torque X" : "Contact First Torque X",
+                "url": `https://firsttorquex.com/${locale}/contact`,
+                "mainEntity": {
+                    "@type": "AutomotiveBusiness",
+                    "name": "First Torque X",
+                    "image": "https://firsttorquex.com/brand/ftx-3d-logo.webp",
+                    "telephone": phone,
+                    "email": email,
+                    "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": address,
+                        "addressLocality": "Jubail",
+                        "addressRegion": "Eastern Province",
+                        "addressCountry": "SA"
+                    }
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": isAr ? "الرئيسية" : "Home",
+                        "item": `https://firsttorquex.com/${locale}`
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": isAr ? "تواصل معنا" : "Contact",
+                        "item": `https://firsttorquex.com/${locale}/contact`
+                    }
+                ]
             }
-        }
+        ]
     };
 
     return (

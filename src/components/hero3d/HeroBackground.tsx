@@ -15,7 +15,7 @@ export function HeroBackground({
     const handleResize = useCallback(() => {
         if (!canvasRef?.current) return;
         const canvas = canvasRef.current;
-        const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+        const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 3) : 1;
         const width = canvas.parentElement?.clientWidth || window.innerWidth;
         const height = canvas.parentElement?.clientHeight || window.innerHeight;
 

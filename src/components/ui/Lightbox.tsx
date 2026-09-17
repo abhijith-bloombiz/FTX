@@ -24,10 +24,12 @@ const getLocalizedText = (text: any, locale: Locale): string => {
 };
 
 const getItemImage = (item: any): string => {
-    if (item?.image && typeof item.image === "string" && !item.image.endsWith(".mp4") && !item.image.endsWith(".webm") && item.image.trim().length > 0) {
-        return item.image;
+    const img = item?.image;
+    if (img && typeof img === "string" && !img.endsWith(".mp4") && !img.endsWith(".webm") && !img.startsWith("blob:") && img.trim().length > 0) {
+        if (img.includes("ppf-studio-hero.jpg")) return "/images/gallery/gt3rs-ppf.jpg";
+        return img;
     }
-    return "/images/gallery/ppf-studio-hero.jpg";
+    return "/images/gallery/gt3rs-ppf.jpg";
 };
 
 const getItemVideo = (item: any): string => {

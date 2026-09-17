@@ -49,7 +49,7 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
 
     const isBeforeAfterItem = (g: any) => g.category === "before-after" || g.isBeforeAfter || (g.beforeImage && g.afterImage);
     const availableItems = allGalleryItems.filter((g) => !isBeforeAfterItem(g));
-    const beforeAfterItem = allGalleryItems.find((g) => isBeforeAfterItem(g));
+    const beforeAfterItem = allGalleryItems.find((g) => isBeforeAfterItem(g)) || galleryData.find((g) => isBeforeAfterItem(g));
 
     const getTitle = (item: any) => {
         if (!item?.title) return "";
@@ -58,12 +58,13 @@ export function FeaturedWork({ locale, messages }: FeaturedWorkProps) {
     };
 
     const getItemImage = (item: any) => {
-        if (!item) return "/images/gallery/ppf-studio-hero.jpg";
+        if (!item) return "/images/gallery/gt3rs-ppf.jpg";
         const candidate = item.poster || item.coverImage || item.image || item.src;
-        if (candidate && typeof candidate === "string" && !candidate.endsWith(".mp4") && !candidate.endsWith(".webm")) {
+        if (candidate && typeof candidate === "string" && !candidate.endsWith(".mp4") && !candidate.endsWith(".webm") && !candidate.startsWith("blob:")) {
+            if (candidate.includes("ppf-studio-hero.jpg")) return "/images/gallery/gt3rs-ppf.jpg";
             return candidate;
         }
-        return item.poster || item.coverImage || "/images/gallery/ppf-studio-hero.jpg";
+        return item.poster || item.coverImage || "/images/gallery/gt3rs-ppf.jpg";
     };
 
     // Homepage Gallery should strictly render images only (videos are disabled on homepage for performance)

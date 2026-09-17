@@ -100,15 +100,19 @@ export async function seedDatabase() {
             console.log("Seeded Packages collection");
         }
 
-        // 4. Seed Gallery
-        const galleryCount = await GalleryItemModel.countDocuments();
-        if (galleryCount === 0) {
-            const galleryToInsert = galleryData.map((g) => ({
+        // 4. Seed / Sync Gallery (Ensure all default gallery items exist in DB)
+        const existingGallery = await GalleryItemModel.find({}, "itemId").lean();
+        const existingGalleryIds = new Set(existingGallery.map((g: any) => g.itemId));
+        const missingGallery = galleryData
+            .filter((g) => !existingGalleryIds.has(g.id))
+            .map((g) => ({
                 ...g,
                 itemId: g.id,
             }));
-            await GalleryItemModel.insertMany(galleryToInsert);
-            console.log("Seeded Gallery collection");
+
+        if (missingGallery.length > 0) {
+            await GalleryItemModel.insertMany(missingGallery);
+            console.log(`Synced ${missingGallery.length} new item(s) to Gallery collection`);
         }
 
         // 5. Seed Testimonials
@@ -337,20 +341,21 @@ export async function seedDatabase() {
                     ar: "تواصل معنا",
                 },
                 subtitle: {
-                    en: "AUTOMOTIVE PRECISION DISTRICT",
-                    ar: "منطقة تميز السيارات",
+                    en: "JUBAIL STUDIO",
+                    ar: "استوديو الجبيل",
                 },
                 content: {
                     en: "Visit our state-of-the-art studio bay or send an inquiry to book your vehicle consultation.",
                     ar: "تفضل بزيارة استوديو FTX أو أرسل استفسارك لحجز موعد استشارة سيارتك.",
                 },
                 metadata: {
-                    phone: "+971 50 000 0000",
-                    email: "info@ftxdetailing.ae",
-                    addressEn: "Automotive Precision District, Bay 14, UAE",
-                    addressAr: "منطقة تميز السيارات، المجمع 14، الإمارات العربية المتحدة",
-                    workingHoursEn: "Mon - Sat: 9:00 AM - 8:00 PM (Sun: Closed)",
-                    workingHoursAr: "الإثنين - السبت: 9:00 صباحاً - 8:00 مساءً (الأحد: مغلق)",
+                    mapsUrl: "https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3555.3769148582523!2d49.642920275442016!3d26.986624276603266!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjbCsDU5JzExLjkiTiA0OcKwMzgnNDMuOCJF!5e0!3m2!1sen!2sin!4v1789663231745!5m2!1sen!2sin",
+                    phone: "+966 54 951 1812",
+                    email: "firsttorquex1@gmail.com",
+                    addressEn: "Jubail – King Faisal West Road, Opposite Lulu Hypermarket",
+                    addressAr: "الجبيل – طريق الملك فيصل الغربي، مقابل لولو هايبر ماركت",
+                    workingHoursEn: "All days : 12:00 P.M – 11:00 PM",
+                    workingHoursAr: "جميع الأيام: 12:00 ظهراً – 11:00 مساءً",
                     social: {
                         instagram: "https://instagram.com/ftxdetailing",
                         youtube: "https://youtube.com/@ftxdetailing",
