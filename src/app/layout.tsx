@@ -1,6 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Hanken_Grotesk, JetBrains_Mono, Noto_Sans_Arabic } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const ethnocentric = localFont({
+    src: "../../public/fonts/Ethnocentric-Regular.otf",
+    variable: "--font-ethnocentric",
+    display: "swap",
+});
 
 const spaceGrotesk = Space_Grotesk({
     subsets: ["latin"],
@@ -116,7 +123,7 @@ export default function RootLayout({
     return (
         <html
             lang="en"
-            className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable}`}
+            className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable} ${ethnocentric.variable}`}
         >
             <body className="bg-ftx-black text-ftx-silver antialiased overflow-x-hidden">
                 {children}

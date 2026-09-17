@@ -26,6 +26,7 @@ const config: Config = {
                 },
             },
             fontFamily: {
+                ethnocentric: ["var(--font-ethnocentric)", "Ethnocentric", "sans-serif"],
                 heading: ["var(--font-space-grotesk)", "Space Grotesk", "sans-serif"],
                 body: ["var(--font-hanken-grotesk)", "Hanken Grotesk", "Inter", "sans-serif"],
                 mono: ["var(--font-jetbrains-mono)", "JetBrains Mono", "monospace"],

@@ -7,6 +7,7 @@ import { Locale } from "@/i18n/config";
 import { HeroBackground } from "@/components/hero3d/HeroBackground";
 import { HeroContent, HeroContentHandle } from "@/components/hero3d/HeroContent";
 import { HeroTypography, HeroTypographyHandle } from "@/components/hero3d/HeroTypography";
+import { useLenis } from "@/components/motion/SmoothScrollProvider";
 
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
@@ -18,20 +19,22 @@ interface HeroSectionProps {
     messages: any;
 }
 
-const TOTAL_FRAMES = 130;
+const TOTAL_FRAMES = 110;
 const CRITICAL_LOAD_COUNT = 8; // 8 critical frames required for instant loader completion and zero-lag initial reveal
 
 export function HeroSection({ locale, messages }: HeroSectionProps) {
     const sectionRef = useRef<HTMLDivElement>(null);
     const pinWrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
     const typographyRef = useRef<HeroTypographyHandle>(null);
     const contentHandleRef = useRef<HeroContentHandle>(null);
+    const scrollBtnRef = useRef<HTMLButtonElement>(null);
+    const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
+    const { lenis } = useLenis();
 
     // Frame Cache & High-Frequency Animation Refs (0ms React State Overhead)
     const imagesRef = useRef<(HTMLImageElement | null)[]>(new Array(TOTAL_FRAMES).fill(null));
-    const inFlightRef = useRef<Set<number>>(new Set());
+    const inFlightPromisesRef = useRef<Map<number, Promise<HTMLImageElement | null>>>(new Map());
     const fetchedSetRef = useRef<Set<number>>(new Set());
 
     const targetFrameRef = useRef<number>(0);
@@ -102,8 +105,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = isMobile ? "medium" : "high";
 
-        const imgWidth = img.naturalWidth || 1920;
-        const imgHeight = img.naturalHeight || 1080;
+        const imgWidth = img.naturalWidth || 1600;
+        const imgHeight = img.naturalHeight || 900;
 
         ctx.fillStyle = "#070707";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -145,32 +148,38 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         ctx.fillRect(0, bottomFadeY, canvasWidth, bottomFadeH);
     }, [isMobile, isLowEnd]);
 
-    // Fast Single-Frame Loader & Decoder with In-Flight Guard
+    // Fast Single-Frame Loader & Decoder with Shared In-Flight Promises & Auto-Draw
     const loadFrame = useCallback((index: number): Promise<HTMLImageElement | null> => {
         if (index < 0 || index >= TOTAL_FRAMES) return Promise.resolve(null);
         if (imagesRef.current[index]) return Promise.resolve(imagesRef.current[index]);
-        if (inFlightRef.current.has(index)) return Promise.resolve(null);
+        if (inFlightPromisesRef.current.has(index)) {
+            return inFlightPromisesRef.current.get(index)!;
+        }
 
-        inFlightRef.current.add(index);
         const img = new Image();
         const paddedIndex = String(index + 1).padStart(4, "0");
         img.src = `/video/frames/frame_${paddedIndex}.webp`;
 
         const onComplete = () => {
-            inFlightRef.current.delete(index);
+            inFlightPromisesRef.current.delete(index);
             if (img.naturalWidth > 0) {
                 fetchedSetRef.current.add(index);
                 imagesRef.current[index] = img;
+
+                // If this is the initial frame (index 0) or the currently targeted frame, draw it immediately!
+                if (index === 0 || index === Math.round(currentFrameRef.current)) {
+                    drawFrame(img);
+                }
                 return img;
             }
             return null;
         };
 
-        if (img.complete) {
+        if (img.complete && img.naturalWidth > 0) {
             return Promise.resolve(onComplete());
         }
 
-        return new Promise<HTMLImageElement | null>((resolve) => {
+        const promise = new Promise<HTMLImageElement | null>((resolve) => {
             if (img.decode) {
                 img.decode().then(() => resolve(onComplete())).catch(() => resolve(onComplete()));
             } else {
@@ -178,7 +187,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 img.onerror = () => resolve(onComplete());
             }
         });
-    }, []);
+
+        inFlightPromisesRef.current.set(index, promise);
+        return promise;
+    }, [drawFrame]);
 
     // Memory Management (Sliding Window Pruning with Fast Scroll Expansion)
     const manageMemoryAndQueue = useCallback((centerFrame: number, isForward: boolean) => {
@@ -219,7 +231,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
         // Load queued frames
         queue.forEach((idx) => {
-            if (!imagesRef.current[idx] && !inFlightRef.current.has(idx)) {
+            if (!imagesRef.current[idx] && !inFlightPromisesRef.current.has(idx)) {
                 loadFrame(idx);
             }
         });
@@ -271,8 +283,15 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             if (isCancelled) return;
 
             // Draw initial frame immediately
-            const firstImg = imagesRef.current[0];
-            if (firstImg) drawFrame(firstImg);
+            let firstImg = imagesRef.current[0];
+            if (!firstImg) {
+                firstImg = await loadFrame(0);
+            }
+            if (firstImg) {
+                drawFrame(firstImg);
+                lastDrawnFrameIndexRef.current = 0;
+            }
+            startRafLoopRef.current();
 
             // Signal loader readiness
             if (typeof window !== "undefined") {
@@ -295,7 +314,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
 
             scheduleIdle(async () => {
                 if (isCancelled) return;
-                for (let b = 1; b < 5; b++) {
+                for (let b = 1; b < 6; b++) {
                     if (isCancelled) return;
                     const start = b * 26;
                     const end = Math.min(TOTAL_FRAMES, start + 26);
@@ -411,7 +430,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const pinWrapper = pinWrapperRef.current;
 
         const ctx = gsap.context(() => {
-            ScrollTrigger.create({
+            scrollTriggerRef.current = ScrollTrigger.create({
                 trigger: section,
                 pin: pinWrapper,
                 start: "top top",
@@ -430,6 +449,11 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                     }
                     if (contentHandleRef.current) {
                         contentHandleRef.current.setProgress(progress);
+                    }
+                    if (scrollBtnRef.current) {
+                        const opacity = Math.max(0, 1 - progress * 5);
+                        scrollBtnRef.current.style.opacity = opacity.toString();
+                        scrollBtnRef.current.style.pointerEvents = opacity < 0.05 ? "none" : "auto";
                     }
                 },
             });
@@ -460,6 +484,62 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => ctx.revert();
     }, [drawFrame, isMobile, isLowEnd]);
 
+    // ResizeObserver: Redraw canvas whenever its rendered dimensions change
+    useEffect(() => {
+        if (!canvasRef.current) return;
+        const canvas = canvasRef.current;
+
+        const ro = new ResizeObserver(() => {
+            const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
+            const img = imagesRef.current[frameIndex] || imagesRef.current[0];
+            if (img && img.complete && img.naturalWidth > 0) {
+                drawFrame(img);
+            }
+        });
+
+        ro.observe(canvas);
+        return () => ro.disconnect();
+    }, [drawFrame]);
+
+    // Redraw immediately upon reveal transition to guarantee canvas is painted
+    useEffect(() => {
+        if (revealed) {
+            const frameIndex = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
+            const img = imagesRef.current[frameIndex] || imagesRef.current[0];
+            if (img && img.complete && img.naturalWidth > 0) {
+                drawFrame(img);
+            }
+            startRafLoopRef.current();
+        }
+    }, [revealed, drawFrame]);
+
+    const handleScrollToReveal = useCallback(() => {
+        const introSection = document.getElementById("about") || document.getElementById("intro");
+        const defaultTarget = scrollTriggerRef.current
+            ? scrollTriggerRef.current.end
+            : (sectionRef.current ? sectionRef.current.offsetTop + (isMobile ? 1600 : 2200) : 2200);
+
+        if (lenis) {
+            if (introSection) {
+                lenis.scrollTo(introSection, {
+                    offset: -60,
+                    duration: 3.2,
+                    easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+                });
+            } else {
+                lenis.scrollTo(defaultTarget - 60, {
+                    duration: 3.2,
+                    easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+                });
+            }
+        } else {
+            const targetPos = introSection
+                ? introSection.getBoundingClientRect().top + window.scrollY - 60
+                : defaultTarget - 60;
+            window.scrollTo({ top: targetPos, behavior: "smooth" });
+        }
+    }, [lenis, isMobile]);
+
     return (
         <section
             ref={sectionRef}
@@ -472,6 +552,20 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             >
                 {/* Background 3D Glow & Ambient Mesh */}
                 <HeroBackground />
+
+                {/* Instant Zero-Delay Frame 1 Poster Fallback (guarantees zero black screen even before canvas context initializes) */}
+                <img
+                    src="/video/frames/frame_0001.webp"
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none select-none"
+                    style={{
+                        opacity: revealed ? 1 : 0,
+                        transform: revealed ? "scale(1)" : "scale(1.03)",
+                        transition: "opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1400ms cubic-bezier(0.16, 1, 0.3, 1)",
+                        willChange: revealed ? "auto" : "opacity, transform",
+                    }}
+                />
 
                 {/* High-DPI Cover-fit Canvas for Super-Optimized WebP Frames with Smooth 1.2s Reveal Transition */}
                 <canvas
@@ -489,12 +583,49 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 <HeroTypography ref={typographyRef} revealed={revealed} isMobile={isMobile} />
 
                 {/* Foreground Hero Headline & CTA Buttons */}
-                <div ref={contentRef} className="relative z-10 w-full">
-                    <HeroContent ref={contentHandleRef} locale={locale} messages={messages} revealed={revealed} />
-                </div>
+                <HeroContent ref={contentHandleRef} locale={locale} messages={messages} revealed={revealed} />
 
                 {/* Bottom Fade Gradient Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 h-36 sm:h-48 bg-gradient-to-t from-[#070707] via-[#070707]/80 to-transparent pointer-events-none z-15" />
+
+                {/* Scroll-to-Reveal Button */}
+                {revealed && (
+                    <button
+                        ref={scrollBtnRef}
+                        type="button"
+                        onClick={handleScrollToReveal}
+                        aria-label="Scroll to reveal"
+                        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none"
+                        style={{
+                            transition: "opacity 0.3s ease",
+                        }}
+                    >
+                        {/* Pulsing ring */}
+                        <span className="absolute inset-0 rounded-full border border-white/20 animate-ping" style={{ animationDuration: "2s" }} />
+
+                        {/* Glassy pill */}
+                        <span
+                            className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/20 group-hover:border-white/50 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                            style={{
+                                background: "transparent",
+                                backdropFilter: "blur(16px)",
+                                WebkitBackdropFilter: "blur(16px)",
+                            }}
+                        >
+                            {/* Chevron SVG with bounce animation */}
+                            <svg
+                                className="w-5 h-5 sm:w-6 sm:h-6 text-white/80 group-hover:text-white transition-colors duration-300 animate-bounce"
+                                style={{ animationDuration: "1.8s" }}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </button>
+                )}
             </div>
         </section>
     );

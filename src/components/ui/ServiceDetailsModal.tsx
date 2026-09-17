@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, CheckCircle2, ListChecks, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { X, CheckCircle2, ListChecks, ShieldCheck, ArrowUpRight } from "lucide-react";
 import { Locale } from "@/i18n/config";
 import { useLenis } from "@/components/motion/SmoothScrollProvider";
 
@@ -158,6 +159,18 @@ export function ServiceDetailsModal({ service, locale, onClose }: ServiceDetails
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* Modal Footer: Book This Service CTA */}
+                <div className="shrink-0 px-5 sm:px-7 py-3.5 sm:py-4 border-t border-white/10 bg-black/60 flex items-center justify-between gap-4">
+                    <Link
+                        href={`/${locale}/contact?service=${encodeURIComponent(service.serviceId || service.id || "")}#quote-form`}
+                        onClick={onClose}
+                        className="ftx-btn-tech ftx-btn-specular w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 text-xs font-mono font-bold tracking-wider uppercase text-ftx-black bg-ftx-lime hover:bg-ftx-lime-bright shadow-lime-glow transition-all active:scale-98"
+                    >
+                        <span>{isAr ? "حجز الخدمة / طلب عرض سعر" : "BOOK THIS SERVICE / GET QUOTE"}</span>
+                        <ArrowUpRight className="w-4 h-4" />
+                    </Link>
                 </div>
             </div>
         </div>

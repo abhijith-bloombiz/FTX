@@ -1,8 +1,29 @@
 @import 'lenis/dist/lenis.css';
 
+@font-face {
+  font-family: 'Ethnocentric';
+  src: url('/fonts/Ethnocentric-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-ethnocentric {
+  font-family: 'Ethnocentric', var(--font-ethnocentric), sans-serif !important;
+  font-weight: 400 !important;
+  font-synthesis: none !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+.font-ethnocentric-slim {
+  -webkit-text-stroke: 0.35px rgba(8, 8, 8, 0.95);
+}
 
 :root {
   --color-obsidian: #131313;

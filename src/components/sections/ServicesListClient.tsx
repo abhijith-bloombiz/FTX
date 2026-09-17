@@ -67,7 +67,7 @@ export function ServicesListClient({ services, packages, locale, messages }: Ser
                     const targetServiceSlug = service.serviceId || service.id;
                     const buttonLink = hasRelatedPackages
                         ? `/${locale}/packages?category=${encodeURIComponent(targetServiceSlug)}`
-                        : `/${locale}/contact?service=${encodeURIComponent(targetServiceSlug)}`;
+                        : `/${locale}/contact?service=${encodeURIComponent(targetServiceSlug)}#quote-form`;
 
                     const serviceTitle =
                         typeof service.title === "object"

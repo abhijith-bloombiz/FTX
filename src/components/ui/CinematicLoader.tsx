@@ -152,13 +152,11 @@ export function CinematicLoader() {
     useEffect(() => {
         if (!shouldRender || isAdmin) return;
 
-        const navSvgAssets = ["home", "about", "services", "gallery", "packages", "contact"].map((k) => `/fonts/nav/${k}.svg`);
         const assetsToPreload = [
             "/images/FTX loading/bg.webp",
             "/images/FTX loading/bg-mob.webp",
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
-            ...navSvgAssets,
             ...(isHome ? Array.from({ length: 6 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`) : []),
         ];
 

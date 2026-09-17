@@ -57,13 +57,6 @@ export function Navbar({ locale, messages }: NavbarProps) {
     }, [pathname, locale, updateUnderlinePosition]);
 
     useEffect(() => {
-        // Preload mobile navigation SVG masks in browser cache on mount for 0ms hamburger menu load
-        const navKeys = ["home", "about", "services", "gallery", "packages", "contact"];
-        navKeys.forEach((key) => {
-            const img = new window.Image();
-            img.src = `/fonts/nav/${key}.svg`;
-        });
-
         let wasScrolled = false;
         const handleScroll = () => {
             const isScrolled = window.scrollY > 20;
@@ -163,7 +156,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                             </div>
                         </Link>
 
-                        {/* Desktop Navigation Links with Styled SVG Typography */}
+                        {/* Desktop Navigation Links */}
                         <nav
                             onMouseLeave={resetUnderline}
                             className="relative hidden md:flex items-center gap-7 pb-0.5 pt-1"
@@ -175,31 +168,6 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                         ? pathname === `/${locale}`
                                         : pathname.startsWith(itemHref);
 
-                                const aspectClass = item.key === "contact" ? "aspect-[2030/775]" : "aspect-[2172/724]";
-
-                                // home (17px), about (19px), gallery (24.5px), services (25px), packages (26.5px), contact (27.5px)
-                                const heightClass =
-                                    item.key === "home"
-                                        ? "h-4 lg:h-[18px]"
-                                        : item.key === "about"
-                                            ? "h-4.5 lg:h-[19px]"
-                                            : item.key === "gallery"
-                                                ? "h-5.5 lg:h-[24.5px]"
-                                                : item.key === "services"
-                                                    ? "h-6 lg:h-[25px]"
-                                                    : item.key === "packages"
-                                                        ? "h-[27.5px] lg:h-[29px]"
-                                                        : "h-7 lg:h-[28px]";
-
-                                const underlineBottomClass =
-                                    item.key === "home" || item.key === "about"
-                                        ? "bottom-0"
-                                        : item.key === "packages" || item.key === "contact"
-                                            ? "bottom-[5px]"
-                                            : "bottom-1 sm:bottom-[3px]";
-
-                                const marginClass = "";
-
                                 return (
                                     <Link
                                         key={item.key}
@@ -209,7 +177,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                         href={itemHref}
                                         onMouseEnter={() => updateUnderlinePosition(idx)}
                                         onClick={() => updateUnderlinePosition(idx)}
-                                        className={`group relative flex items-center py-1.5 px-1 ${marginClass} transition-all duration-300`}
+                                        className="group relative flex items-center py-1.5 px-1 transition-all duration-300"
                                         style={{
                                             opacity: revealed ? 1 : 0,
                                             transform: revealed ? "translate3d(0, 0, 0)" : "translate3d(0, -15px, 0)",
@@ -218,26 +186,17 @@ export function Navbar({ locale, messages }: NavbarProps) {
                                         }}
                                     >
                                         {locale === "en" ? (
-                                            <div
-                                                className={`${heightClass} ${aspectClass} transition-all duration-300 ${isActive
-                                                    ? "bg-ftx-lime drop-shadow-[0_0_10px_rgba(164,214,94,0.75)]"
-                                                    : "bg-ftx-silver group-hover:bg-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                                            <span
+                                                className={`font-ethnocentric text-[9px] md:text-[9.5px] lg:text-[10px] xl:text-[10.5px] uppercase tracking-widest transition-all duration-300 select-none ${isActive
+                                                    ? "text-ftx-lime drop-shadow-[0_0_6px_rgba(164,214,94,0.4)]"
+                                                    : "text-ftx-silver group-hover:text-white group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]"
                                                     }`}
-                                                style={{
-                                                    maskImage: `url('/fonts/nav/${item.key}.svg')`,
-                                                    WebkitMaskImage: `url('/fonts/nav/${item.key}.svg')`,
-                                                    maskSize: "contain",
-                                                    WebkitMaskSize: "contain",
-                                                    maskRepeat: "no-repeat",
-                                                    WebkitMaskRepeat: "no-repeat",
-                                                    maskPosition: "center",
-                                                    WebkitMaskPosition: "center",
-                                                }}
-                                                aria-label={messages?.nav?.[item.key] || item.key}
-                                            />
+                                            >
+                                                {messages?.nav?.[item.key] || item.key}
+                                            </span>
                                         ) : (
                                             <span
-                                                className={`text-xs sm:text-sm font-heading font-bold uppercase tracking-widest transition-all duration-300 ${isActive
+                                                className={`text-[11px] sm:text-xs md:text-[12.5px] font-heading font-bold uppercase tracking-widest transition-all duration-300 ${isActive
                                                     ? "text-ftx-lime drop-shadow-[0_0_10px_rgba(164,214,94,0.75)]"
                                                     : "text-ftx-silver group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
                                                     }`}
@@ -248,7 +207,7 @@ export function Navbar({ locale, messages }: NavbarProps) {
 
                                         {/* Smooth Expanding Underline Effect on Hover */}
                                         <span
-                                            className={`absolute ${underlineBottomClass} left-0 right-0 h-[2px] bg-ftx-lime rounded-full shadow-[0_0_10px_#a4d65e] transition-transform duration-300 ease-out origin-center pointer-events-none ${isActive ? "scale-x-100 opacity-100" : "scale-x-0 group-hover:scale-x-100 opacity-90"
+                                            className={`absolute bottom-0 left-0 right-0 h-[2px] bg-ftx-lime rounded-full shadow-[0_0_10px_#a4d65e] transition-transform duration-300 ease-out origin-center pointer-events-none ${isActive ? "scale-x-100 opacity-100" : "scale-x-0 group-hover:scale-x-100 opacity-90"
                                                 }`}
                                         />
                                     </Link>

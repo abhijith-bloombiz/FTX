@@ -13,7 +13,7 @@ export function PackageCard({ packageData, locale, ctaText }: PackageCardProps) 
     const { id, category, name, description, price, popular, features, badge } = packageData;
 
     const packageNameStr = typeof name === "object" ? (name[locale] || name.en || name.ar || "") : (name || "");
-    const quoteHref = `/${locale}/contact?service=${encodeURIComponent(category || "")}&package=${encodeURIComponent(packageNameStr || id || "")}`;
+    const quoteHref = `/${locale}/contact?service=${encodeURIComponent(category || "")}&package=${encodeURIComponent(packageNameStr || id || "")}#quote-form`;
 
     const badgeText = badge
         ? (typeof badge === "string" ? badge : badge[locale] || badge.en || "")

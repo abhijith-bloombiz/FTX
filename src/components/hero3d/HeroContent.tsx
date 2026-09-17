@@ -21,12 +21,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         const containerRef = useRef<HTMLDivElement>(null);
 
         // Group 1 Individual Line Refs (Top Left)
-        const line1Ref = useRef<HTMLDivElement>(null); // "PRECISION"
-        const line2Ref = useRef<HTMLDivElement>(null); // "PROTECTION."
+        const line1Ref = useRef<HTMLHeadingElement>(null); // "PRECISION"
+        const line2Ref = useRef<HTMLHeadingElement>(null); // "PROTECTION."
 
         // Group 2 Individual Line Refs (Top Left - Same Position)
-        const line3Ref = useRef<HTMLDivElement>(null); // "AUTOMOTIVE"
-        const line4Ref = useRef<HTMLDivElement>(null); // "PERFECTION."
+        const line3Ref = useRef<HTMLHeadingElement>(null); // "AUTOMOTIVE"
+        const line4Ref = useRef<HTMLHeadingElement>(null); // "PERFECTION."
 
         // CTA Button refs
         const btn1Ref = useRef<HTMLAnchorElement>(null);
@@ -55,7 +55,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         const updateDOM = useCallback((p: number) => {
             // Helper function for individual line staggered enter & exit (used for Group 2)
             const animateLine = (
-                el: HTMLDivElement | null,
+                el: HTMLElement | null,
                 inStart: number,
                 inEnd: number,
                 outStart: number,
@@ -113,7 +113,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             // Visible immediately on page visit (p=0.00 -> 0.32), Exits Left 0.32 -> 0.42
             // =========================================================================
             const animateGroup1Line = (
-                el: HTMLDivElement | null,
+                el: HTMLElement | null,
                 outStart: number,
                 outEnd: number
             ) => {
@@ -223,132 +223,40 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
         return (
             <div
                 ref={containerRef}
-                className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[calc(100vh-6rem)] flex flex-col justify-between py-12 transition-opacity duration-300 pointer-events-none"
+                className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 transition-opacity duration-300 pointer-events-none"
                 style={{ opacity: revealed ? 1 : 0 }}
             >
-                {/* TOP LEFT STACKED CONTAINER */}
-                <div className="relative pt-4 pointer-events-auto translate-x-0 sm:-translate-x-[10px] min-h-[360px] sm:min-h-[410px] lg:min-h-[470px] xl:min-h-[530px]">
+                {/* TOP LEFT HEADLINE */}
+                <div className="relative pointer-events-auto h-[85px] sm:h-[105px] md:h-[120px] lg:h-[135px] xl:h-[155px]">
                     {/* GROUP 1: PRECISION PROTECTION. */}
-                    <div className="contents">
-                        {/* LINE 1 */}
-                        <div className={`absolute top-[10px] sm:top-[30px] ${locale === "ar" ? "lg:top-[50px] xl:top-[60px]" : ""} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
-                            {locale === "en" ? (
-                                <div
-                                    ref={line1Ref}
-                                    className={`-ml-[1px] h-[89px] sm:h-[109px] lg:h-[125px] xl:h-[141px] aspect-[2021/724] bg-white drop-shadow-[0_0_20px_rgba(255,255,255,0.25)] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
-                                    style={{
-                                        maskImage: "url('/fonts/home/precision.svg')",
-                                        WebkitMaskImage: "url('/fonts/home/precision.svg')",
-                                        maskSize: "contain",
-                                        WebkitMaskSize: "contain",
-                                        maskRepeat: "no-repeat",
-                                        WebkitMaskRepeat: "no-repeat",
-                                        maskPosition: "center",
-                                        WebkitMaskPosition: "center",
-                                    }}
-                                    aria-label="PRECISION"
-                                    role="img"
-                                />
-                            ) : (
-                                <h1
-                                    ref={line1Ref}
-                                    className={`text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-tight text-white uppercase drop-shadow-[0_0_20px_rgba(255,255,255,0.25)] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
-                                >
-                                    {(messages?.hero?.title || "PRECISION PROTECTION.").split(" ")[0]}
-                                </h1>
-                            )}
-                        </div>
+                    <h1
+                        ref={line1Ref}
+                        className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
+                    >
+                        {locale === "en" ? "PRECISION" : (messages?.hero?.title || "PRECISION PROTECTION.").split(" ")[0]}
+                    </h1>
 
-                        {/* LINE 2 */}
-                        <div className={`absolute top-[51px] sm:top-[61px] ${locale === "ar" ? "lg:top-[125px] xl:top-[150px]" : "lg:top-[77px] xl:top-[101px]"} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
-                            {locale === "en" ? (
-                                <div
-                                    ref={line2Ref}
-                                    className={`h-[94px] sm:h-[114px] lg:h-[130px] xl:h-[146px] aspect-[2032/775] bg-white drop-shadow-[0_0_20px_rgba(255,255,255,0.25)] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
-                                    style={{
-                                        maskImage: "url('/fonts/home/protection.svg')",
-                                        WebkitMaskImage: "url('/fonts/home/protection.svg')",
-                                        maskSize: "contain",
-                                        WebkitMaskSize: "contain",
-                                        maskRepeat: "no-repeat",
-                                        WebkitMaskRepeat: "no-repeat",
-                                        maskPosition: "center",
-                                        WebkitMaskPosition: "center",
-                                    }}
-                                    aria-label="PROTECTION."
-                                    role="img"
-                                />
-                            ) : (
-                                <h1
-                                    ref={line2Ref}
-                                    className={`text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-tight text-white uppercase drop-shadow-[0_0_20px_rgba(255,255,255,0.25)] will-change-transform ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
-                                >
-                                    {(messages?.hero?.title || "PRECISION PROTECTION.").split(" ").slice(1).join(" ")}
-                                </h1>
-                            )}
-                        </div>
-                    </div>
+                    <h1
+                        ref={line2Ref}
+                        className={`absolute top-[36px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
+                    >
+                        {locale === "en" ? "PROTECTION." : (messages?.hero?.title || "PRECISION PROTECTION.").split(" ").slice(1).join(" ")}
+                    </h1>
 
                     {/* GROUP 2: AUTOMOTIVE PERFECTION. */}
-                    <div className="contents">
-                        {/* LINE 3 */}
-                        <div className={`absolute top-0 ${locale === "ar" ? "lg:top-[35px] xl:top-[45px]" : "lg:top-[15px]"} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
-                            {locale === "en" ? (
-                                <div
-                                    ref={line3Ref}
-                                    className="-ml-[2px] h-[104px] sm:h-[124px] lg:h-[140px] xl:h-[156px] aspect-[2021/724] bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime drop-shadow-[0_0_30px_rgba(164,214,94,0.4)] will-change-transform"
-                                    style={{
-                                        maskImage: "url('/fonts/home/automotive.svg')",
-                                        WebkitMaskImage: "url('/fonts/home/automotive.svg')",
-                                        maskSize: "contain",
-                                        WebkitMaskSize: "contain",
-                                        maskRepeat: "no-repeat",
-                                        WebkitMaskRepeat: "no-repeat",
-                                        maskPosition: "center",
-                                        WebkitMaskPosition: "center",
-                                    }}
-                                    aria-label="AUTOMOTIVE"
-                                    role="img"
-                                />
-                            ) : (
-                                <h1
-                                    ref={line3Ref}
-                                    className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_30px_rgba(164,214,94,0.4)] will-change-transform"
-                                >
-                                    {(messages?.hero?.subtitle || "AUTOMOTIVE PERFECTION.").split(" ")[0]}
-                                </h1>
-                            )}
-                        </div>
+                    <h1
+                        ref={line3Ref}
+                        className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
+                    >
+                        {locale === "en" ? "AUTOMOTIVE" : (messages?.hero?.subtitle || "AUTOMOTIVE PERFECTION.").split(" ")[0]}
+                    </h1>
 
-                        {/* LINE 4 */}
-                        <div className={`absolute top-[51px] sm:top-[61px] ${locale === "ar" ? "lg:top-[115px] xl:top-[140px]" : "lg:top-[67px] xl:top-[91px]"} left-0 right-0 w-full flex justify-center lg:justify-start text-left overflow-hidden py-0.5`}>
-                            {locale === "en" ? (
-                                <div
-                                    ref={line4Ref}
-                                    className="ml-[1px] h-[94px] sm:h-[114px] lg:h-[130px] xl:h-[146px] aspect-[1983/793] bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime drop-shadow-[0_0_30px_rgba(164,214,94,0.4)] will-change-transform"
-                                    style={{
-                                        maskImage: "url('/fonts/home/perfection.svg')",
-                                        WebkitMaskImage: "url('/fonts/home/perfection.svg')",
-                                        maskSize: "contain",
-                                        WebkitMaskSize: "contain",
-                                        maskRepeat: "no-repeat",
-                                        WebkitMaskRepeat: "no-repeat",
-                                        maskPosition: "center",
-                                        WebkitMaskPosition: "center",
-                                    }}
-                                    aria-label="PERFECTION."
-                                    role="img"
-                                />
-                            ) : (
-                                <h1
-                                    ref={line4Ref}
-                                    className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_30px_rgba(164,214,94,0.4)] will-change-transform"
-                                >
-                                    {(messages?.hero?.subtitle || "AUTOMOTIVE PERFECTION.").split(" ").slice(1).join(" ")}
-                                </h1>
-                            )}
-                        </div>
-                    </div>
+                    <h1
+                        ref={line4Ref}
+                        className={`absolute top-[36px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
+                    >
+                        {locale === "en" ? "PERFECTION." : (messages?.hero?.subtitle || "AUTOMOTIVE PERFECTION.").split(" ").slice(1).join(" ")}
+                    </h1>
                 </div>
 
                 {/* BOTTOM SECTION: CTA Buttons */}

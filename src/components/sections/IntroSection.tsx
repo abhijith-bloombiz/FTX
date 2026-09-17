@@ -10,7 +10,8 @@ interface IntroSectionProps {
 
 export function IntroSection({ locale, messages }: IntroSectionProps) {
     return (
-        <section id="about" className="py-12 sm:py-16 bg-black relative overflow-hidden">
+        <section id="about" data-section="intro" className="py-12 sm:py-16 bg-black relative overflow-hidden">
+            <div id="intro" className="absolute top-0 pointer-events-none" />
             {/* Atmospheric Lime Ambient Glow (Bottom Left - Desktop Only for GPU Optimization) */}
             <div
                 className="absolute bottom-0 left-0 w-full sm:w-[700px] h-[250px] sm:h-[350px] pointer-events-none z-0 hidden sm:block"

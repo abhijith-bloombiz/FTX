@@ -245,8 +245,8 @@ export async function seedDatabase() {
                 page: "about",
                 sectionKey: "hero",
                 title: {
-                    en: "ABOUT FTX - FIRST TORQUE X",
-                    ar: "عن FTX - فيرست تورك إكس",
+                    en: "ABOUT FTX",
+                    ar: "عن FTX",
                 },
                 subtitle: {
                     en: "PRECISION PROTECTION",
@@ -383,6 +383,17 @@ export async function seedDatabase() {
                 );
                 console.log("Seeded Page Sections successfully!");
             }
+
+            // Ensure About page hero title is updated to "ABOUT FTX"
+            await PageSection.updateOne(
+                { page: "about", sectionKey: "hero", "title.en": { $regex: /FIRST TORQUE X/i } },
+                {
+                    $set: {
+                        "title.en": "ABOUT FTX",
+                        "title.ar": "عن FTX",
+                    }
+                }
+            );
 
             global.isDatabaseSeeded = true;
         } catch (error) {

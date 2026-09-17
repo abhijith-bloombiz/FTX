@@ -56,15 +56,11 @@ export const HeroTypography = React.forwardRef<HeroTypographyHandle, HeroTypogra
             currentProgressRef.current = p;
             const isVis = revealed && entryRevealed;
 
-            const maxIndex = 129; // 130 total frames (0..129)
-            const frame130Progress = 129 / maxIndex; // 1.0
-            const frame120Progress = 119 / maxIndex;
-
             let frameHideOpacity = 1;
-            if (p >= frame130Progress) {
+            if (p >= 1.0) {
                 frameHideOpacity = 0;
-            } else if (p > frame120Progress) {
-                frameHideOpacity = 1 - (p - frame120Progress) / (frame130Progress - frame120Progress);
+            } else if (p > 0.92) {
+                frameHideOpacity = 1 - (p - 0.92) / (1.0 - 0.92);
             }
 
             const fillProg = Math.min(1, Math.max(0, p / 0.65));
