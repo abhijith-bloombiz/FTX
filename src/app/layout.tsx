@@ -127,6 +127,25 @@ export default function RootLayout({
             suppressHydrationWarning
             className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable} ${ethnocentric.variable}`}
         >
+            <head>
+                {/* Preload critical Cinematic Loader Background Assets for instant initial load display */}
+                <link
+                    rel="preload"
+                    as="image"
+                    type="image/webp"
+                    href="/images/FTX%20loading/bg.webp"
+                    media="(min-width: 768px)"
+                    fetchPriority="high"
+                />
+                <link
+                    rel="preload"
+                    as="image"
+                    type="image/webp"
+                    href="/images/FTX%20loading/bg-mob.webp"
+                    media="(max-width: 767px)"
+                    fetchPriority="high"
+                />
+            </head>
             <body className="bg-ftx-black text-ftx-silver antialiased overflow-x-hidden">
                 {children}
             </body>

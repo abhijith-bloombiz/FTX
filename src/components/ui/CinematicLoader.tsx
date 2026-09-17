@@ -133,6 +133,7 @@ export function CinematicLoader() {
 
     const minAnimationDoneRef = useRef(false);
     const framesLoadedRef = useRef(false);
+    const bgLoadedRef = useRef(false);
     const hasExitedRef = useRef(false);
     const animationFrameIdRef = useRef<number | null>(null);
 
@@ -153,8 +154,8 @@ export function CinematicLoader() {
         if (!shouldRender || isAdmin) return;
 
         const assetsToPreload = [
-            "/images/FTX loading/bg.webp",
-            "/images/FTX loading/bg-mob.webp",
+            "/images/FTX%20loading/bg.webp",
+            "/images/FTX%20loading/bg-mob.webp",
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
             ...(isHome ? Array.from({ length: 6 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`) : []),
@@ -210,7 +211,7 @@ export function CinematicLoader() {
 
         const checkReadyToExit = () => {
             if (DISABLE_AUTO_EXIT) return;
-            if (minAnimationDoneRef.current && framesLoadedRef.current) {
+            if (minAnimationDoneRef.current && framesLoadedRef.current && bgLoadedRef.current) {
                 triggerExitTransition();
             }
         };
@@ -222,13 +223,20 @@ export function CinematicLoader() {
 
         checkFramesLoaded();
 
+        // Check if background image is already complete from cache
+        if (bgImgRef.current && bgImgRef.current.complete && bgImgRef.current.naturalWidth > 0) {
+            bgLoadedRef.current = true;
+            if (bgRef.current) bgRef.current.style.opacity = "1";
+        }
+
         if (!framesLoadedRef.current) {
             window.addEventListener("load", handleFramesReady);
             window.addEventListener("ftx_loader_complete", handleFramesReady);
         }
 
-        // Safety fallback so it never hangs if frames take unusually long
+        // Safety fallback so it never hangs if frames or network take unusually long
         const safetyTimer = setTimeout(() => {
+            bgLoadedRef.current = true;
             framesLoadedRef.current = true;
             triggerExitTransition();
         }, animationDuration + 1000);
@@ -274,8 +282,8 @@ export function CinematicLoader() {
 
             // 0. Background Fade-In + Parallax Zoom
             if (bgRef.current) {
-                const bgOpacity = prefersReducedMotion ? 1.0 : luxuryExpoEaseOut(Math.min(1, p / 0.30));
-                bgRef.current.style.opacity = bgOpacity.toFixed(3);
+                const targetOpacity = bgLoadedRef.current ? 1.0 : (prefersReducedMotion ? 1.0 : luxuryExpoEaseOut(Math.min(1, p / 0.30)));
+                bgRef.current.style.opacity = targetOpacity.toFixed(3);
             }
             if (bgImgRef.current) {
                 const bgScale = 1.06 - luxuryExpoEaseOut(p) * 0.05;
@@ -383,8 +391,17 @@ export function CinematicLoader() {
                     <source media="(max-width: 767px)" srcSet="/images/FTX%20loading/bg-mob.webp" />
                     <img
                         ref={bgImgRef}
-                        src="/images/FTX loading/bg.webp"
+                        src="/images/FTX%20loading/bg.webp"
                         alt="FTX Loading Background"
+                        fetchPriority="high"
+                        loading="eager"
+                        decoding="sync"
+                        onLoad={() => {
+                            bgLoadedRef.current = true;
+                            if (bgRef.current) {
+                                bgRef.current.style.opacity = "1";
+                            }
+                        }}
                         className="w-full h-full object-cover object-center transform-gpu transition-transform duration-75"
                     />
                 </picture>

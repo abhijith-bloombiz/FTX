@@ -45,6 +45,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
     const startRafLoopRef = useRef<() => void>(() => {});
 
     const lastDrawnFrameIndexRef = useRef<number>(-1);
+    const lastDrawnFractionRef = useRef<number>(-1);
     const cachedBottomGradRef = useRef<{ height: number; grad: CanvasGradient } | null>(null);
 
     const [revealed, setRevealed] = useState(false);
@@ -71,9 +72,9 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => observer.disconnect();
     }, []);
 
-    // High-DPI Cover-fit Canvas Drawing Pipeline (100% Native Resolution, Zero Mid-Frame Blending)
-    const drawFrame = useCallback((img: HTMLImageElement) => {
-        if (!canvasRef.current || !img || !img.complete || img.naturalWidth === 0) return;
+    // High-DPI Cover-fit Canvas Drawing Pipeline with Sub-Frame Motion Crossfading
+    const drawFrame = useCallback((baseImg: HTMLImageElement, nextImg?: HTMLImageElement | null, blendWeight: number = 0) => {
+        if (!canvasRef.current || !baseImg || !baseImg.complete || baseImg.naturalWidth === 0) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
@@ -103,8 +104,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
 
-        const imgWidth = img.naturalWidth || 1600;
-        const imgHeight = img.naturalHeight || 900;
+        const imgWidth = baseImg.naturalWidth || 1600;
+        const imgHeight = baseImg.naturalHeight || 900;
 
         ctx.fillStyle = "#070707";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -116,9 +117,16 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const x = (canvasWidth - width) / 2;
         const y = (canvasHeight - height) / 2;
 
-        // 100% Crisp Frame Rendering - zero crossfade ghosting/blending
+        // 1. Draw base frame at full opacity
         ctx.globalAlpha = 1.0;
-        ctx.drawImage(img, x, y, width, height);
+        ctx.drawImage(baseImg, x, y, width, height);
+
+        // 2. Sub-frame motion crossfade: smoothly blend next frame during mid-frame scroll
+        if (nextImg && nextImg.complete && nextImg.naturalWidth > 0 && blendWeight > 0.01) {
+            ctx.globalAlpha = Math.min(1, Math.max(0, blendWeight));
+            ctx.drawImage(nextImg, x, y, width, height);
+            ctx.globalAlpha = 1.0;
+        }
 
         const bottomFadeH = isMobile ? canvasHeight * 0.30 : canvasHeight * 0.22;
         const bottomFadeY = canvasHeight - bottomFadeH;
@@ -361,35 +369,48 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             }
 
             const val = Math.min(TOTAL_FRAMES - 1, Math.max(0, currentFrameRef.current));
-            const frameIdx = Math.round(val);
+            const baseIdx = Math.floor(val);
+            const nextIdx = Math.min(TOTAL_FRAMES - 1, baseIdx + 1);
+            const fraction = val - baseIdx;
 
-            // Idle Canvas Redraw Guard: Skip canvas redraws when exact frame index is already drawn
-            const isFrameIdle = absDiff < 0.001 && frameIdx === lastDrawnFrameIndexRef.current;
+            // Idle Canvas Redraw Guard: Skip canvas redraws when completely idle and frame hasn't moved
+            const isFrameIdle = absDiff < 0.001 && baseIdx === lastDrawnFrameIndexRef.current && Math.abs(fraction - lastDrawnFractionRef.current) < 0.01;
 
             if (!isFrameIdle) {
-                let img = imagesRef.current[frameIdx];
+                let baseImg = imagesRef.current[baseIdx];
 
-                // Fallback decoding lookup if target frame is still decoding during fast scroll
-                if (!img) {
+                // Fallback decoding lookup if base frame is still decoding during fast scroll
+                if (!baseImg) {
                     for (let offset = 1; offset < 25; offset++) {
-                        const prev = imagesRef.current[Math.max(0, frameIdx - offset)];
-                        if (prev) { img = prev; break; }
-                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, frameIdx + offset)];
-                        if (next) { img = next; break; }
+                        const prev = imagesRef.current[Math.max(0, baseIdx - offset)];
+                        if (prev) { baseImg = prev; break; }
+                        const next = imagesRef.current[Math.min(TOTAL_FRAMES - 1, baseIdx + offset)];
+                        if (next) { baseImg = next; break; }
                     }
-                    loadFrame(frameIdx);
+                    loadFrame(baseIdx);
                 }
 
-                if (img) {
-                    drawFrame(img);
-                    lastDrawnFrameIndexRef.current = frameIdx;
+                let nextImg: HTMLImageElement | null = null;
+                if (baseIdx !== nextIdx && fraction > 0.01) {
+                    nextImg = imagesRef.current[nextIdx];
+                    if (!nextImg) {
+                        loadFrame(nextIdx);
+                    }
+                }
+
+                if (baseImg) {
+                    // Sub-frame motion crossfade: smoothly blend next frame over base frame
+                    drawFrame(baseImg, nextImg, fraction);
+                    lastDrawnFrameIndexRef.current = baseIdx;
+                    lastDrawnFractionRef.current = fraction;
                 }
             }
 
-            if (frameIdx !== lastFrameIdx) {
+            const roundedFrameIdx = Math.round(val);
+            if (roundedFrameIdx !== lastFrameIdx) {
                 const isForward = target >= current;
-                manageMemoryAndQueue(frameIdx, isForward);
-                lastFrameIdx = frameIdx;
+                manageMemoryAndQueue(roundedFrameIdx, isForward);
+                lastFrameIdx = roundedFrameIdx;
             }
 
             // If settled and completely idle, put RAF to sleep to save 100% CPU/GPU and mobile battery!
