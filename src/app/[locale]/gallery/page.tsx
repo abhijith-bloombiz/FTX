@@ -279,6 +279,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     <ViewportVideo
                                                         src={getItemVideo(card1.item)!}
                                                         poster={getItemImage(card1.item)}
+                                                        priority
                                                         className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     />
                                                 ) : (
@@ -337,6 +338,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         <ViewportVideo
                                                             src={getItemVideo(card2.item)!}
                                                             poster={getItemImage(card2.item)}
+                                                            priority
                                                             className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                         />
                                                     ) : (
@@ -592,6 +594,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                     <ViewportVideo
                                                         src={getItemVideo(item)!}
                                                         poster={getItemImage(item)}
+                                                        priority={index === 0}
                                                         className="absolute inset-0 w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
                                                     />
                                                 ) : (
@@ -601,6 +604,7 @@ export default function GalleryPage({ params: { locale } }: GalleryPageProps) {
                                                         fill
                                                         sizes="(max-width: 768px) 100vw, 50vw"
                                                         className="object-cover transform-gpu transition-transform duration-700 ease-out md:group-hover:scale-110"
+                                                        priority={index === 0}
                                                         unoptimized={isUploadSrc(getItemImage(item))}
                                                     />
                                                 )}

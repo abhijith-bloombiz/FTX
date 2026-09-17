@@ -181,19 +181,22 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return promise;
     }, [drawFrame]);
 
-    // Memory Management (Sliding Window Pruning with Fast Scroll Expansion)
+    // Memory Management (Generous Sliding Window with Directional Preloading)
     const manageMemoryAndQueue = useCallback((centerFrame: number, isForward: boolean) => {
-        // Mobile VRAM optimization: Keep 14 frames (-4/+10) vs 50 frames (-15/+35) on Desktop
-        const backKeep = isMobile ? 4 : 15;
-        const forwardKeep = isMobile ? 10 : 35;
+        // Generous cache retention: 70+ frames on mobile, full retention on desktop
+        // (Prevents aggressive frame purging/re-decoding cycles that cause mobile stutter)
+        const backKeep = isMobile ? 32 : 55;
+        const forwardKeep = isMobile ? 48 : 55;
         const minKeep = Math.max(0, centerFrame - backKeep);
         const maxKeep = Math.min(TOTAL_FRAMES - 1, centerFrame + forwardKeep);
 
-        // 1. Release decoded images outside active window (keep index 0 as fallback safety)
-        for (let i = 0; i < TOTAL_FRAMES; i++) {
-            if (i !== 0 && (i < minKeep || i > maxKeep)) {
-                if (imagesRef.current[i]) {
-                    imagesRef.current[i] = null;
+        // 1. Release decoded images outside active window only on memory-constrained devices (keep index 0 as fallback safety)
+        if (isMobile || isLowEnd) {
+            for (let i = 0; i < TOTAL_FRAMES; i++) {
+                if (i !== 0 && (i < minKeep || i > maxKeep)) {
+                    if (imagesRef.current[i]) {
+                        imagesRef.current[i] = null;
+                    }
                 }
             }
         }
@@ -201,8 +204,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         // 2. Prioritize preloading ahead in current scroll direction
         const queue: number[] = [];
         const step = isForward ? 1 : -1;
-        const forwardAhead = isMobile ? 10 : 25;
-        const backAhead = isMobile ? 4 : 8;
+        const forwardAhead = isMobile ? 24 : 35;
+        const backAhead = isMobile ? 12 : 20;
 
         for (let offset = 1; offset <= forwardAhead; offset++) {
             const targetIdx = centerFrame + offset * step;
@@ -224,7 +227,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 loadFrame(idx);
             }
         });
-    }, [loadFrame, isMobile]);
+    }, [loadFrame, isMobile, isLowEnd]);
 
     // Initial Mobile & Low-End Hardware Capability Check
     useEffect(() => {
@@ -256,13 +259,13 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         };
     }, []);
 
-    // Adaptive Batch Preloader: Only load initial critical frames on mount; load rest on demand
+    // Adaptive Batch Preloader: Only load initial critical frames on mount; buffer rest in background
     useEffect(() => {
         let isCancelled = false;
 
         const loadInitialAndDeferred = async () => {
-            // Batch 1: Load initial critical frames for instant hero entry (4 on mobile, 8 on desktop)
-            const initialCount = isMobile ? 4 : CRITICAL_LOAD_COUNT;
+            // Batch 1: Load initial critical frames for instant hero entry (6 on mobile, 8 on desktop)
+            const initialCount = isMobile ? 6 : CRITICAL_LOAD_COUNT;
             const batch1Promises: Promise<HTMLImageElement | null>[] = [];
             for (let i = 0; i < initialCount; i++) {
                 batch1Promises.push(loadFrame(i));
@@ -288,30 +291,38 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 window.dispatchEvent(new CustomEvent("ftx_loader_complete"));
             }
 
-            // On mobile / low-end, do NOT eagerly download remaining frames 26-129 upfront!
-            // manageMemoryAndQueue will dynamically load frames as user scrolls into the section.
-            if (isMobile || isLowEnd) return;
-
-            // On desktop: gently buffer remaining frames during idle time
+            // Both Mobile and Desktop: buffer remaining frames gently during idle time
+            // On mobile, use gentle micro-batches with short breathers so touch responsiveness stays 100% fluid
             const scheduleIdle = (fn: () => void) => {
                 if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-                    (window as any).requestIdleCallback(fn, { timeout: 2500 });
+                    (window as any).requestIdleCallback(fn, { timeout: 2000 });
                 } else {
-                    setTimeout(fn, 1500);
+                    setTimeout(fn, 1200);
                 }
             };
 
             scheduleIdle(async () => {
                 if (isCancelled) return;
-                for (let b = 1; b < 6; b++) {
+                const batchSize = isMobile ? 12 : 25;
+                const totalBatches = Math.ceil(TOTAL_FRAMES / batchSize);
+
+                for (let b = 0; b < totalBatches; b++) {
                     if (isCancelled) return;
-                    const start = b * 26;
-                    const end = Math.min(TOTAL_FRAMES, start + 26);
+                    const start = b * batchSize;
+                    const end = Math.min(TOTAL_FRAMES, start + batchSize);
                     const batch: Promise<HTMLImageElement | null>[] = [];
                     for (let i = start; i < end; i++) {
-                        batch.push(loadFrame(i));
+                        if (!imagesRef.current[i]) {
+                            batch.push(loadFrame(i));
+                        }
                     }
-                    await Promise.all(batch);
+                    if (batch.length > 0) {
+                        await Promise.all(batch);
+                        // On mobile, take a short breather between batches to keep the main thread free
+                        if (isMobile) {
+                            await new Promise((r) => setTimeout(r, 60));
+                        }
+                    }
                 }
             });
         };
@@ -321,7 +332,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         return () => {
             isCancelled = true;
         };
-    }, [drawFrame, loadFrame, isMobile, isLowEnd]);
+    }, [drawFrame, loadFrame, isMobile]);
 
     // Single rAF Render & Animation Loop with Idle Sleep & Adaptive Velocity Smoothing
     useEffect(() => {
@@ -342,10 +353,10 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
             if (absDiff < 0.015) {
                 currentFrameRef.current = target;
             } else {
-                // Adaptive velocity-aware lerp factor for fast scroll vs precision scroll
+                // Adaptive velocity-aware lerp factor for smooth momentum glide on both mobile & desktop
                 const lerpFactor = isMobile
-                    ? (absDiff > 15 ? 0.55 : absDiff > 6 ? 0.45 : 0.38)
-                    : (absDiff > 15 ? 0.48 : absDiff > 6 ? 0.38 : 0.30);
+                    ? (absDiff > 18 ? 0.36 : absDiff > 6 ? 0.28 : 0.22)
+                    : (absDiff > 15 ? 0.44 : absDiff > 6 ? 0.35 : 0.28);
                 currentFrameRef.current += diff * lerpFactor;
             }
 
@@ -419,8 +430,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 trigger: section,
                 pin: pinWrapper,
                 start: "top top",
-                end: isMobile ? "+=1600px" : "+=2200px",
-                scrub: true,
+                end: isMobile ? "+=2000px" : "+=2200px",
+                scrub: isMobile ? 0.45 : true,
                 anticipatePin: 1,
                 fastScrollEnd: true,
                 preventOverlaps: true,
@@ -501,7 +512,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const introSection = document.getElementById("about") || document.getElementById("intro");
         const defaultTarget = scrollTriggerRef.current
             ? scrollTriggerRef.current.end
-            : (sectionRef.current ? sectionRef.current.offsetTop + (isMobile ? 1600 : 2200) : 2200);
+            : (sectionRef.current ? sectionRef.current.offsetTop + (isMobile ? 2000 : 2200) : 2200);
 
         if (lenis) {
             if (introSection) {
@@ -528,7 +539,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         <section
             ref={sectionRef}
             id="hero"
-            className="relative w-full h-[180vh] md:h-[260vh] bg-[#070707] overflow-visible"
+            className="relative w-full h-[220vh] md:h-[260vh] bg-[#070707] overflow-visible"
         >
             <div
                 ref={pinWrapperRef}

@@ -78,6 +78,19 @@ export function BeforeAfterSlider({
         }
     };
 
+    const formatSrc = (src: string) => {
+        if (!src) return src;
+        // Never append query parameters to blob: URLs or data: URLs (causes ERR_FILE_NOT_FOUND)
+        if (src.startsWith("blob:") || src.startsWith("data:")) return src;
+        if (src.includes("?")) return src;
+        return `${src}?v=2`;
+    };
+
+    const isUnoptimized = (src: string) => {
+        if (typeof src !== "string") return false;
+        return src.startsWith("blob:") || src.startsWith("data:") || src.startsWith("/uploads/");
+    };
+
     return (
         <div
             ref={containerRef}
@@ -91,14 +104,14 @@ export function BeforeAfterSlider({
             {/* After Image (Background) */}
             <div className="absolute inset-0 w-full h-full pointer-events-none select-none">
                 <Image
-                    src={afterImage}
+                    src={formatSrc(afterImage)}
                     alt={`After: ${alt}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 1200px"
-                    quality={75}
+                    quality={85}
                     loading="lazy"
                     draggable={false}
-                    unoptimized={typeof afterImage === "string" && afterImage.startsWith("/uploads/")}
+                    unoptimized={isUnoptimized(afterImage)}
                     className="object-cover pointer-events-none select-none"
                 />
                 <div className="absolute bottom-4 right-4 px-3 py-1 bg-ftx-black/80 border border-ftx-lime/50 text-[10px] font-mono font-bold text-ftx-lime tracking-widest rounded pointer-events-auto shadow-lg">
@@ -116,14 +129,14 @@ export function BeforeAfterSlider({
                 }}
             >
                 <Image
-                    src={beforeImage}
+                    src={formatSrc(beforeImage)}
                     alt={`Before: ${alt}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 1200px"
-                    quality={75}
+                    quality={85}
                     loading="lazy"
                     draggable={false}
-                    unoptimized={typeof beforeImage === "string" && beforeImage.startsWith("/uploads/")}
+                    unoptimized={isUnoptimized(beforeImage)}
                     className="object-cover pointer-events-none select-none"
                 />
                 <div className="absolute bottom-4 left-4 px-3 py-1 bg-ftx-black/80 border border-ftx-surface-high text-[10px] font-mono font-bold text-ftx-silver tracking-widest rounded pointer-events-auto shadow-lg">

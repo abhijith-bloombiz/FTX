@@ -7,9 +7,10 @@ interface ViewportVideoProps {
     src: string;
     poster?: string;
     className?: string;
+    priority?: boolean;
 }
 
-export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
+export function ViewportVideo({ src, poster, className, priority = false }: ViewportVideoProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const [shouldLoad, setShouldLoad] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -65,7 +66,7 @@ export function ViewportVideo({ src, poster, className }: ViewportVideoProps) {
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className={className}
-                priority={false}
+                priority={priority}
                 unoptimized={typeof poster === "string" && poster.startsWith("/uploads/")}
             />
         );

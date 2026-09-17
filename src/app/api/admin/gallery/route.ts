@@ -17,7 +17,7 @@ function sanitizeAssetUrl(url?: string | null, fallback: string = ""): string {
     if (url.includes("underbody-coating.jpg")) return "/images/services/underbody-coating.webp";
 
     if (url.startsWith("/") && !url.startsWith("//")) {
-        const cleanPath = url.replace(/^\/+/, "");
+        const cleanPath = url.split("?")[0].replace(/^\/+/, "");
         const localFilePath = path.join(process.cwd(), "public", cleanPath);
         if (!fs.existsSync(localFilePath)) {
             return fallback;
