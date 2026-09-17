@@ -78,8 +78,8 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
-        // Hardware DPR Capping (Native devicePixelRatio capped at 1.0x on Low-End & 1.25x on Mobile & 2x on Desktop)
-        const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
+        // Hardware DPR Capping (Native devicePixelRatio capped at 1.0x on Low-End Mobile & 1.75x on Mobile & 2x on Desktop)
+        const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.75 : 2;
         const dpr = typeof window !== "undefined"
             ? Math.min(window.devicePixelRatio || 1, maxDpr)
             : 1;
@@ -102,7 +102,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
         if (!canvasWidth || !canvasHeight) return;
 
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = isMobile ? "medium" : "high";
+        ctx.imageSmoothingQuality = isLowEnd ? "medium" : "high";
 
         const imgWidth = img.naturalWidth || 1600;
         const imgHeight = img.naturalHeight || 900;
@@ -454,7 +454,7 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 const img = imagesRef.current[frameIndex] || imagesRef.current[0];
 
                 if (img && canvasRef.current) {
-                    const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.25 : 2;
+                    const maxDpr = isLowEnd ? 1.0 : isMobile ? 1.75 : 2;
                     const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
                     const w = canvasRef.current.clientWidth;
                     const h = canvasRef.current.clientHeight;
