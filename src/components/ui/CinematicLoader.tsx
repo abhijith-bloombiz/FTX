@@ -153,9 +153,11 @@ export function CinematicLoader() {
     useEffect(() => {
         if (!shouldRender || isAdmin) return;
 
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+        const bgAsset = isMobile ? "/images/FTX%20loading/bg-mob.webp" : "/images/FTX%20loading/bg.webp";
+
         const assetsToPreload = [
-            "/images/FTX%20loading/bg.webp",
-            "/images/FTX%20loading/bg-mob.webp",
+            bgAsset,
             "/brand/ftx-3d-logo.webp",
             ...LOADER_CONFIGS.map((c) => c.src),
             ...(isHome ? Array.from({ length: 6 }, (_, i) => `/video/frames/frame_${String(i + 1).padStart(4, "0")}.webp`) : []),

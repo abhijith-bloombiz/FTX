@@ -56,8 +56,11 @@ export async function POST(req: NextRequest) {
 
         const publicUrl = `/uploads/${filename}`;
         return NextResponse.json({ success: true, url: publicUrl });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Upload error:", error);
-        return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
+        return NextResponse.json(
+            { error: error?.message ? `Failed to upload file: ${error.message}` : "Failed to upload file" },
+            { status: 500 }
+        );
     }
 }

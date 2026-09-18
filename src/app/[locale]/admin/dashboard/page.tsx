@@ -321,7 +321,18 @@ export default function AdminDashboardPage() {
                 const formData = new FormData();
                 formData.append("file", file);
                 const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-                const data = await res.json();
+                let data: any = {};
+                try {
+                    data = await res.json();
+                } catch {
+                    if (res.status === 413) {
+                        throw new Error(`File "${file.name}" is too large for the server (HTTP 413). Please reduce file size or increase server client_max_body_size.`);
+                    }
+                    throw new Error(`Upload failed with server status ${res.status}`);
+                }
+                if (!res.ok) {
+                    throw new Error(data.error || `Upload failed (${res.status})`);
+                }
                 return data.url || "";
             };
 
@@ -3694,7 +3705,18 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-        const data = await res.json();
+        let data: any = {};
+        try {
+            data = await res.json();
+        } catch {
+            if (res.status === 413) {
+                throw new Error(`File "${file.name}" is too large for the server (HTTP 413). Please reduce file size or increase server client_max_body_size.`);
+            }
+            throw new Error(`Upload failed with server status ${res.status}`);
+        }
+        if (!res.ok) {
+            throw new Error(data.error || `Upload failed (${res.status})`);
+        }
         return data.url || "";
     };
 
