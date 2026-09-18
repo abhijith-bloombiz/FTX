@@ -67,9 +67,17 @@ export const metadata: Metadata = {
         siteName: "First Torque X",
         images: [
             {
-                url: "/brand/ftx-3d-logo.webp",
+                url: "/brand/ftx-og-image.jpg",
                 width: 1200,
                 height: 630,
+                type: "image/jpeg",
+                alt: "First Torque X Automotive Protection Studio",
+            },
+            {
+                url: "/brand/ftx-og-square.jpg",
+                width: 600,
+                height: 600,
+                type: "image/jpeg",
                 alt: "First Torque X Automotive Protection Studio",
             },
         ],
@@ -80,7 +88,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "First Torque X",
         description: "Bespoke Paint Protection Film (PPF), Ceramic Coating & Surgical Detailing.",
-        images: ["/brand/ftx-3d-logo.webp"],
+        images: ["/brand/ftx-og-image.jpg"],
     },
     robots: {
         index: true,

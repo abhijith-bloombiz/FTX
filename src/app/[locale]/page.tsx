@@ -142,9 +142,17 @@ export async function generateMetadata({ params: { locale } }: HomePageProps) {
             siteName: "First Torque X",
             images: [
                 {
-                    url: "/brand/ftx-3d-logo.webp",
+                    url: "/brand/ftx-og-image.jpg",
                     width: 1200,
                     height: 630,
+                    type: "image/jpeg",
+                    alt: "First Torque X Automotive Protection Studio",
+                },
+                {
+                    url: "/brand/ftx-og-square.jpg",
+                    width: 600,
+                    height: 600,
+                    type: "image/jpeg",
                     alt: "First Torque X Automotive Protection Studio",
                 },
             ],
@@ -159,7 +167,7 @@ export async function generateMetadata({ params: { locale } }: HomePageProps) {
             description: isAr
                 ? "أفلام حماية الطلاء PPF، وطلاء السيراميك 9H+، وتصحيح الطلاء فائق الدقة."
                 : "Premier automotive protection studio specializing in PPF, 9H+ Ceramic, and Surgical Detailing.",
-            images: ["/brand/ftx-3d-logo.webp"],
+            images: ["/brand/ftx-og-image.jpg"],
         },
     };
 }

@@ -96,6 +96,11 @@ const nextConfig = {
     async redirects() {
         return [
             {
+                source: '/',
+                destination: '/en',
+                permanent: false,
+            },
+            {
                 source: '/admin',
                 destination: '/en/admin/login',
                 permanent: false,

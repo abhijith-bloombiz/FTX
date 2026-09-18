@@ -48,9 +48,10 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
             siteName: "First Torque X",
             images: [
                 {
-                    url: "/brand/ftx-3d-logo.webp",
+                    url: "/brand/ftx-og-image.jpg",
                     width: 1200,
                     height: 630,
+                    type: "image/jpeg",
                     alt: "Contact Us | First Torque X Concierge",
                 },
             ],
@@ -63,7 +64,7 @@ export async function generateMetadata({ params: { locale } }: ContactPageProps)
             description: isAr
                 ? "احجز موعد استشارة وتعرف على باقات حماية وتلميع سيارتك."
                 : "Book a personalized studio consultation with First Torque X.",
-            images: ["/brand/ftx-3d-logo.webp"],
+            images: ["/brand/ftx-og-image.jpg"],
         },
     };
 }
