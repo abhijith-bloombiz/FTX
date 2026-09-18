@@ -181,11 +181,11 @@ export default async function AboutPage({ params: { locale } }: AboutPageProps) 
 
             {/* Studio Philosophy & Craftsmanship */}
             {philosophySec?.isVisible !== false && (
-                <section className="py-10 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <section className="pt-6 sm:pt-8 pb-10 sm:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                         <ScrollReveal type="editorial" className="lg:col-span-6 space-y-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-ftx-surface border border-ftx-lime/40 text-[10px] font-mono text-ftx-lime uppercase rounded">
-                                <ShieldCheck className="w-3.5 h-3.5" />
+                            <div className="-mt-2 sm:-mt-3 inline-flex items-center gap-3 px-5 sm:px-6 py-2.5 sm:py-3 bg-ftx-surface border border-ftx-lime/50 text-xs sm:text-sm font-mono font-bold tracking-wider sm:tracking-widest text-ftx-lime uppercase ftx-squircle-sm shadow-[0_0_15px_rgba(164,214,94,0.12)]">
+                                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                                 <span>{philosophyBadge}</span>
                             </div>
 

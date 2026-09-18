@@ -22,11 +22,12 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
 
         // Group 1 Individual Line Refs (Top Left)
         const line1Ref = useRef<HTMLDivElement>(null); // "PRECISION"
-        const line2Ref = useRef<HTMLDivElement>(null); // "PROTECTION."
+        const line2Ref = useRef<HTMLDivElement>(null); // "PROTECTION"
+        const line3Ref = useRef<HTMLDivElement>(null); // "PERFECTION"
 
         // Group 2 Individual Line Refs (Top Left - Same Position)
-        const line3Ref = useRef<HTMLDivElement>(null); // "AUTOMOTIVE"
-        const line4Ref = useRef<HTMLDivElement>(null); // "PERFECTION."
+        const line4Ref = useRef<HTMLDivElement>(null); // "AUTOMOTIVE"
+        const line5Ref = useRef<HTMLDivElement>(null); // "PERFECTION."
 
         // CTA Button refs
         const btn1Ref = useRef<HTMLAnchorElement>(null);
@@ -109,8 +110,8 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
             };
 
             // =========================================================================
-            // GROUP 1: PRECISION then PROTECTION.
-            // Visible immediately on page visit (p=0.00 -> 0.32), Exits Left 0.32 -> 0.42
+            // GROUP 1: PRECISION then PROTECTION then PERFECTION
+            // Visible immediately on page visit (p=0.00 -> 0.32), Exits Left 0.32 -> 0.48
             // =========================================================================
             const animateGroup1Line = (
                 el: HTMLElement | null,
@@ -143,14 +144,15 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
 
             animateGroup1Line(line1Ref.current, 0.32, 0.42);
             animateGroup1Line(line2Ref.current, 0.35, 0.45);
+            animateGroup1Line(line3Ref.current, 0.38, 0.48);
 
             // =========================================================================
             // GROUP 2: AUTOMOTIVE then PERFECTION. (Top-Left Same Spot)
-            // Line 3 ("AUTOMOTIVE"): Enters 0.42 -> 0.54 | Holds 0.54 -> 0.85 | Exits Fade 0.85 -> 0.96
-            // Line 4 ("PERFECTION."): Enters 0.50 -> 0.62 | Holds 0.62 -> 0.85 | Exits Fade 0.85 -> 0.98
+            // Line 4 ("AUTOMOTIVE"): Enters 0.44 -> 0.54 | Holds 0.54 -> 0.85 | Exits Fade 0.85 -> 0.96
+            // Line 5 ("PERFECTION."): Enters 0.50 -> 0.62 | Holds 0.62 -> 0.85 | Exits Fade 0.85 -> 0.98
             // =========================================================================
-            animateLine(line3Ref.current, 0.42, 0.54, 0.85, 0.96, "fade");
-            animateLine(line4Ref.current, 0.50, 0.62, 0.85, 0.98, "fade");
+            animateLine(line4Ref.current, 0.44, 0.54, 0.85, 0.96, "fade");
+            animateLine(line5Ref.current, 0.50, 0.62, 0.85, 0.98, "fade");
 
             // =========================================================================
             // CTA BUTTONS: Visible on Page Visit (p=0.00 -> 0.88), Exits to edges 0.88 -> 1.00
@@ -227,21 +229,21 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                 style={{ opacity: revealed ? 1 : 0 }}
             >
                 {/* TOP LEFT HEADLINE */}
-                <div className="relative pointer-events-auto h-[85px] sm:h-[105px] md:h-[120px] lg:h-[135px] xl:h-[155px]">
+                <div className="relative pointer-events-auto h-[125px] sm:h-[135px] md:h-[155px] lg:h-[180px] xl:h-[210px]">
                     {/* Semantic Authoritative H1 for Search Engines & Accessibility */}
                     <h1 className="sr-only">
                         {locale === "en"
-                            ? "First Torque X – Precision Protection & Automotive Perfection | PPF & Ceramic Coating"
-                            : "First Torque X – دقة جراحية وحماية فائقة للسيارات | أفلام الحماية والنانو سيراميك"}
+                            ? "First Torque X – Precision, Protection & Perfection | PPF & Ceramic Coating"
+                            : "First Torque X – دقة جراحية وحماية فائقة وكمال للسيارات | أفلام الحماية والنانو سيراميك"}
                     </h1>
 
-                    {/* GROUP 1: PRECISION PROTECTION. (Visual Animated Layer) */}
+                    {/* GROUP 1: PRECISION PROTECTION PERFECTION (Visual Animated Layer) */}
                     <div
                         ref={line1Ref}
                         aria-hidden="true"
                         className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out"}`}
                     >
-                        {locale === "en" ? "PRECISION" : (messages?.hero?.title || "PRECISION PROTECTION.").split(" ")[0]}
+                        {locale === "en" ? "PRECISION" : (messages?.hero?.line1 || (messages?.hero?.title || "PRECISION PROTECTION PERFECTION").split(" ")[0] || "دقة")}
                     </div>
 
                     <div
@@ -249,12 +251,20 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                         aria-hidden="true"
                         className={`absolute top-[40px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-100"}`}
                     >
-                        {locale === "en" ? "PROTECTION." : (messages?.hero?.title || "PRECISION PROTECTION.").split(" ").slice(1).join(" ")}
+                        {locale === "en" ? "PROTECTION" : (messages?.hero?.line2 || (messages?.hero?.title || "PRECISION PROTECTION PERFECTION").split(" ")[1] || "حماية")}
+                    </div>
+
+                    <div
+                        ref={line3Ref}
+                        aria-hidden="true"
+                        className={`absolute top-[80px] sm:top-[84px] md:top-[96px] lg:top-[112px] xl:top-[132px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-ethnocentric-slim font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] will-change-transform leading-tight select-none whitespace-nowrap ${transitionFinished ? "" : "transition-all duration-700 ease-out delay-200"}`}
+                    >
+                        {locale === "en" ? "PERFECTION" : (messages?.hero?.line3 || (messages?.hero?.title || "PRECISION PROTECTION PERFECTION").split(" ")[2] || "كمال")}
                     </div>
 
                     {/* GROUP 2: AUTOMOTIVE PERFECTION. (Visual Animated Layer) */}
                     <div
-                        ref={line3Ref}
+                        ref={line4Ref}
                         aria-hidden="true"
                         className={`absolute top-0 left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
                     >
@@ -262,7 +272,7 @@ export const HeroContent = React.forwardRef<HeroContentHandle, HeroContentProps>
                     </div>
 
                     <div
-                        ref={line4Ref}
+                        ref={line5Ref}
                         aria-hidden="true"
                         className={`absolute top-[40px] sm:top-[42px] md:top-[48px] lg:top-[56px] xl:top-[66px] left-0 right-0 lg:right-auto text-center lg:text-start ${locale === "ar" ? "font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl" : "font-ethnocentric font-normal text-[30px] sm:text-[32px] md:text-[38px] lg:text-[42px] xl:text-[48px] tracking-[0.04em] xl:tracking-[0.05em]"} text-transparent bg-clip-text bg-gradient-to-r from-ftx-lime via-ftx-lime-bright to-ftx-lime uppercase drop-shadow-[0_0_8px_rgba(164,214,94,0.18)] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-tight will-change-transform select-none whitespace-nowrap`}
                     >

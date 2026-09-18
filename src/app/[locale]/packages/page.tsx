@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Filter, ChevronDown, Loader2, ArrowUpRight } from "lucide-react";
+import { Shield, Sparkles, Wrench, Layers, Loader2, ArrowUpRight } from "lucide-react";
 import { packagesData } from "@/data/packages";
 import { PackageCard } from "@/components/ui/PackageCard";
 import { Locale } from "@/i18n/config";
@@ -25,10 +25,122 @@ function PackagesContent({ locale }: { locale: Locale }) {
     const [allServices, setAllServices] = useState<any[]>(cachedServicesItems || []);
     const [loading, setLoading] = useState(!cachedPackagesItems && packagesData.length === 0);
     const [activeCategory, setActiveCategory] = useState<string>(() => categoryParam || "ppf");
-    const [isOpen, setIsOpen] = useState(false);
-    const [isDesktopOpen, setIsDesktopOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const desktopDropdownRef = useRef<HTMLDivElement>(null);
+
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const firstSetRef = useRef<HTMLDivElement>(null);
+    const isPausedRef = useRef(false);
+    const isDraggingRef = useRef(false);
+    const wheelTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollStartLeft, setScrollStartLeft] = useState(0);
+    const [hasDragged, setHasDragged] = useState(false);
+
+    // Continuous smooth auto-scroll marquee loop
+    useEffect(() => {
+        let animId: number;
+        const speed = 0.7; // pixels per frame (calibrated for smooth automotive banner glide)
+
+        const tick = () => {
+            if (
+                !isPausedRef.current &&
+                !isDraggingRef.current &&
+                scrollContainerRef.current &&
+                firstSetRef.current
+            ) {
+                const container = scrollContainerRef.current;
+                const setWidth = firstSetRef.current.offsetWidth;
+                if (setWidth > 0) {
+                    container.scrollLeft += speed;
+                    if (container.scrollLeft >= setWidth) {
+                        container.scrollLeft -= setWidth;
+                    }
+                }
+            }
+            animId = requestAnimationFrame(tick);
+        };
+
+        animId = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(animId);
+    }, []);
+
+    // Wheel support for horizontal scrolling on hover
+    useEffect(() => {
+        const el = scrollContainerRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                e.preventDefault();
+                isPausedRef.current = true;
+                el.scrollLeft += e.deltaY;
+                const setWidth = firstSetRef.current?.offsetWidth || 0;
+                if (setWidth > 0) {
+                    if (el.scrollLeft >= setWidth * 2) el.scrollLeft -= setWidth;
+                    if (el.scrollLeft < 0) el.scrollLeft += setWidth;
+                }
+                if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+                wheelTimerRef.current = setTimeout(() => {
+                    if (!isDraggingRef.current) {
+                        isPausedRef.current = false;
+                    }
+                }, 1200);
+            }
+        };
+        el.addEventListener("wheel", onWheel, { passive: false });
+        return () => {
+            el.removeEventListener("wheel", onWheel);
+            if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+        };
+    }, []);
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!scrollContainerRef.current) return;
+        isDraggingRef.current = true;
+        isPausedRef.current = true;
+        setIsDragging(true);
+        setHasDragged(false);
+        setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+        setScrollStartLeft(scrollContainerRef.current.scrollLeft);
+    };
+
+    const handleMouseLeave = () => {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+        isPausedRef.current = false;
+    };
+
+    const handleMouseUp = () => {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+        setTimeout(() => {
+            if (!isDraggingRef.current) {
+                isPausedRef.current = false;
+            }
+        }, 1000);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDraggingRef.current || !scrollContainerRef.current || !firstSetRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollContainerRef.current.offsetLeft;
+        const walk = x - startX;
+        if (Math.abs(walk) > 5) {
+            setHasDragged(true);
+        }
+        const setWidth = firstSetRef.current.offsetWidth;
+        let newScroll = scrollStartLeft - walk;
+        if (setWidth > 0) {
+            if (newScroll < 0) {
+                newScroll += setWidth;
+                setScrollStartLeft((prev) => prev + setWidth);
+            } else if (newScroll >= setWidth * 2) {
+                newScroll -= setWidth;
+                setScrollStartLeft((prev) => prev - setWidth);
+            }
+        }
+        scrollContainerRef.current.scrollLeft = newScroll;
+    };
 
     // Sync active category if categoryParam changes
     useEffect(() => {
@@ -71,6 +183,8 @@ function PackagesContent({ locale }: { locale: Locale }) {
         })
         : defaultCategories;
 
+    const activeCategoryObj = categories.find((c) => c.id === activeCategory) || categories[0];
+
     const filteredPackages = allPackages.filter((pkg) => {
         const pCat = (pkg.category || "").toLowerCase().trim();
         const aCat = (activeCategory || "").toLowerCase().trim();
@@ -79,8 +193,6 @@ function PackagesContent({ locale }: { locale: Locale }) {
 
     const handleSelectCategory = (catId: string) => {
         setActiveCategory(catId);
-        setIsOpen(false);
-        setIsDesktopOpen(false);
         if (typeof window !== "undefined") {
             const url = new URL(window.location.href);
             url.searchParams.set("category", catId);
@@ -88,19 +200,19 @@ function PackagesContent({ locale }: { locale: Locale }) {
         }
     };
 
-    // Close dropdowns when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-            if (desktopDropdownRef.current && !desktopDropdownRef.current.contains(event.target as Node)) {
-                setIsDesktopOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const getCategoryIcon = (catId: string) => {
+        const id = (catId || "").toLowerCase();
+        if (id.includes("ppf") || id.includes("film") || id.includes("حماية")) {
+            return <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />;
+        }
+        if (id.includes("ceramic") || id.includes("سيراميك")) {
+            return <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />;
+        }
+        if (id.includes("detail") || id.includes("تلميع")) {
+            return <Wrench className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />;
+        }
+        return <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />;
+    };
 
     return (
         <div className="pt-[88px] sm:pt-[96px] pb-0 bg-black min-h-screen relative overflow-hidden">
@@ -121,108 +233,93 @@ function PackagesContent({ locale }: { locale: Locale }) {
                 }
             />
 
-            {/* Category Tabs & Dropdown */}
+            {/* Category Filter Banners (Single Row Auto-Scrolling Marquee) */}
             <div id="packages-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                {/* Mobile Filter Button (sm:hidden) - Positioned Right with RTL support */}
-                <div className="sm:hidden mb-6 flex justify-end">
-                    <div ref={dropdownRef} className="relative">
-                        <button
-                            onClick={() => setIsOpen(!isOpen)}
-                            className={`p-2.5 ftx-btn-tech shadow-xl transition-all duration-200 flex items-center justify-center ${isOpen || activeCategory !== "ppf"
-                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-bold"
-                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                                }`}
-                            title="Filter Packages"
-                        >
-                            <Filter className="w-4 h-4" />
-                        </button>
+                <div className="relative mb-2 sm:mb-3">
+                    {/* Subtle edge fade masks for seamless banner look */}
+                    <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-black via-black/80 to-transparent z-10" />
 
-                        <div
-                            className={`absolute ltr:right-0 rtl:left-0 top-full mt-2 z-50 min-w-[240px] bg-ftx-surface/95 backdrop-blur-xl border border-ftx-surface-high/80 ftx-squircle-lg p-1.5 shadow-2xl space-y-1 transform-gpu transition-all duration-150 ease-out ltr:origin-top-right rtl:origin-top-left ${isOpen
-                                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-                                }`}
-                        >
-                            {categories.map((cat, idx) => {
-                                const isActive = activeCategory === cat.id;
-                                const delay = isOpen ? idx * 40 : (categories.length - 1 - idx) * 25;
-
-                                return (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => handleSelectCategory(cat.id)}
-                                        style={{ transitionDelay: `${delay}ms` }}
-                                        className={`w-full text-left rtl:text-right px-4 py-2.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech flex items-center justify-between transition-all duration-200 ease-out transform-gpu ${isOpen
-                                            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
-                                            : "opacity-0 -translate-y-1.5 scale-95 pointer-events-none"
-                                            } ${isActive
-                                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
-                                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                                            }`}
-                                    >
-                                        <span>{cat.label}</span>
-                                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                    <div
+                        ref={scrollContainerRef}
+                        data-lenis-prevent
+                        onMouseEnter={() => {
+                            isPausedRef.current = true;
+                        }}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchStart={() => {
+                            isPausedRef.current = true;
+                        }}
+                        onTouchEnd={() => {
+                            setTimeout(() => {
+                                if (!isDraggingRef.current) isPausedRef.current = false;
+                            }, 1000);
+                        }}
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
+                        onMouseMove={handleMouseMove}
+                        className="flex flex-nowrap items-center [direction:ltr] overflow-x-auto pb-2 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
+                    >
+                        {[0, 1, 2, 3].map((setIndex) => (
+                            <div
+                                key={`cat-set-${setIndex}`}
+                                ref={setIndex === 0 ? firstSetRef : undefined}
+                                aria-hidden={setIndex > 0 ? "true" : undefined}
+                                className="flex flex-nowrap items-center gap-2.5 sm:gap-3.5 pr-2.5 sm:pr-3.5 shrink-0"
+                            >
+                                {categories.map((cat) => {
+                                    const isActive = activeCategory === cat.id;
+                                    return (
+                                        <button
+                                            key={`${cat.id}-${setIndex}`}
+                                            type="button"
+                                            tabIndex={setIndex === 0 ? 0 : -1}
+                                            data-active={isActive}
+                                            onFocus={() => {
+                                                isPausedRef.current = true;
+                                            }}
+                                            onBlur={() => {
+                                                isPausedRef.current = false;
+                                            }}
+                                            onClick={() => {
+                                                if (hasDragged) return;
+                                                handleSelectCategory(cat.id);
+                                            }}
+                                            className={`group relative shrink-0 w-auto inline-flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 ftx-btn-tech ftx-btn-specular transition-all duration-200 border cursor-pointer select-none whitespace-nowrap ${isActive
+                                                ? "bg-ftx-lime text-ftx-black border-ftx-lime shadow-lime-glow font-black"
+                                                : "bg-ftx-surface hover:bg-ftx-surface-high text-ftx-silver hover:text-white border-ftx-surface-high hover:border-ftx-lime/50"
+                                                }`}
+                                        >
+                                            <div className={`p-1 rounded transition-colors shrink-0 ${isActive
+                                                ? "bg-black/15 text-ftx-black"
+                                                : "bg-black/40 text-ftx-lime group-hover:bg-ftx-lime/15"
+                                                }`}>
+                                                {getCategoryIcon(cat.id)}
+                                            </div>
+                                            <span className="text-xs sm:text-sm font-mono font-bold tracking-wider uppercase">
+                                                {cat.label}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* Desktop Category Filter Dropdown (hidden sm:flex) */}
-                <div className="hidden sm:flex items-center ltr:justify-start rtl:justify-end mb-6">
-                    <div ref={desktopDropdownRef} className="relative">
-                        <button
-                            onClick={() => setIsDesktopOpen(!isDesktopOpen)}
-                            className={`px-6 py-3 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech transition-all duration-200 border flex items-center gap-3 ${isDesktopOpen || activeCategory !== "ppf"
-                                ? "bg-ftx-lime text-ftx-black border-ftx-lime shadow-lime-glow font-black"
-                                : "bg-ftx-surface text-ftx-silver hover:text-white border-ftx-surface-high hover:bg-ftx-surface-high"
-                                }`}
-                        >
-                            <span>
-                                <span className="opacity-60 font-medium me-1">
-                                    {locale === "ar" ? "الفئة:" : "CATEGORY:"}
-                                </span>
-                                {categories.find((c) => c.id === activeCategory)?.label || activeCategory.toUpperCase()}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ease-out ${isDesktopOpen ? "rotate-180" : ""}`} />
-                        </button>
-
-                        <div
-                            className={`absolute ltr:left-0 rtl:right-0 top-full mt-2 z-50 min-w-[270px] bg-ftx-surface/95 backdrop-blur-xl border border-ftx-surface-high/80 ftx-squircle-lg p-1.5 shadow-2xl space-y-1 transform-gpu transition-all duration-150 ease-out ltr:origin-top-left rtl:origin-top-right ${isDesktopOpen
-                                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-                                }`}
-                        >
-                            {categories.map((cat, idx) => {
-                                const isActive = activeCategory === cat.id;
-                                const delay = isDesktopOpen ? idx * 40 : (categories.length - 1 - idx) * 25;
-
-                                return (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => handleSelectCategory(cat.id)}
-                                        style={{ transitionDelay: `${delay}ms` }}
-                                        className={`w-full text-left rtl:text-right px-4 py-2.5 text-xs font-mono font-bold tracking-wider uppercase ftx-btn-tech flex items-center justify-between transition-all duration-200 ease-out transform-gpu ${isDesktopOpen
-                                            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
-                                            : "opacity-0 -translate-y-1.5 scale-95 pointer-events-none"
-                                            } ${isActive
-                                                ? "bg-ftx-lime text-ftx-black shadow-lime-glow font-black"
-                                                : "bg-ftx-surface text-ftx-silver hover:text-white hover:bg-ftx-surface-high border border-ftx-surface-high"
-                                            }`}
-                                    >
-                                        <span>{cat.label}</span>
-                                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-ftx-black" />}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
+                {/* Selected Package Category Display (Fits inside the existing gap without taking extra space) */}
+                <div className="flex items-center gap-2 sm:gap-2.5 px-1 mb-4 sm:mb-5 border-b border-ftx-surface-high/40 pb-2.5 min-w-0">
+                    <span className="text-[10px] sm:text-xs font-mono font-bold tracking-widest text-ftx-silver uppercase shrink-0">
+                        {locale === "ar" ? "الباقة المحددة:" : "SELECTED PACKAGE:"}
+                    </span>
+                    <span className="text-xs sm:text-sm font-mono font-bold text-ftx-lime uppercase tracking-wider truncate">
+                        {activeCategoryObj?.label || activeCategory}
+                    </span>
                 </div>
 
                 {/* Packages Cards Grid or Empty State */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2 animate-pulse">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-pulse">
                         {[1, 2, 3].map((i) => (
                             <div key={`pkg-skeleton-${i}`} className="bg-ftx-surface/30 border border-ftx-surface-high/50 ftx-squircle-xl p-8 space-y-6 min-h-[480px] flex flex-col justify-between">
                                 <div className="space-y-4">
@@ -258,7 +355,7 @@ function PackagesContent({ locale }: { locale: Locale }) {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {filteredPackages.map((pkg, idx) => (
                             <ScrollReveal key={pkg.id || pkg._id || `package-${idx}`} type="scale" delay={idx * 120} className="h-full">
                                 <PackageCard

@@ -23,7 +23,10 @@
     },
     "hero": {
         "badge": "LUXURY AUTOMOTIVE PROTECTION",
-        "title": "PRECISION PROTECTION.",
+        "title": "PRECISION PROTECTION PERFECTION",
+        "line1": "PRECISION",
+        "line2": "PROTECTION",
+        "line3": "PERFECTION",
         "subtitle": "AUTOMOTIVE PERFECTION.",
         "description": "Premium Paint Protection Film, advanced Ceramic Coating, and Professional Detailing services engineered for discerning vehicle enthusiasts.",
         "scrollExplore": "SCROLL TO EXPLORE"

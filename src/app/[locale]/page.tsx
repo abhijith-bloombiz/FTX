@@ -43,9 +43,9 @@ async function getDynamicMessages(locale: Locale) {
             const lang = isAr ? "ar" : "en";
 
             dbSections.forEach((sec: any) => {
-                if (sec.sectionKey === "intro" && sec.title?.[lang]) {
+                if (sec.sectionKey === "intro") {
                     messages.intro = messages.intro || {};
-                    messages.intro.title = sec.title[lang];
+                    if (sec.title?.[lang]) messages.intro.title = sec.title[lang];
                     if (sec.subtitle?.[lang]) messages.intro.badge = sec.subtitle[lang];
                     if (sec.content?.[lang]) {
                         const parts = sec.content[lang].split("\n").filter(Boolean);
@@ -62,14 +62,14 @@ async function getDynamicMessages(locale: Locale) {
                         messages.intro.badgeSub = sec.metadata.badgeSub[lang];
                     }
                 }
-                if (sec.sectionKey === "services" && sec.title?.[lang]) {
+                if (sec.sectionKey === "services") {
                     messages.servicesSection = messages.servicesSection || {};
-                    messages.servicesSection.title = sec.title[lang];
+                    if (sec.title?.[lang]) messages.servicesSection.title = sec.title[lang];
                     if (sec.subtitle?.[lang]) messages.servicesSection.badge = sec.subtitle[lang];
                 }
-                if (sec.sectionKey === "why_ftx" && sec.title?.[lang]) {
+                if (sec.sectionKey === "why_ftx") {
                     messages.whyFtx = messages.whyFtx || {};
-                    messages.whyFtx.title = sec.title[lang];
+                    if (sec.title?.[lang]) messages.whyFtx.title = sec.title[lang];
                     if (sec.subtitle?.[lang]) messages.whyFtx.badge = sec.subtitle[lang];
                     if (sec.metadata?.card1Title?.[lang]) messages.whyFtx.v1Title = sec.metadata.card1Title[lang];
                     if (sec.metadata?.card1Desc?.[lang]) messages.whyFtx.v1Desc = sec.metadata.card1Desc[lang];
@@ -80,26 +80,42 @@ async function getDynamicMessages(locale: Locale) {
                     if (sec.metadata?.card2Image) messages.whyFtx.v2Image = sec.metadata.card2Image;
 
                     if (sec.metadata?.card3Title?.[lang]) messages.whyFtx.v3Title = sec.metadata.card3Title[lang];
-                    if (sec.metadata?.card3Desc?.[lang]) messages.whyFtx.v3Desc = sec.metadata.card3Desc[lang];
+                    const rawCard3DescEn = sec.metadata?.card3Desc?.en;
+                    const rawCard3DescAr = sec.metadata?.card3Desc?.ar;
+                    const isCard3Corrupted = rawCard3DescEn && /[\u0600-\u06FF]/.test(rawCard3DescEn) && !rawCard3DescAr;
+                    if (isAr) {
+                        const val = rawCard3DescAr || (isCard3Corrupted ? rawCard3DescEn : undefined);
+                        if (val) messages.whyFtx.v3Desc = val;
+                    } else {
+                        if (rawCard3DescEn && !isCard3Corrupted) messages.whyFtx.v3Desc = rawCard3DescEn;
+                    }
                     if (sec.metadata?.card3Image) messages.whyFtx.v3Image = sec.metadata.card3Image;
 
                     if (sec.metadata?.card4Title?.[lang]) messages.whyFtx.v4Title = sec.metadata.card4Title[lang];
-                    if (sec.metadata?.card4Desc?.[lang]) messages.whyFtx.v4Desc = sec.metadata.card4Desc[lang];
+                    const rawCard4DescEn = sec.metadata?.card4Desc?.en;
+                    const rawCard4DescAr = sec.metadata?.card4Desc?.ar;
+                    const isCard4Corrupted = rawCard4DescEn && /[\u0600-\u06FF]/.test(rawCard4DescEn) && !rawCard4DescAr;
+                    if (isAr) {
+                        const val = rawCard4DescAr || (isCard4Corrupted ? rawCard4DescEn : undefined);
+                        if (val) messages.whyFtx.v4Desc = val;
+                    } else {
+                        if (rawCard4DescEn && !isCard4Corrupted) messages.whyFtx.v4Desc = rawCard4DescEn;
+                    }
                     if (sec.metadata?.card4Image) messages.whyFtx.v4Image = sec.metadata.card4Image;
                 }
-                if (sec.sectionKey === "gallery" && sec.title?.[lang]) {
+                if (sec.sectionKey === "gallery") {
                     messages.gallery = messages.gallery || {};
-                    messages.gallery.heroTitle = sec.title[lang];
+                    if (sec.title?.[lang]) messages.gallery.heroTitle = sec.title[lang];
                     if (sec.subtitle?.[lang]) messages.gallery.heroSub = sec.subtitle[lang];
                 }
-                if (sec.sectionKey === "testimonials" && sec.title?.[lang]) {
+                if (sec.sectionKey === "testimonials") {
                     messages.testimonials = messages.testimonials || {};
-                    messages.testimonials.title = sec.title[lang];
+                    if (sec.title?.[lang]) messages.testimonials.title = sec.title[lang];
                     if (sec.subtitle?.[lang]) messages.testimonials.badge = sec.subtitle[lang];
                 }
-                if (sec.sectionKey === "contact" && sec.title?.[lang]) {
+                if (sec.sectionKey === "contact") {
                     messages.contact = messages.contact || {};
-                    messages.contact.heroTitle = sec.title[lang];
+                    if (sec.title?.[lang]) messages.contact.heroTitle = sec.title[lang];
                     if (sec.subtitle?.[lang]) messages.contact.heroSub = sec.subtitle[lang];
                 }
             });

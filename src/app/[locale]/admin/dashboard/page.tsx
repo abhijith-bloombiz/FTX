@@ -1115,13 +1115,18 @@ export default function AdminDashboardPage() {
                                                 className="bg-ftx-surface border border-ftx-surface-high p-5 ftx-squircle-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                                             >
                                                 <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <span className="px-2 py-0.5 bg-ftx-obsidian text-ftx-lime border border-ftx-lime/30 text-[10px] font-mono font-bold uppercase">
                                                             {pkg.category?.toUpperCase()}
                                                         </span>
                                                         <span className="text-xs font-mono text-ftx-lime font-bold">
                                                             {pkg.price?.en}
                                                         </span>
+                                                        {(pkg.popular || (pkg.badge && (typeof pkg.badge === "string" ? pkg.badge.trim() !== "" : pkg.badge.en || pkg.badge.ar))) && (
+                                                            <span className="px-2 py-0.5 bg-ftx-lime/20 text-ftx-lime border border-ftx-lime/40 text-[10px] font-mono font-bold uppercase">
+                                                                {typeof pkg.badge === "object" ? (pkg.badge?.en || "POPULAR CHOICE") : (pkg.badge || "POPULAR CHOICE")}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <h3 className="text-base font-bold font-heading text-white uppercase">
                                                         {pkg.name?.en} / {pkg.name?.ar}
@@ -2864,6 +2869,41 @@ export default function AdminDashboardPage() {
                                             </div>
                                         </div>
 
+                                        {/* Custom Badge Label (EN & AR) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">
+                                                    BADGE TEXT (EN) — OPTIONAL
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={typeof editModalItem.badge === "object" ? editModalItem.badge?.en || "" : editModalItem.badge || ""}
+                                                    onChange={(e) => {
+                                                        const curBadge = typeof editModalItem.badge === "object" ? editModalItem.badge : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, badge: { ...curBadge, en: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none"
+                                                    placeholder="e.g. POPULAR CHOICE, BEST VALUE"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[11px] font-mono text-ftx-silver uppercase">
+                                                    BADGE TEXT (AR) — اختياري
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    dir="rtl"
+                                                    value={typeof editModalItem.badge === "object" ? editModalItem.badge?.ar || "" : ""}
+                                                    onChange={(e) => {
+                                                        const curBadge = typeof editModalItem.badge === "object" ? editModalItem.badge : { en: "", ar: "" };
+                                                        setEditModalItem({ ...editModalItem, badge: { ...curBadge, ar: e.target.value } });
+                                                    }}
+                                                    className="w-full p-3 bg-ftx-obsidian border border-ftx-surface-high text-white text-xs font-mono rounded-lg focus:border-ftx-lime focus:outline-none text-right"
+                                                    placeholder="مثال: الأكثر شعبية، الخيار الأفضل"
+                                                />
+                                            </div>
+                                        </div>
+
                                         {/* Description (EN & AR) */}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="space-y-1">
@@ -3625,14 +3665,24 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
         setCard3Image(section.metadata?.card3Image || (isWhyFtxSec ? "/images/pillars/craftsmanship.jpg" : "/images/about/infrared.jpg"));
         setCard3TitleEn(section.metadata?.card3Title?.en || (isWhyFtxSec ? "CRAFTSMANSHIP" : "Curing Infrared Lamps"));
         setCard3TitleAr(section.metadata?.card3Title?.ar || (isWhyFtxSec ? "الحرفية العالية" : "أشعة التجفيف بالإنفراريد"));
-        setCard3DescEn(section.metadata?.card3Desc?.en || (isWhyFtxSec ? "Certified master applicators working in climate-controlled bays." : "Shortwave infrared curing locks in ceramic coatings at optimal temperature matrices for maximum gloss and durability."));
-        setCard3DescAr(section.metadata?.card3Desc?.ar || (isWhyFtxSec ? "فنيون محترفون معتمدون يعملون في بيئة معقمة ومكيفة." : "المعالجة بالأشعة تحت الحمراء تضمن ثبات السيراميك لأقصى لمعان ومتانة."));
+        const rawCard3DescEn = section.metadata?.card3Desc?.en || "";
+        const rawCard3DescAr = section.metadata?.card3Desc?.ar || "";
+        const isCard3Corrupted = /[\u0600-\u06FF]/.test(rawCard3DescEn) && !rawCard3DescAr;
+        const defaultCard3DescEn = isWhyFtxSec ? "Certified master applicators working in climate-controlled bays." : "Shortwave infrared curing locks in ceramic coatings at optimal temperature matrices for maximum gloss and durability.";
+        const defaultCard3DescAr = isWhyFtxSec ? "فنيون محترفون معتمدون يعملون في بيئة معقمة ومكيفة." : "المعالجة بالأشعة تحت الحمراء تضمن ثبات السيراميك لأقصى لمعان ومتانة.";
+        setCard3DescEn(isCard3Corrupted ? defaultCard3DescEn : (rawCard3DescEn || defaultCard3DescEn));
+        setCard3DescAr(isCard3Corrupted ? rawCard3DescEn : (rawCard3DescAr || defaultCard3DescAr));
 
         setCard4Image(section.metadata?.card4Image || "/images/pillars/performance.jpg");
         setCard4TitleEn(section.metadata?.card4Title?.en || "PERFORMANCE");
         setCard4TitleAr(section.metadata?.card4Title?.ar || "الأداء المتميز");
-        setCard4DescEn(section.metadata?.card4Desc?.en || "Hydrophobic repellency and deep obsidian gloss enhancement.");
-        setCard4DescAr(section.metadata?.card4Desc?.ar || "خصائص فائقة لطرد المياه ولمعان عميق.");
+        const rawCard4DescEn = section.metadata?.card4Desc?.en || "";
+        const rawCard4DescAr = section.metadata?.card4Desc?.ar || "";
+        const isCard4Corrupted = /[\u0600-\u06FF]/.test(rawCard4DescEn) && !rawCard4DescAr;
+        const defaultCard4DescEn = "Hydrophobic repellency and deep obsidian gloss enhancement.";
+        const defaultCard4DescAr = "خصائص فائقة لطرد المياه ولمعان عميق.";
+        setCard4DescEn(isCard4Corrupted ? defaultCard4DescEn : (rawCard4DescEn || defaultCard4DescEn));
+        setCard4DescAr(isCard4Corrupted ? rawCard4DescEn : (rawCard4DescAr || defaultCard4DescAr));
 
         setMetric1Val(section.metadata?.metric1Val || "10");
         setMetric1Suffix(section.metadata?.metric1Suffix || "+");
@@ -3646,8 +3696,11 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
 
         setMetric3Val(section.metadata?.metric3Val || "100");
         setMetric3Suffix(section.metadata?.metric3Suffix || "%");
-        setMetric3LabelEn(section.metadata?.metric3Label?.en || "SATISFACTION FOCUS");
-        setMetric3LabelAr(section.metadata?.metric3Label?.ar || "تركيز على رضا العملاء");
+        const rawMetric3LabelEn = section.metadata?.metric3Label?.en || "";
+        const rawMetric3LabelAr = section.metadata?.metric3Label?.ar || "";
+        const isMetric3Corrupted = /[\u0600-\u06FF]/.test(rawMetric3LabelEn) && !rawMetric3LabelAr;
+        setMetric3LabelEn(isMetric3Corrupted ? "SATISFACTION FOCUS" : (rawMetric3LabelEn || "SATISFACTION FOCUS"));
+        setMetric3LabelAr(isMetric3Corrupted ? rawMetric3LabelEn : (rawMetric3LabelAr || "تركيز على رضا العملاء"));
 
         setStat1Val(section.metadata?.stat1Val || "100");
         setStat1Suffix(section.metadata?.stat1Suffix || "%");
@@ -3656,8 +3709,11 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
 
         setStat2Val(section.metadata?.stat2Val || "1500");
         setStat2Suffix(section.metadata?.stat2Suffix || "+");
-        setStat2LabelEn(section.metadata?.stat2Label?.en || "Supercars Protected");
-        setStat2LabelAr(section.metadata?.stat2Label?.ar || "سيارة فائقة تم حمايتها");
+        const rawStat2LabelEn = section.metadata?.stat2Label?.en || "";
+        const rawStat2LabelAr = section.metadata?.stat2Label?.ar || "";
+        const isStat2Corrupted = /[\u0600-\u06FF]/.test(rawStat2LabelEn) && !rawStat2LabelAr;
+        setStat2LabelEn(isStat2Corrupted ? "Supercars Protected" : (rawStat2LabelEn || "Supercars Protected"));
+        setStat2LabelAr(isStat2Corrupted ? rawStat2LabelEn : (rawStat2LabelAr || "سيارة فائقة تم حمايتها"));
 
         setMapsUrl(section.metadata?.mapsUrl || "");
         setPhone(section.metadata?.phone || "");
@@ -3762,7 +3818,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                             stat1Label: { en: stat1LabelEn, ar: stat1LabelAr },
                             stat2Val,
                             stat2Suffix,
-                            stat2Label: { en: stat2LabelAr },
+                            stat2Label: { en: stat2LabelEn, ar: stat2LabelAr },
                         }
                         : {}),
                     ...(isInfrastructure || isWhyFtx
@@ -3775,12 +3831,12 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                             card2Desc: { en: card2DescEn, ar: card2DescAr },
                             card3Image: finalCard3Image,
                             card3Title: { en: card3TitleEn, ar: card3TitleAr },
-                            card3Desc: { en: card3DescAr },
+                            card3Desc: { en: card3DescEn, ar: card3DescAr },
                             ...(isWhyFtx
                                 ? {
                                     card4Image: finalCard4Image,
                                     card4Title: { en: card4TitleEn, ar: card4TitleAr },
-                                    card4Desc: { en: card4DescAr },
+                                    card4Desc: { en: card4DescEn, ar: card4DescAr },
                                 }
                                 : {}),
                         }
@@ -3796,7 +3852,7 @@ function SectionEditCard({ section, onSave, saving }: { section: any; onSave: (s
                             metric2Label: { en: metric2LabelEn, ar: metric2LabelAr },
                             metric3Val,
                             metric3Suffix,
-                            metric3Label: { en: metric3LabelAr },
+                            metric3Label: { en: metric3LabelEn, ar: metric3LabelAr },
                         }
                         : {}),
                     ...(badgeTitleEn || badgeTitleAr ? { badgeTitle: { en: badgeTitleEn, ar: badgeTitleAr } } : {}),
