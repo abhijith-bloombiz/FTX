@@ -706,6 +706,37 @@ html[dir="rtl"] {
   animation: ftxArrowNudge 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Scroll to Explore Text Shimmer Animation */
+@keyframes ftxScrollShimmer {
+  0% {
+    background-position: 200% center;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -200% center;
+    opacity: 0.6;
+  }
+}
+
+.ftx-scroll-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.85) 25%,
+    #bff377 50%,
+    rgba(255, 255, 255, 0.85) 75%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ftxScrollShimmer 3s ease-in-out infinite;
+  display: inline-block;
+}
+
 /* Mouse Hover Override: Pause auto animation and force icon color to black on card hover */
 .group:hover.animate-icon-seq-1 svg,
 .group:hover.animate-icon-seq-2 svg,

@@ -579,41 +579,48 @@ export function HeroSection({ locale, messages }: HeroSectionProps) {
                 {/* Bottom Fade Gradient Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 h-36 sm:h-48 bg-gradient-to-t from-[#070707] via-[#070707]/80 to-transparent pointer-events-none z-15" />
 
-                {/* Scroll-to-Reveal Button */}
+                {/* Scroll-to-Explore Button & Text */}
                 {revealed && (
                     <button
                         ref={scrollBtnRef}
                         type="button"
                         onClick={handleScrollToReveal}
-                        aria-label="Scroll to reveal"
-                        className="absolute bottom-[76px] sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none"
+                        aria-label="Scroll to explore"
+                        className="absolute bottom-[64px] sm:bottom-8 left-1/2 -translate-x-1/2 z-40 group cursor-pointer select-none flex flex-col items-center gap-2 transition-all duration-300"
                         style={{
                             transition: "opacity 0.3s ease",
                         }}
                     >
-                        {/* Pulsing ring */}
-                        <span className="absolute inset-0 rounded-full border border-white/20 animate-ping" style={{ animationDuration: "2s" }} />
+                        <div className="relative flex items-center justify-center">
+                            {/* Pulsing ring */}
+                            <span className="absolute inset-0 rounded-full border border-white/20 group-hover:border-ftx-lime/40 animate-ping" style={{ animationDuration: "2s" }} />
 
-                        {/* Glassy pill */}
-                        <span
-                            className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/20 group-hover:border-white/50 transition-all duration-300 group-hover:scale-105 active:scale-95"
-                            style={{
-                                background: "transparent",
-                                backdropFilter: "blur(16px)",
-                                WebkitBackdropFilter: "blur(16px)",
-                            }}
-                        >
-                            {/* Chevron SVG with bounce animation */}
-                            <svg
-                                className="w-5 h-5 sm:w-6 sm:h-6 text-white/80 group-hover:text-white transition-colors duration-300 animate-bounce"
-                                style={{ animationDuration: "1.8s" }}
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
+                            {/* Glassy pill */}
+                            <span
+                                className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-white/20 group-hover:border-ftx-lime/50 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                                style={{
+                                    background: "rgba(7, 7, 7, 0.45)",
+                                    backdropFilter: "blur(16px)",
+                                    WebkitBackdropFilter: "blur(16px)",
+                                }}
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
+                                {/* Chevron SVG with bounce animation */}
+                                <svg
+                                    className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 group-hover:text-ftx-lime transition-colors duration-300 animate-bounce"
+                                    style={{ animationDuration: "1.8s" }}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </span>
+                        </div>
+
+                        {/* Scroll to explore animated text */}
+                        <span className="ftx-scroll-text-shimmer text-[10px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase transition-all duration-300 whitespace-nowrap group-hover:brightness-125 group-hover:drop-shadow-[0_0_8px_rgba(164,214,94,0.6)]">
+                            {messages?.hero?.scrollExplore || (locale === "ar" ? "مرر للاستكشاف" : "SCROLL TO EXPLORE")}
                         </span>
                     </button>
                 )}
